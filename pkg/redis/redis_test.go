@@ -60,6 +60,7 @@ func TestClient_Set(t *testing.T) {
 func TestClient_Get(t *testing.T) {
 	s := miniredis.RunT(t)
 	s.Set("GetKey", "GetValue")
+	s.SetTTL("GetKey", 60*time.Second)
 
 	c := &Client{
 		client: redis.NewClient(&redis.Options{
