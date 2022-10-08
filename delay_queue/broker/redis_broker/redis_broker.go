@@ -84,9 +84,10 @@ func (q *RedisDelayQueue) pushToZSet(ctx context.Context, readyTime int64, msg *
 func (q *RedisDelayQueue) getFromZSetByScore(topic string, batchSize int) ([]types.Message, error) {
 	// 批量获取已经准备好执行的消息
 	zs, err := q.rdb.GetClient().ZRangeByScoreWithScores(context.Background(), q.topicZSet(topic), &redis.ZRangeBy{
-		Min:   "-inf",
-		Max:   strconv.FormatInt(time.Now().Unix(), 10),
-		Count: int64(batchSize),
+		Min:    "-inf",
+		Max:    strconv.FormatInt(time.Now().Unix(), 10),
+		Offset: 0,
+		Count:  int64(batchSize),
 	}).Result()
 
 	if err != nil {

@@ -4,18 +4,16 @@ import (
 	"context"
 	"fmt"
 	"os"
+	"runtime"
 	"testing"
 	"time"
 
-	"github.com/beihai0xff/pudding/configs"
+	"github.com/alicebob/miniredis/v2"
+	"github.com/go-redis/redis/v9"
 )
 
 // redis_test.go 测试文件对 Redis 客户端对外暴漏的方法进行了功能测试，连接的是 dev 环境的数据库 。
 // 下面的单元测试也可以作为使用范例参考
-
-var (
-	c = GetRDB(configs.GetRedisConfig())
-)
 
 func TestMain(m *testing.M) {
 	exitCode := m.Run()
@@ -25,6 +23,15 @@ func TestMain(m *testing.M) {
 
 // TestClient_Set 测试 Set 方法
 func TestClient_Set(t *testing.T) {
+	s := miniredis.RunT(t)
+	c := &Client{
+		client: redis.NewClient(&redis.Options{
+			Addr:     s.Addr(),
+			DB:       0,
+			PoolSize: runtime.NumCPU() * 40,
+		}),
+	}
+
 	type args struct {
 		key        string
 		value      string
@@ -51,7 +58,17 @@ func TestClient_Set(t *testing.T) {
 
 // TestClient_Get 测试 Get 方法
 func TestClient_Get(t *testing.T) {
-	_ = c.Set(context.Background(), "GetKey", "GetValue", 60*time.Second)
+	s := miniredis.RunT(t)
+	s.Set("GetKey", "GetValue")
+
+	c := &Client{
+		client: redis.NewClient(&redis.Options{
+			Addr:     s.Addr(),
+			DB:       0,
+			PoolSize: runtime.NumCPU() * 40,
+		}),
+	}
+
 	type args struct {
 		key string
 	}
@@ -80,6 +97,16 @@ func TestClient_Get(t *testing.T) {
 
 // TestClient_GetDistributeLock 测试 GetDistributeLock 方法
 func TestClient_GetDistributeLock(t *testing.T) {
+	s := miniredis.RunT(t)
+
+	c := &Client{
+		client: redis.NewClient(&redis.Options{
+			Addr:     s.Addr(),
+			DB:       0,
+			PoolSize: runtime.NumCPU() * 40,
+		}),
+	}
+
 	lock, _ := c.GetDistributeLock(context.Background(), "DLockUsed", 10*time.Second)
 	defer lock.Release(context.Background())
 	type args struct {
