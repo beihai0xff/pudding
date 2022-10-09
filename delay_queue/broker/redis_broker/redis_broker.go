@@ -26,7 +26,7 @@ func (q *RedisDelayQueue) Produce(ctx context.Context, msg *types.Message) error
 	if !msg.ReadyTime.IsZero() {
 		readyTime = msg.ReadyTime.Unix()
 	} else {
-		// 否则使用Delay
+		// 否则使用 Delay
 		readyTime = time.Now().Add(msg.Delay).Unix()
 	}
 	return q.pushToZSet(ctx, readyTime, msg)
@@ -122,24 +122,28 @@ func (q *RedisDelayQueue) RealTimeProduce(ctx context.Context, topic string, msg
 }
 
 // NewRealTimeConsumer consume Messages from the queue in real time
-func (q *RedisDelayQueue) NewRealTimeConsumer(topic, group, consumerName string, batchSize int, fn func(msg *types.Message) error) {
+func (q *RedisDelayQueue) NewRealTimeConsumer(topic, group, consumerName string, batchSize int,
+	fn func(msg *types.Message) error) {
 
 	for {
 		// 拉取已经投递却未被 ACK 的消息，保证消息至少被成功消费1次
-		if msgs, err := q.rdb.XGroupConsume(context.Background(), topic, group, consumerName, "0", batchSize); err != nil {
-			q.handlerRealTimeMessage(msgs, topic, group, fn)
-			if len(msgs) == batchSize {
-				continue
-			}
+		msgs, err := q.rdb.XGroupConsume(context.Background(), topic, group, consumerName, "0", batchSize)
+		if err != nil {
+			// TODO: 记录错误日志
+		}
+		q.handlerRealTimeMessage(msgs, topic, group, fn)
+		if len(msgs) == batchSize {
+			// 如果一次未拉取完未被 ACK 的消息，则继续拉取
+			// 确保先消费完成未被 ACK 的消息
+			continue
 		}
 
 		// 拉取新消息
-		if msgs, err := q.rdb.XGroupConsume(context.Background(), topic, group, consumerName, ">", batchSize); err != nil {
-			q.handlerRealTimeMessage(msgs, topic, group, fn)
-			if len(msgs) == batchSize {
-				continue
-			}
+		msgs, err = q.rdb.XGroupConsume(context.Background(), topic, group, consumerName, ">", batchSize)
+		if err != nil {
+			// TODO: 记录错误日志
 		}
+		q.handlerRealTimeMessage(msgs, topic, group, fn)
 
 	}
 }
@@ -150,6 +154,8 @@ func (q *RedisDelayQueue) handlerRealTimeMessage(msgs []redis.XMessage, topic, g
 
 	// 遍历处理消息
 	for _, msg := range msgs {
+		// TODO: 消费超过三次的消息，记录错误日志，并添加到死信队列
+
 		var m types.Message
 
 		err := json.Unmarshal(msg.Values["body"].([]byte), &m)
