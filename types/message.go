@@ -1,6 +1,9 @@
 package types
 
-import "time"
+import (
+	"encoding/json"
+	"time"
+)
 
 // Message 消息
 type Message struct {
@@ -10,4 +13,13 @@ type Message struct {
 	Body      []byte        // Message Body
 	Delay     time.Duration // Message Delay Time (Seconds)
 	ReadyTime time.Time     // Message Ready Time（now + delay, Unix Timestamp, Seconds）
+}
+
+func GetMessageFromJSON(j []byte) (*Message, error) {
+	var m Message
+	if err := json.Unmarshal(j, &m); err != nil {
+		return nil, err
+	}
+
+	return &m, nil
 }

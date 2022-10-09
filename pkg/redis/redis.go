@@ -63,9 +63,9 @@ func (c *Client) Get(ctx context.Context, key string) (string, error) {
 	return c.client.Get(ctx, key).Result()
 }
 
-// GetPipeline 获取一个 Pipeline 对象
-func (c *Client) GetPipeline() redis.Pipeliner {
-	return c.client.TxPipeline()
+// HGet 执行 Redis HGet 命令
+func (c *Client) HGet(ctx context.Context, key, field string) ([]byte, error) {
+	return c.client.HGet(ctx, key, field).Bytes()
 }
 
 // GetDistributeLock 获取一个分布式锁

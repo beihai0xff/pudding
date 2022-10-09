@@ -96,17 +96,18 @@ func (q *RedisDelayQueue) getFromZSetByScore(topic string, batchSize, partition 
 	// 遍历每个 message key，根据 message key 获取 message body
 	for _, z := range zs {
 		key := z.Member.(string)
-		// 获取消息的body
-		body, err := q.rdb.GetClient().HGet(context.Background(), q.topicHashtable(topic, partition), key).Bytes()
+		// 获取消息的 body
+		body, err := q.rdb.HGet(context.Background(), q.topicHashtable(topic, partition), key)
 		if err != nil {
+			// TODO: 记录错误日志
 			continue
 		}
-		res = append(res, types.Message{
-			Topic:     topic,
-			Key:       key,
-			Body:      body,
-			ReadyTime: time.Unix(int64(z.Score), 0),
-		})
+		msg, err := types.GetMessageFromJSON(body)
+		if err != nil {
+			// TODO: 记录错误日志
+			continue
+		}
+		res = append(res, *msg)
 	}
 	return res, nil
 }
@@ -157,14 +158,14 @@ func (q *RedisDelayQueue) handlerRealTimeMessage(msgs []redis.XMessage, topic, g
 
 		// TODO: 消费超过三次的消息，记录错误日志，并添加到死信队列
 
-		var m types.Message
-		if err := json.Unmarshal(msg.Values["body"].([]byte), &m); err != nil {
+		m, err := types.GetMessageFromJSON(msg.Values["body"].([]byte))
+		if err != nil {
 			// TODO: 记录错误日志
 			continue
 		}
 
 		// handle message
-		if err := fn(&m); err != nil {
+		if err := fn(m); err != nil {
 			// TODO: 记录错误日志
 			continue
 		}
