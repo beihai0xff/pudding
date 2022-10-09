@@ -154,24 +154,23 @@ func (q *RedisDelayQueue) handlerRealTimeMessage(msgs []redis.XMessage, topic, g
 
 	// 遍历处理消息
 	for _, msg := range msgs {
+
 		// TODO: 消费超过三次的消息，记录错误日志，并添加到死信队列
 
 		var m types.Message
-
-		err := json.Unmarshal(msg.Values["body"].([]byte), &m)
-		if err != nil {
+		if err := json.Unmarshal(msg.Values["body"].([]byte), &m); err != nil {
 			// TODO: 记录错误日志
 			continue
 		}
 
-		err = fn(&m)
-		if err != nil {
+		// handle message
+		if err := fn(&m); err != nil {
 			// TODO: 记录错误日志
 			continue
 		}
 
-		err = q.rdb.XAck(context.Background(), topic, group, msg.ID)
-		if err != nil {
+		// handle message success，ACK
+		if err := q.rdb.XAck(context.Background(), topic, group, msg.ID); err != nil {
 			// TODO: 记录错误日志
 			continue
 		}
