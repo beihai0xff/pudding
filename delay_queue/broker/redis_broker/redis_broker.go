@@ -32,10 +32,27 @@ func (q *RedisDelayQueue) Produce(ctx context.Context, msg *types.Message) error
 	return q.pushToZSet(ctx, readyTime, msg)
 }
 
-func (q *RedisDelayQueue) NewConsumer(topic string, batchSize int, fn func(msg *types.Message) error) {
+func (q *RedisDelayQueue) pushToZSet(ctx context.Context, readyTime int64, msg *types.Message) error {
+	c, err := json.Marshal(msg)
+	if err != nil {
+		return fmt.Errorf("pushToZSet: failed to marshal message:%w", err)
+	}
+
+	success, err := pushScript.Run(ctx, q.rdb.GetClient(), []string{q.topicZSet(msg.Topic, msg.Partition),
+		q.topicHashtable(msg.Topic, msg.Partition)}, msg.Key, c, readyTime).Bool()
+	if err != nil {
+		return fmt.Errorf("pushToZSet: failed to push message:%w", err)
+	}
+	if !success {
+		return errno.ErrDuplicateMessage
+	}
+	return nil
+}
+
+func (q *RedisDelayQueue) NewConsumer(topic string, partition, batchSize int, fn func(msg *types.Message) error) {
 	for {
 		// 批量获取已经准备好执行的消息
-		messages, err := q.getFromZSetByScore(topic, batchSize)
+		messages, err := q.getFromZSetByScore(topic, batchSize, partition)
 		// 如果获取出错或者获取不到消息，则休眠一秒
 		if err != nil || len(messages) == 0 {
 			time.Sleep(time.Second)
@@ -52,38 +69,14 @@ func (q *RedisDelayQueue) NewConsumer(topic string, batchSize int, fn func(msg *
 			}
 			// 如果消息处理成功，删除消息
 			deleteScript.Run(context.Background(), q.rdb.GetClient(),
-				[]string{q.topicZSet(topic), q.topicHashtable(topic)}, msg.Key)
+				[]string{q.topicZSet(topic, partition), q.topicHashtable(topic, partition)}, msg.Key)
 		}
 	}
 }
 
-func (q *RedisDelayQueue) topicZSet(topic string) string {
-	return "zset_" + topic
-}
-
-func (q *RedisDelayQueue) topicHashtable(topic string) string {
-	return "hashTable_" + topic
-}
-
-func (q *RedisDelayQueue) pushToZSet(ctx context.Context, readyTime int64, msg *types.Message) error {
-	c, err := json.Marshal(msg)
-	if err != nil {
-		return fmt.Errorf("pushToZSet: failed to marshal message:%w", err)
-	}
-	success, err := pushScript.Run(ctx, q.rdb.GetClient(), []string{q.topicZSet(msg.Topic), q.topicHashtable(msg.Topic)},
-		msg.Key, c, readyTime).Bool()
-	if err != nil {
-		return fmt.Errorf("pushToZSet: failed to push message:%w", err)
-	}
-	if !success {
-		return errno.ErrDuplicateMessage
-	}
-	return nil
-}
-
-func (q *RedisDelayQueue) getFromZSetByScore(topic string, batchSize int) ([]types.Message, error) {
+func (q *RedisDelayQueue) getFromZSetByScore(topic string, batchSize, partition int) ([]types.Message, error) {
 	// 批量获取已经准备好执行的消息
-	zs, err := q.rdb.GetClient().ZRangeByScoreWithScores(context.Background(), q.topicZSet(topic), &redis.ZRangeBy{
+	zs, err := q.rdb.GetClient().ZRangeByScoreWithScores(context.Background(), q.topicZSet(topic, partition), &redis.ZRangeBy{
 		Min:    "-inf",
 		Max:    strconv.FormatInt(time.Now().Unix(), 10),
 		Offset: 0,
@@ -104,7 +97,7 @@ func (q *RedisDelayQueue) getFromZSetByScore(topic string, batchSize int) ([]typ
 	for _, z := range zs {
 		key := z.Member.(string)
 		// 获取消息的body
-		body, err := q.rdb.GetClient().HGet(context.Background(), q.topicHashtable(topic), key).Bytes()
+		body, err := q.rdb.GetClient().HGet(context.Background(), q.topicHashtable(topic, partition), key).Bytes()
 		if err != nil {
 			continue
 		}
@@ -116,4 +109,80 @@ func (q *RedisDelayQueue) getFromZSetByScore(topic string, batchSize int) ([]typ
 		})
 	}
 	return res, nil
+}
+
+// RealTimeProduce produce a Message to the queue in real time
+func (q *RedisDelayQueue) RealTimeProduce(ctx context.Context, topic string, msg *types.Message) error {
+	c, err := json.Marshal(msg)
+	if err != nil {
+		return fmt.Errorf("RealTimeProduce: failed to marshal message:%w", err)
+	}
+
+	return q.rdb.SteamSend(ctx, topic, c)
+}
+
+// NewRealTimeConsumer consume Messages from the queue in real time
+func (q *RedisDelayQueue) NewRealTimeConsumer(topic, group, consumerName string, batchSize int, fn func(msg *types.Message) error) {
+
+	for {
+		// 拉取已经投递却未被 ACK 的消息，保证消息至少被成功消费1次
+		if msgs, err := q.rdb.XGroupConsume(context.Background(), topic, group, consumerName, "0", batchSize); err != nil {
+			q.handlerRealTimeMessage(msgs, topic, group, fn)
+			if len(msgs) == batchSize {
+				continue
+			}
+		}
+
+		// 拉取新消息
+		if msgs, err := q.rdb.XGroupConsume(context.Background(), topic, group, consumerName, ">", batchSize); err != nil {
+			q.handlerRealTimeMessage(msgs, topic, group, fn)
+			if len(msgs) == batchSize {
+				continue
+			}
+		}
+
+	}
+}
+
+// handlerRealTimeMessage handle Messages from the queue in real time
+func (q *RedisDelayQueue) handlerRealTimeMessage(msgs []redis.XMessage, topic, group string,
+	fn func(msg *types.Message) error) {
+
+	// 遍历处理消息
+	for _, msg := range msgs {
+		var m types.Message
+
+		err := json.Unmarshal(msg.Values["body"].([]byte), &m)
+		if err != nil {
+			// TODO: 记录错误日志
+			continue
+		}
+
+		err = fn(&m)
+		if err != nil {
+			// TODO: 记录错误日志
+			continue
+		}
+
+		err = q.rdb.XAck(context.Background(), topic, group, msg.ID)
+		if err != nil {
+			// TODO: 记录错误日志
+			continue
+		}
+	}
+
+	return
+}
+
+// Close the queue
+func (q *RedisDelayQueue) Close() error {
+	return q.rdb.Close()
+}
+
+func (q *RedisDelayQueue) topicZSet(topic string, partition int) string {
+	return fmt.Sprintf("zset_%s:%d", topic, partition)
+}
+
+func (q *RedisDelayQueue) topicHashtable(topic string, partition int) string {
+	return fmt.Sprintf("hashTable_%s:%d", topic, partition)
 }
