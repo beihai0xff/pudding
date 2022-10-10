@@ -123,6 +123,12 @@ func (c *Client) XGroupConsume(ctx context.Context, topic, group, consumerName, 
 	return result[0].Messages, nil
 }
 
+func (c *Client) XGroupDelConsumer(ctx context.Context, topic, group, consumerName string) error {
+	_, err := c.client.XGroupDelConsumer(ctx, topic, group, consumerName).Result()
+
+	return err
+}
+
 func (c *Client) XAck(ctx context.Context, topic, group string, ids ...string) error {
 	return c.client.XAck(ctx, topic, group, ids...).Err()
 }
