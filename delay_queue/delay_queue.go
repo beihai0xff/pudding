@@ -24,9 +24,9 @@ type RealTimeQueue interface {
 	Close() error
 }
 
-type Queue interface {
-	*DelayQueue
-	*RealTimeQueue
+type Queue struct {
+	delay    DelayQueue
+	realtime RealTimeQueue
 }
 
 // NewDelayQueue create a new DelayQueue
