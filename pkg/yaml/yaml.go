@@ -14,7 +14,7 @@ type Users struct {
 }
 
 func Parse(filePath string, data interface{}) error {
-	file, err := ioutil.ReadFile("test.yaml")
+	file, err := ioutil.ReadFile(filePath)
 	if err != nil {
 		return err
 	}
