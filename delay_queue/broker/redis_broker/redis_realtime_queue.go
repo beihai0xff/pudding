@@ -7,21 +7,26 @@ import (
 
 	"github.com/go-redis/redis/v9"
 
+	rdb "github.com/beihai0xff/pudding/pkg/redis"
 	"github.com/beihai0xff/pudding/types"
 )
 
-// RealTimeProduce produce a Message to the queue in realtime
-func (q *RedisDelayQueue) RealTimeProduce(ctx context.Context, topic string, msg *types.Message) error {
-	c, err := json.Marshal(msg)
-	if err != nil {
-		return fmt.Errorf("RealTimeProduce: failed to marshal message:%w", err)
-	}
-
-	return q.rdb.SteamSend(ctx, topic, c)
+type RedisRealTimeQueue struct {
+	rdb *rdb.Client // Redis客户端
 }
 
-// NewRealTimeConsumer consume Messages from the queue in real time
-func (q *RedisDelayQueue) NewRealTimeConsumer(topic, group, consumerName string, batchSize int,
+// Produce produce a Message to the queue in realtime
+func (q *RedisRealTimeQueue) Produce(ctx context.Context, msg *types.Message) error {
+	c, err := json.Marshal(msg)
+	if err != nil {
+		return fmt.Errorf("ProduceRealTime: failed to marshal message:%w", err)
+	}
+
+	return q.rdb.StreamSend(ctx, q.getTopicPartition(msg.Topic, msg.Partition), c)
+}
+
+// NewConsumer consume Messages from the queue in real time
+func (q *RedisRealTimeQueue) NewConsumer(topic, group, consumerName string, batchSize int,
 	fn func(msg *types.Message) error) {
 
 	for {
@@ -48,7 +53,7 @@ func (q *RedisDelayQueue) NewRealTimeConsumer(topic, group, consumerName string,
 }
 
 // handlerRealTimeMessage handle Messages from the queue in real time
-func (q *RedisDelayQueue) handlerRealTimeMessage(msgs []redis.XMessage, topic, group string,
+func (q *RedisRealTimeQueue) handlerRealTimeMessage(msgs []redis.XMessage, topic, group string,
 	fn func(msg *types.Message) error) {
 
 	// 遍历处理消息
@@ -76,4 +81,13 @@ func (q *RedisDelayQueue) handlerRealTimeMessage(msgs []redis.XMessage, topic, g
 	}
 
 	return
+}
+
+func (q *RedisRealTimeQueue) getTopicPartition(topic string, partition int) string {
+	return fmt.Sprintf("stream_%s:%d", topic, partition)
+}
+
+// Close close the queue
+func (q *RedisRealTimeQueue) Close() error {
+	return q.rdb.Close()
 }
