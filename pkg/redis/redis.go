@@ -28,8 +28,8 @@ type Client struct {
 	Config *configs.RedisConfig
 }
 
-// GetRDB 获取客户端
-func GetRDB(c *configs.RedisConfig) *Client {
+// NewRDB 获取客户端
+func NewRDB(c *configs.RedisConfig) *Client {
 	ClientOnce.Do(
 		func() {
 			opt, err := redis.ParseURL(c.RedisURL)
@@ -50,6 +50,10 @@ func (c *Client) GetClient() *redis.Client {
 	return c.client
 }
 
+/*
+	String 相关 Command
+*/
+
 // Set 执行 Redis SET 命令，expireTime 时间单位为秒
 func (c *Client) Set(ctx context.Context, key, value string, expireTime time.Duration) error {
 	if key == "" || value == "" {
@@ -63,27 +67,30 @@ func (c *Client) Get(ctx context.Context, key string) (string, error) {
 	return c.client.Get(ctx, key).Result()
 }
 
+/*
+	ZSet 相关 Command
+*/
+
+// ZRangeByScore 执行 Redis zrangebyscore 命令
+func (c *Client) ZRangeByScore(ctx context.Context, key string, opt *redis.ZRangeBy) ([]redis.Z, error) {
+	return c.client.ZRangeByScoreWithScores(ctx, key, opt).Result()
+}
+
+/*
+	HashTable 相关 Command
+*/
+
 // HGet 执行 Redis HGet 命令
 func (c *Client) HGet(ctx context.Context, key, field string) ([]byte, error) {
 	return c.client.HGet(ctx, key, field).Bytes()
 }
 
-// GetDistributeLock 获取一个分布式锁
-func (c *Client) GetDistributeLock(ctx context.Context, name string,
-	expireTime time.Duration) (*redislock.Lock, error) {
-	// Create a new lock client.
-	locker := redislock.New(c.client)
+/*
+	Stream 相关 Command
+*/
 
-	// Try to obtain lock.
-	return locker.Obtain(ctx, name, expireTime, nil)
-}
-
-// Close redis client
-func (c *Client) Close() error {
-	return c.client.Close()
-}
-
-func (c *Client) SteamSend(ctx context.Context, streamName string, msg []byte) error {
+// StreamSend 向指定 Stream 发送消息
+func (c *Client) StreamSend(ctx context.Context, streamName string, msg []byte) error {
 	return c.client.XAdd(ctx, &redis.XAddArgs{
 		Stream: streamName,
 		MaxLen: 100000,
@@ -131,4 +138,23 @@ func (c *Client) XGroupDelConsumer(ctx context.Context, topic, group, consumerNa
 
 func (c *Client) XAck(ctx context.Context, topic, group string, ids ...string) error {
 	return c.client.XAck(ctx, topic, group, ids...).Err()
+}
+
+/*
+	DistributeLock 相关
+*/
+
+// GetDistributeLock 获取一个分布式锁
+func (c *Client) GetDistributeLock(ctx context.Context, name string,
+	expireTime time.Duration) (*redislock.Lock, error) {
+	// Create a new lock client.
+	locker := redislock.New(c.client)
+
+	// Try to obtain lock.
+	return locker.Obtain(ctx, name, expireTime, nil)
+}
+
+// Close redis client
+func (c *Client) Close() error {
+	return c.client.Close()
 }

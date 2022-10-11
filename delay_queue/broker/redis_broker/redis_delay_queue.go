@@ -4,15 +4,21 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"log"
 	"strconv"
 	"time"
+
+	"github.com/beihai0xff/pudding/pkg/log"
+	rdb "github.com/beihai0xff/pudding/pkg/redis"
 
 	"github.com/go-redis/redis/v9"
 
 	"github.com/beihai0xff/pudding/pkg/errno"
 	"github.com/beihai0xff/pudding/types"
 )
+
+type RedisDelayQueue struct {
+	rdb *rdb.Client // Redis客户端
+}
 
 func (q *RedisDelayQueue) Produce(ctx context.Context, msg *types.Message) error {
 	// 如果设置了 ReadyTime，则使用 ReadyTime
@@ -58,7 +64,7 @@ func (q *RedisDelayQueue) NewConsumer(topic string, partition, batchSize int, fn
 			// 处理消息
 			err = fn(&msg)
 			if err != nil {
-				log.Printf("failed to handle message: %+v, caused by: %v", msg, err)
+				log.Errorf("failed to handle message: %+v, caused by: %v", msg, err)
 				continue
 			}
 			// 如果消息处理成功，删除消息
@@ -70,12 +76,12 @@ func (q *RedisDelayQueue) NewConsumer(topic string, partition, batchSize int, fn
 
 func (q *RedisDelayQueue) getFromZSetByScore(topic string, batchSize, partition int) ([]types.Message, error) {
 	// 批量获取已经准备好执行的消息
-	zs, err := q.rdb.GetClient().ZRangeByScoreWithScores(context.Background(), q.topicZSet(topic, partition), &redis.ZRangeBy{
+	zs, err := q.rdb.ZRangeByScore(context.Background(), q.topicZSet(topic, partition), &redis.ZRangeBy{
 		Min:    "-inf",
 		Max:    strconv.FormatInt(time.Now().Unix(), 10),
 		Offset: 0,
 		Count:  int64(batchSize),
-	}).Result()
+	})
 
 	if err != nil {
 		return nil, fmt.Errorf("failed to get messages from zset: %w", err)
@@ -104,4 +110,17 @@ func (q *RedisDelayQueue) getFromZSetByScore(topic string, batchSize, partition 
 		res = append(res, *msg)
 	}
 	return res, nil
+}
+
+// Close Close the queue
+func (q *RedisDelayQueue) Close() error {
+	return q.rdb.Close()
+}
+
+func (q *RedisDelayQueue) topicZSet(topic string, partition int) string {
+	return fmt.Sprintf("zset_%s:%d", topic, partition)
+}
+
+func (q *RedisDelayQueue) topicHashtable(topic string, partition int) string {
+	return fmt.Sprintf("hashTable_%s:%d", topic, partition)
 }

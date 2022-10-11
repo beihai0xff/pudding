@@ -1,7 +1,9 @@
 package log
 
-var logger Logger
+import "go.uber.org/zap"
+
+var defaultLogger *zap.SugaredLogger
 
 func init() {
-	logger = NewLogger(defaultConfig)
+	defaultLogger = NewLogger(defaultConfig).Sugar()
 }

@@ -1,29 +1,37 @@
 package log
 
 import (
+	"flag"
+	"os"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
 )
 
+func TestMain(m *testing.M) {
+
+	flag.Parse()
+	exitCode := m.Run()
+
+	os.Exit(exitCode)
+}
+
 func TestNewLogger(t *testing.T) {
-	logger := NewLogger(defaultTestConfig)
+	logger := NewLogger(defaultConfig)
 	assert.NotNil(t, logger)
 }
 
 func Test_ZapLog(t *testing.T) {
-	testLogger.Trace("hello world")
-	testLogger.Debug("hello world")
-	testLogger.Info("hello world")
-	testLogger.Warn("hello world")
-	testLogger.Error("hello world")
+	Debugf("hello world")
+	Infof("hello world")
+	Warnf("hello world")
+	Errorf("hello world")
 
-	puff := "puff"
-	testLogger.Tracef("hello world %s", puff)
-	testLogger.Debugf("hello world %s", puff)
-	testLogger.Infof("hello world %s", puff)
-	testLogger.Warnf("hello world %s", puff)
-	testLogger.Errorf("hello world %s", puff)
+	pudding := "pudding"
+	Debugf("hello world %s", pudding)
+	Infof("hello world %s", pudding)
+	Warnf("hello world %s", pudding)
+	Errorf("hello world %s", pudding)
 
-	testLogger.WithFields("field", "testfield").Debug("testdebug")
+	WithFields("field", "testfield").Debug("testdebug")
 }

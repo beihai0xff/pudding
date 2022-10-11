@@ -1,5 +1,29 @@
 package log
 
+import "go.uber.org/zap/zapcore"
+
+// Levels zapcore level
+var Levels = map[string]zapcore.Level{
+	"":      zapcore.DebugLevel,
+	"debug": zapcore.DebugLevel,
+	"info":  zapcore.InfoLevel,
+	"warn":  zapcore.WarnLevel,
+	"error": zapcore.ErrorLevel,
+	"fatal": zapcore.FatalLevel,
+}
+
+const (
+	// OutputConsole console output
+	OutputConsole = "console"
+	// OutputFile file output
+	OutputFile = "file"
+
+	// EncoderTypeConsole log format console encoder
+	EncoderTypeConsole = "console"
+	// EncoderTypeJson log format json encoder
+	EncoderTypeJson = "json"
+)
+
 var defaultConfig = &OutputConfig{
 	Writer:    OutputConsole,
 	Level:     "debug",
