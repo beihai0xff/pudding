@@ -6,16 +6,18 @@ import (
 	"strconv"
 	"time"
 
+	"github.com/go-redis/redis/v9"
+
 	"github.com/beihai0xff/pudding/configs"
 	"github.com/beihai0xff/pudding/pkg/log"
 	rdb "github.com/beihai0xff/pudding/pkg/redis"
 	"github.com/beihai0xff/pudding/types"
-
-	"github.com/go-redis/redis/v9"
 )
 
 type DelayQueue struct {
-	rdb *rdb.Client // Redis客户端
+	rdb *rdb.Client // Redis Client
+	// key is partition, value is the bucket ID in the partition
+	bucket map[int64]int8
 }
 
 func NewDelayQueue() *DelayQueue {
@@ -24,13 +26,13 @@ func NewDelayQueue() *DelayQueue {
 	}
 }
 
-func (q *DelayQueue) Produce(ctx context.Context, bucketID int64, msg *types.Message) error {
+func (q *DelayQueue) Produce(ctx context.Context, partition int64, msg *types.Message) error {
 	member := &redis.Z{Score: float64(msg.ReadyTime.Unix()), Member: msg.Key}
-	return q.pushToZSet(ctx, bucketID, member)
+	return q.pushToZSet(ctx, partition, member)
 }
 
-func (q *DelayQueue) pushToZSet(ctx context.Context, bucketID int64, member *redis.Z) error {
-	err := q.rdb.ZAddNX(ctx, q.getZSet(bucketID), *member)
+func (q *DelayQueue) pushToZSet(ctx context.Context, partition int64, member *redis.Z) error {
+	err := q.rdb.ZAddNX(ctx, q.getZSet(partition), *member)
 	if err != nil {
 		return fmt.Errorf("pushToZSet failed: %w", err)
 	}
@@ -38,17 +40,17 @@ func (q *DelayQueue) pushToZSet(ctx context.Context, bucketID int64, member *red
 	return nil
 }
 
-func (q *DelayQueue) Consume(ctx context.Context, bucketID, batchSize int64,
+func (q *DelayQueue) Consume(ctx context.Context, partition, batchSize int64,
 	fn func(msg *types.Message) error) error {
 
 	// 批量获取已经准备好执行的消息
-	messages, err := q.getFromZSetByScore(bucketID, batchSize)
+	messages, err := q.getFromZSetByScore(partition, batchSize)
 	// 如果获取出错或者获取不到消息，则直接返回
 	if err != nil || len(messages) == 0 {
 		return err
 	}
 
-	zset := q.getZSet(bucketID)
+	zset := q.getZSet(partition)
 	// 遍历每个消息
 	for _, msg := range messages {
 
@@ -68,9 +70,9 @@ func (q *DelayQueue) Consume(ctx context.Context, bucketID, batchSize int64,
 	return nil
 }
 
-func (q *DelayQueue) getFromZSetByScore(bucketID, batchSize int64) ([]types.Message, error) {
+func (q *DelayQueue) getFromZSetByScore(partition, batchSize int64) ([]types.Message, error) {
 	// 批量获取已经准备好执行的消息
-	zs, err := q.rdb.ZRangeByScore(context.Background(), q.getZSet(bucketID), &redis.ZRangeBy{
+	zs, err := q.rdb.ZRangeByScore(context.Background(), q.getZSet(partition), &redis.ZRangeBy{
 		Min:    "-inf",
 		Max:    strconv.FormatInt(time.Now().Unix(), 10),
 		Offset: 0,
@@ -87,7 +89,7 @@ func (q *DelayQueue) getFromZSetByScore(bucketID, batchSize int64) ([]types.Mess
 
 	res := make([]types.Message, len(zs))
 
-	hashTable := q.getHashtable(bucketID)
+	hashTable := q.getHashtable(partition)
 
 	// 遍历每个 message key，根据 message key 获取 message body
 	for _, z := range zs {
@@ -113,10 +115,25 @@ func (q *DelayQueue) Close() error {
 	return nil
 }
 
-func (q *DelayQueue) getZSet(bucketID int64) string {
-	return fmt.Sprintf("zset_%d", bucketID)
+func (q *DelayQueue) getZSet(partition int64) string {
+
+	return fmt.Sprintf("zset_partition_%d_bucket_%8d", partition, q.getBucket(partition))
 }
 
-func (q *DelayQueue) getHashtable(bucketID int64) string {
-	return fmt.Sprintf("hashTable_%d", bucketID)
+func (q *DelayQueue) getBucket(partition int64) int8 {
+	buckets := q.bucket[partition]
+	if buckets <= 0 {
+		q.bucket[partition] = 1
+		return 1
+	}
+
+	if buckets < 3 {
+		return buckets
+	}
+
+	return 1
+}
+
+func (q *DelayQueue) getHashtable(partition int64) string {
+	return fmt.Sprintf("hashTable_partition_%d", partition)
 }
