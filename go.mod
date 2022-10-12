@@ -6,9 +6,11 @@ require (
 	github.com/alicebob/miniredis/v2 v2.23.0
 	github.com/bsm/redislock v0.8.1
 	github.com/go-redis/redis/v9 v9.0.0-beta.3
+	github.com/google/uuid v1.3.0
 	github.com/natefinch/lumberjack v2.0.0+incompatible
 	github.com/stretchr/testify v1.8.0
 	go.uber.org/zap v1.23.0
+	gopkg.in/yaml.v3 v3.0.1
 )
 
 require (
@@ -22,5 +24,4 @@ require (
 	go.uber.org/atomic v1.7.0 // indirect
 	go.uber.org/multierr v1.6.0 // indirect
 	gopkg.in/natefinch/lumberjack.v2 v2.0.0 // indirect
-	gopkg.in/yaml.v3 v3.0.1 // indirect
 )

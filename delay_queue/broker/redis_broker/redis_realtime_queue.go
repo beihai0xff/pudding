@@ -11,12 +11,12 @@ import (
 	"github.com/beihai0xff/pudding/types"
 )
 
-type RedisRealTimeQueue struct {
+type RealTimeQueue struct {
 	rdb *rdb.Client // Redis客户端
 }
 
 // Produce produce a Message to the queue in realtime
-func (q *RedisRealTimeQueue) Produce(ctx context.Context, msg *types.Message) error {
+func (q *RealTimeQueue) Produce(ctx context.Context, msg *types.Message) error {
 	c, err := json.Marshal(msg)
 	if err != nil {
 		return fmt.Errorf("ProduceRealTime: failed to marshal message:%w", err)
@@ -26,7 +26,7 @@ func (q *RedisRealTimeQueue) Produce(ctx context.Context, msg *types.Message) er
 }
 
 // NewConsumer consume Messages from the queue in real time
-func (q *RedisRealTimeQueue) NewConsumer(topic, group, consumerName string, batchSize int,
+func (q *RealTimeQueue) NewConsumer(topic, group, consumerName string, batchSize int,
 	fn func(msg *types.Message) error) {
 
 	for {
@@ -53,14 +53,13 @@ func (q *RedisRealTimeQueue) NewConsumer(topic, group, consumerName string, batc
 }
 
 // handlerRealTimeMessage handle Messages from the queue in real time
-func (q *RedisRealTimeQueue) handlerRealTimeMessage(msgs []redis.XMessage, topic, group string,
+func (q *RealTimeQueue) handlerRealTimeMessage(msgs []redis.XMessage, topic, group string,
 	fn func(msg *types.Message) error) {
 
 	// 遍历处理消息
 	for _, msg := range msgs {
 
 		// TODO: 消费超过三次的消息，记录错误日志，并添加到死信队列
-
 		m, err := types.GetMessageFromJSON(msg.Values["body"].([]byte))
 		if err != nil {
 			// TODO: 记录错误日志
@@ -83,11 +82,11 @@ func (q *RedisRealTimeQueue) handlerRealTimeMessage(msgs []redis.XMessage, topic
 	return
 }
 
-func (q *RedisRealTimeQueue) getTopicPartition(topic string, partition int) string {
+func (q *RealTimeQueue) getTopicPartition(topic string, partition int) string {
 	return fmt.Sprintf("stream_%s:%d", topic, partition)
 }
 
 // Close close the queue
-func (q *RedisRealTimeQueue) Close() error {
+func (q *RealTimeQueue) Close() error {
 	return q.rdb.Close()
 }
