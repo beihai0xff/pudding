@@ -7,13 +7,12 @@ import (
 	"strconv"
 	"time"
 
+	"github.com/beihai0xff/pudding/pkg/errno"
 	"github.com/beihai0xff/pudding/pkg/log"
 	rdb "github.com/beihai0xff/pudding/pkg/redis"
+	"github.com/beihai0xff/pudding/types"
 
 	"github.com/go-redis/redis/v9"
-
-	"github.com/beihai0xff/pudding/pkg/errno"
-	"github.com/beihai0xff/pudding/types"
 )
 
 type RedisDelayQueue struct {
@@ -35,13 +34,13 @@ func (q *RedisDelayQueue) Produce(ctx context.Context, msg *types.Message) error
 func (q *RedisDelayQueue) pushToZSet(ctx context.Context, readyTime int64, msg *types.Message) error {
 	c, err := json.Marshal(msg)
 	if err != nil {
-		return fmt.Errorf("pushToZSet: failed to marshal message:%w", err)
+		return fmt.Errorf("marshal message failed: %w", err)
 	}
 
 	success, err := pushScript.Run(ctx, q.rdb.GetClient(), []string{q.topicZSet(msg.Topic, msg.Partition),
 		q.topicHashtable(msg.Topic, msg.Partition)}, msg.Key, c, readyTime).Bool()
 	if err != nil {
-		return fmt.Errorf("pushToZSet: failed to push message:%w", err)
+		return fmt.Errorf("pushToZSet failed: %w", err)
 	}
 	if !success {
 		return errno.ErrDuplicateMessage
@@ -55,7 +54,7 @@ func (q *RedisDelayQueue) NewConsumer(topic string, partition, batchSize int, fn
 		messages, err := q.getFromZSetByScore(topic, batchSize, partition)
 		// 如果获取出错或者获取不到消息，则休眠一秒
 		if err != nil || len(messages) == 0 {
-			time.Sleep(time.Second)
+			time.Sleep(500 * time.Millisecond)
 			continue
 		}
 		// 遍历每个消息
