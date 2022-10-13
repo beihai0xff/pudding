@@ -71,9 +71,19 @@ func (c *Client) Get(ctx context.Context, key string) (string, error) {
 	ZSet 相关 Command
 */
 
-// ZRangeByScore 执行 Redis zrangebyscore 命令
+// ZAddNX 执行 Redis ZAdd 命令
+func (c *Client) ZAddNX(ctx context.Context, key string, members ...redis.Z) error {
+	return c.client.ZAddNX(ctx, key, members...).Err()
+}
+
+// ZRangeByScore 执行 Redis ZRangeByScore 命令
 func (c *Client) ZRangeByScore(ctx context.Context, key string, opt *redis.ZRangeBy) ([]redis.Z, error) {
 	return c.client.ZRangeByScoreWithScores(ctx, key, opt).Result()
+}
+
+// ZRem 执行 Redis ZRem 命令
+func (c *Client) ZRem(ctx context.Context, key string, members ...interface{}) error {
+	return c.client.ZRem(ctx, key, members...).Err()
 }
 
 /*
