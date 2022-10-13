@@ -203,3 +203,27 @@ func TestClient_ZRangeByScore(t *testing.T) {
 		})
 	}
 }
+
+func TestClient_DelMap(t *testing.T) {
+	type args struct {
+		ctx context.Context
+		key string
+	}
+	tests := []struct {
+		name    string
+		args    args
+		wantErr bool
+	}{
+		{"删除整个哈希表 Redis 的数据", args{context.Background(), table}, false},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if err := c.Del(tt.args.ctx, tt.args.key); (err != nil) != tt.wantErr {
+				t.Errorf("Del() error = %v, wantErr %v", err, tt.wantErr)
+			}
+			if res, _ := c.HGet(tt.args.ctx, tt.args.key, key); res != nil {
+				t.Errorf("HGet() should be empty, but got: %v", res)
+			}
+		})
+	}
+}

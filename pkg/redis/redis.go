@@ -97,6 +97,11 @@ func (c *Client) HGet(ctx context.Context, key, field string) ([]byte, error) {
 	return c.client.HGet(ctx, key, field).Bytes()
 }
 
+// Del 执行 Redis Del 命令
+func (c *Client) Del(ctx context.Context, keys string) error {
+	return c.client.Del(ctx, keys).Err()
+}
+
 /*
 	Stream 相关 Command
 */
