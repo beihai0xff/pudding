@@ -8,7 +8,7 @@ import (
 
 	"github.com/go-redis/redis/v9"
 
-	"github.com/beihai0xff/pudding/configs"
+	"github.com/beihai0xff/pudding/pkg/configs"
 	"github.com/beihai0xff/pudding/pkg/log"
 	rdb "github.com/beihai0xff/pudding/pkg/redis"
 	"github.com/beihai0xff/pudding/types"

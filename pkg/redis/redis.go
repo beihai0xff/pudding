@@ -10,7 +10,7 @@ import (
 	"github.com/bsm/redislock"
 	"github.com/go-redis/redis/v9"
 
-	"github.com/beihai0xff/pudding/configs"
+	"github.com/beihai0xff/pudding/pkg/configs"
 )
 
 var (
@@ -36,6 +36,8 @@ func NewRDB(c *configs.RedisConfig) *Client {
 			if err != nil {
 				panic(err)
 			}
+
+			opt.DialTimeout = time.Duration(c.DialTimeout) * time.Second
 
 			client = &Client{
 				client: redis.NewClient(opt),
