@@ -2,6 +2,7 @@ package redis_broker
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"strconv"
 	"time"
@@ -9,6 +10,7 @@ import (
 	"github.com/go-redis/redis/v9"
 
 	"github.com/beihai0xff/pudding/pkg/configs"
+	"github.com/beihai0xff/pudding/pkg/errno"
 	"github.com/beihai0xff/pudding/pkg/log"
 	rdb "github.com/beihai0xff/pudding/pkg/redis"
 	"github.com/beihai0xff/pudding/types"
@@ -16,8 +18,8 @@ import (
 
 type DelayQueue struct {
 	rdb *rdb.Client // Redis Client
-	// key is partition, value is the bucket ID in the partition
-	bucket map[int64]int8
+	// key is partition, value is the bucket nums in the partition
+	bucket map[string]int8
 }
 
 func NewDelayQueue() *DelayQueue {
@@ -26,51 +28,72 @@ func NewDelayQueue() *DelayQueue {
 	}
 }
 
-func (q *DelayQueue) Produce(ctx context.Context, partition int64, msg *types.Message) error {
-	member := &redis.Z{Score: float64(msg.ReadyTime.Unix()), Member: msg.Key}
-	return q.pushToZSet(ctx, partition, member)
+func (q *DelayQueue) Produce(ctx context.Context, partition string, msg *types.Message) error {
+	// member := &redis.Z{Score: float64(msg.ReadyTime.Unix()), Member: msg.Key}
+	return q.pushToZSet(ctx, partition, msg)
 }
 
-func (q *DelayQueue) pushToZSet(ctx context.Context, partition int64, member *redis.Z) error {
-	err := q.rdb.ZAddNX(ctx, q.getZSet(partition), *member)
+func (q *DelayQueue) pushToZSet(ctx context.Context, partition string, msg *types.Message) error {
+	/*	err := q.rdb.ZAddNX(ctx, q.getZSet(partition), *member)
+		if err != nil {
+			return fmt.Errorf("pushToZSet failed: %w", err)
+		}
+	*/
+	c, err := json.Marshal(msg)
 	if err != nil {
-		return fmt.Errorf("pushToZSet failed: %w", err)
+		return fmt.Errorf("pushToZSet: failed to marshal message:%w", err)
 	}
 
+	success, err := pushScript.Run(ctx, q.rdb.GetClient(), []string{q.getZSet(partition),
+		q.getHashtable(partition)}, msg.Key, c, msg.ReadyTime).Bool()
+	if err != nil {
+		return fmt.Errorf("pushToZSet: failed to push message:%w", err)
+	}
+	if !success {
+		return errno.ErrDuplicateMessage
+	}
 	return nil
 }
 
-func (q *DelayQueue) Consume(ctx context.Context, partition, batchSize int64,
+func (q *DelayQueue) Consume(ctx context.Context, partition string, batchSize int64,
 	fn func(msg *types.Message) error) error {
 
-	// 批量获取已经准备好执行的消息
-	messages, err := q.getFromZSetByScore(partition, batchSize)
-	// 如果获取出错或者获取不到消息，则直接返回
-	if err != nil || len(messages) == 0 {
-		return err
-	}
-
-	zset := q.getZSet(partition)
-	// 遍历每个消息
-	for _, msg := range messages {
-
-		// 处理消息
-		err = fn(&msg)
+	for {
+		// batch get messages which are ready to execute
+		messages, err := q.getFromZSetByScore(partition, batchSize)
+		// if you get error return directly
 		if err != nil {
-			log.Errorf("failed to handle message: %+v, caused by: %v", msg, err)
-			continue
-		}
-
-		// 如果消息处理成功，删除消息
-		if err := q.rdb.ZRem(ctx, zset, msg.Key); err != nil {
 			return err
 		}
+
+		// if no data in the partition, break the loop
+		if messages == nil || len(messages) == 0 {
+			break
+		}
+
+		zset := q.getZSet(partition)
+		// 遍历每个消息
+		for _, msg := range messages {
+
+			// 处理消息
+			err = fn(&msg)
+			if err != nil {
+				log.Errorf("failed to handle message: %+v, caused by: %v", msg, err)
+				continue
+			}
+
+			// 如果消息处理成功，删除消息
+			if err := q.rdb.ZRem(ctx, zset, msg.Key); err != nil {
+				return err
+			}
+		}
 	}
 
-	return nil
+	// delete hashTable cache
+	return q.rdb.Del(ctx, q.getHashtable(partition))
 }
 
-func (q *DelayQueue) getFromZSetByScore(partition, batchSize int64) ([]types.Message, error) {
+func (q *DelayQueue) getFromZSetByScore(partition string, batchSize int64) ([]types.Message, error) {
 	// 批量获取已经准备好执行的消息
 	zs, err := q.rdb.ZRangeByScore(context.Background(), q.getZSet(partition), &redis.ZRangeBy{
 		Min:    "-inf",
@@ -115,25 +138,20 @@ func (q *DelayQueue) Close() error {
 	return nil
 }
 
-func (q *DelayQueue) getZSet(partition int64) string {
-
-	return fmt.Sprintf("zset_partition_%d_bucket_%8d", partition, q.getBucket(partition))
+func (q *DelayQueue) getZSet(partition string) string {
+	return fmt.Sprintf("zset_partition_%s_bucket_%8d", partition, q.getBucket(partition))
 }
 
-func (q *DelayQueue) getBucket(partition int64) int8 {
+func (q *DelayQueue) getBucket(partition string) int8 {
 	buckets := q.bucket[partition]
 	if buckets <= 0 {
 		q.bucket[partition] = 1
 		return 1
 	}
 
-	if buckets < 3 {
-		return buckets
-	}
-
 	return 1
 }
 
-func (q *DelayQueue) getHashtable(partition int64) string {
-	return fmt.Sprintf("hashTable_partition_%d", partition)
+func (q *DelayQueue) getHashtable(partition string) string {
+	return fmt.Sprintf("hashTable_partition_%s_bucket_%8d", partition, q.getBucket(partition))
 }
