@@ -1,13 +1,18 @@
 package configs
 
-import "github.com/beihai0xff/pudding/pkg/yaml"
+import (
+	"github.com/beihai0xff/pudding/pkg/yaml"
+)
 
 var c *Config
 
 type Config struct {
-	redis *RedisConfig
+	redis      *RedisConfig
+	delayQueue *DelayQueueConfig
 }
 
 func Init(filePath string) {
-	yaml.Parse(filePath, c)
+	if err := yaml.Parse(filePath, c); err != nil {
+		panic(err)
+	}
 }

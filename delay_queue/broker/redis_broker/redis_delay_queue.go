@@ -71,11 +71,11 @@ func (q *DelayQueue) Consume(ctx context.Context, partition string, batchSize in
 		}
 
 		zsetName := q.getZSetName(partition)
-		// 遍历每个消息
+		// iterate all messages
 		for _, msg := range messages {
-			if msg.ReadyTime.Unix() > time.Now().Unix() {
+			if msg.ReadyTime > time.Now().Unix() {
 				// if the message is not ready to execute,
-				// sleep 500 ms then break the loop
+				// sleep 500 ms then start the next loop
 				time.Sleep(500 * time.Millisecond)
 				continue
 			}
