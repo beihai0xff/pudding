@@ -31,21 +31,50 @@ type RealTimeQueue interface {
 	Close() error
 }
 
+// NewDelayQueue create a new DelayQueue
+func NewDelayQueue() DelayQueue {
+	return redis_broker.NewDelayQueue()
+}
+
+// NewRealTimeQueue create a new RealTimeQueue
+func NewRealTimeQueue() RealTimeQueue {
+	return nil
+}
+
 type Queue struct {
 	delay    DelayQueue
 	realtime RealTimeQueue
 	c        *configs.DelayQueueConfig
+	// partition interval (Seconds)
+	interval int64
 }
 
 func NewQueue() *Queue {
-	return &Queue{
+	q := &Queue{
 		delay:    NewDelayQueue(),
 		realtime: NewRealTimeQueue(),
 		c:        configs.GetDelayQueueConfig(),
 	}
+
+	// parse interval
+	t, err := time.ParseDuration(q.c.PartitionInterval)
+	if err != nil {
+		panic(fmt.Errorf("failed to parse '%s' to time.Duration: %v", q.c.PartitionInterval, err))
+	}
+	q.interval = int64(t.Seconds())
+
+	return q
 }
 
 func (q *Queue) Produce(ctx context.Context, msg *types.Message) error {
+	if err := q.checkParams(msg); err != nil {
+		return err
+	}
+
+	return q.delay.Produce(ctx, q.getPartition(msg.ReadyTime), msg)
+}
+
+func (q *Queue) checkParams(msg *types.Message) error {
 	// if ReadyTime is set, use it
 	// otherwise use current time
 	if msg.ReadyTime <= 0 {
@@ -63,24 +92,23 @@ func (q *Queue) Produce(ctx context.Context, msg *types.Message) error {
 		msg.Key = uuid.NewString()
 	}
 
-	return q.delay.Produce(ctx, q.getPartition(msg.ReadyTime), msg)
+	return nil
 }
 
 func (q *Queue) getPartition(readyTime int64) string {
-	startAt := (readyTime / q.c.PartitionInterval) * q.c.PartitionInterval
-	endAt := startAt + q.c.PartitionInterval
+	startAt := (readyTime / q.interval) * q.interval
+	endAt := startAt + q.interval
 	return fmt.Sprintf("%d-%d", startAt, endAt)
 }
 
 func (q *Queue) Consume(quit chan int) error {
 	for {
 		select {
-		case <-quit:
-			break
-		default:
+		case <-time.Tick(time.Second * time.Duration(q.interval)):
 			partition := q.getPartition(time.Now().Unix())
 			q.delay.Consume(context.Background(), partition, 10, q.moveMsgToRealTimeQueue)
-
+		case <-quit:
+			break
 		}
 	}
 
@@ -88,14 +116,4 @@ func (q *Queue) Consume(quit chan int) error {
 
 func (q *Queue) moveMsgToRealTimeQueue(msg *types.Message) error {
 	return q.realtime.Produce(context.Background(), msg)
-}
-
-// NewDelayQueue create a new DelayQueue
-func NewDelayQueue() DelayQueue {
-	return redis_broker.NewDelayQueue()
-}
-
-// NewRealTimeQueue create a new RealTimeQueue
-func NewRealTimeQueue() RealTimeQueue {
-	return nil
 }
