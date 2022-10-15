@@ -16,8 +16,7 @@ type DelayQueue interface {
 	// Produce produce a Message to DelayQueue
 	Produce(ctx context.Context, partition string, msg *types.Message) error
 	// Consume New a consumer to consume Messages from the queue
-	Consume(ctx context.Context, partition string, batchSize int64,
-		fn func(msg *types.Message) error) error
+	Consume(ctx context.Context, partition string, batchSize int64, fn types.HandleMessage) error
 	// Close the queue
 	Close() error
 }

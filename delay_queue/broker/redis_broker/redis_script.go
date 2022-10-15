@@ -10,7 +10,7 @@ var (
 -- ARGV[2]: Message
 -- ARGV[3]: Message Ready Time（now + delay）
 local getTopicPartition = KEYS[1]
-local getHashtable = KEYS[2]
+local getHashtableName = KEYS[2]
 local key = ARGV[1]
 local message = ARGV[2]
 local readyTime = tonumber(ARGV[3])
@@ -21,7 +21,7 @@ if count == 0 then
    return 0
 end
 -- add Message Content to hashtable
-redis.call("hsetnx", getHashtable, key, message)
+redis.call("hsetnx", getHashtableName, key, message)
 return 1
 `)
 

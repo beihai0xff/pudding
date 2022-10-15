@@ -34,7 +34,7 @@ func (q *DelayQueue) Produce(ctx context.Context, partition string, msg *types.M
 }
 
 func (q *DelayQueue) pushToZSet(ctx context.Context, partition string, msg *types.Message) error {
-	/*	err := q.rdb.ZAddNX(ctx, q.getZSet(partition), *member)
+	/*	err := q.rdb.ZAddNX(ctx, q.getZSetName(partition), *member)
 		if err != nil {
 			return fmt.Errorf("pushToZSet failed: %w", err)
 		}
@@ -44,8 +44,8 @@ func (q *DelayQueue) pushToZSet(ctx context.Context, partition string, msg *type
 		return fmt.Errorf("pushToZSet: failed to marshal message:%w", err)
 	}
 
-	success, err := pushScript.Run(ctx, q.rdb.GetClient(), []string{q.getZSet(partition),
-		q.getHashtable(partition)}, msg.Key, c, msg.ReadyTime).Bool()
+	success, err := pushScript.Run(ctx, q.rdb.GetClient(), []string{q.getZSetName(partition),
+		q.getHashtableName(partition)}, msg.Key, c, msg.ReadyTime).Bool()
 	if err != nil {
 		return fmt.Errorf("pushToZSet: failed to push message:%w", err)
 	}
@@ -55,8 +55,7 @@ func (q *DelayQueue) pushToZSet(ctx context.Context, partition string, msg *type
 	return nil
 }
 
-func (q *DelayQueue) Consume(ctx context.Context, partition string, batchSize int64,
-	fn func(msg *types.Message) error) error {
+func (q *DelayQueue) Consume(ctx context.Context, partition string, batchSize int64, fn types.HandleMessage) error {
 
 	for {
 		// batch get messages which are ready to execute
@@ -71,9 +70,15 @@ func (q *DelayQueue) Consume(ctx context.Context, partition string, batchSize in
 			break
 		}
 
-		zset := q.getZSet(partition)
+		zsetName := q.getZSetName(partition)
 		// 遍历每个消息
 		for _, msg := range messages {
+			if msg.ReadyTime.Unix() > time.Now().Unix() {
+				// if the message is not ready to execute,
+				// sleep 500 ms then break the loop
+				time.Sleep(500 * time.Millisecond)
+				continue
+			}
 
 			// 处理消息
 			err = fn(&msg)
@@ -83,19 +88,19 @@ func (q *DelayQueue) Consume(ctx context.Context, partition string, batchSize in
 			}
 
 			// 如果消息处理成功，删除消息
-			if err := q.rdb.ZRem(ctx, zset, msg.Key); err != nil {
+			if err := q.rdb.ZRem(ctx, zsetName, msg.Key); err != nil {
 				return err
 			}
 		}
 	}
 
 	// delete hashTable cache
-	return q.rdb.Del(ctx, q.getHashtable(partition))
+	return q.rdb.Del(ctx, q.getHashtableName(partition))
 }
 
 func (q *DelayQueue) getFromZSetByScore(partition string, batchSize int64) ([]types.Message, error) {
 	// 批量获取已经准备好执行的消息
-	zs, err := q.rdb.ZRangeByScore(context.Background(), q.getZSet(partition), &redis.ZRangeBy{
+	zs, err := q.rdb.ZRangeByScore(context.Background(), q.getZSetName(partition), &redis.ZRangeBy{
 		Min:    "-inf",
 		Max:    strconv.FormatInt(time.Now().Unix(), 10),
 		Offset: 0,
@@ -112,7 +117,7 @@ func (q *DelayQueue) getFromZSetByScore(partition string, batchSize int64) ([]ty
 
 	res := make([]types.Message, len(zs))
 
-	hashTable := q.getHashtable(partition)
+	hashTable := q.getHashtableName(partition)
 
 	// 遍历每个 message key，根据 message key 获取 message body
 	for _, z := range zs {
@@ -138,7 +143,7 @@ func (q *DelayQueue) Close() error {
 	return nil
 }
 
-func (q *DelayQueue) getZSet(partition string) string {
+func (q *DelayQueue) getZSetName(partition string) string {
 	return fmt.Sprintf("zset_partition_%s_bucket_%8d", partition, q.getBucket(partition))
 }
 
@@ -152,6 +157,6 @@ func (q *DelayQueue) getBucket(partition string) int8 {
 	return 1
 }
 
-func (q *DelayQueue) getHashtable(partition string) string {
+func (q *DelayQueue) getHashtableName(partition string) string {
 	return fmt.Sprintf("hashTable_partition_%s_bucket_%8d", partition, q.getBucket(partition))
 }
