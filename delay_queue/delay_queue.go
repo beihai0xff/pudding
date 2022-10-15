@@ -3,6 +3,7 @@ package delay_queue
 import (
 	"context"
 	"errors"
+	"strconv"
 	"time"
 
 	"github.com/google/uuid"
@@ -13,10 +14,9 @@ import (
 
 type DelayQueue interface {
 	// Produce produce a Message to DelayQueue
-	Produce(ctx context.Context, partition int64, msg *types.Message) error
+	Produce(ctx context.Context, partition string, msg *types.Message) error
 	// Consume New a consumer to consume Messages from the queue
-	Consume(ctx context.Context, partition, batchSize int64,
-		fn func(msg *types.Message) error) error
+	Consume(ctx context.Context, partition string, batchSize int64, fn types.HandleMessage) error
 	// Close the queue
 	Close() error
 }
@@ -43,12 +43,11 @@ func NewQueue() *Queue {
 }
 
 func (q *Queue) Produce(ctx context.Context, msg *types.Message) error {
-	// 如果设置了 ReadyTime，则使用 ReadyTime
-	// 否则使用当前时间
-
+	// if ReadyTime is set, use it
+	// otherwise use current time
 	if !msg.ReadyTime.IsZero() {
 		if msg.Delay == 0 {
-			return errors.New("delay must be greater than 0")
+			return errors.New("message delay must be greater than 0")
 		}
 		msg.ReadyTime = time.Now().Add(time.Duration(msg.Delay) * time.Second)
 	} else {
@@ -61,7 +60,25 @@ func (q *Queue) Produce(ctx context.Context, msg *types.Message) error {
 		msg.Key = uuid.NewString()
 	}
 
-	return q.delay.Produce(ctx, msg.ReadyTime.Unix()/60, msg)
+	return q.delay.Produce(ctx, strconv.FormatInt(msg.ReadyTime.Unix()/60, 10), msg)
+}
+
+func (q *Queue) Consume(quit chan int) error {
+	for {
+		select {
+		case <-quit:
+			break
+		default:
+			partition := strconv.FormatInt(time.Now().Unix()/60, 10)
+			q.delay.Consume(context.Background(), partition, 10, q.moveMsgToRealTimeQueue)
+
+		}
+	}
+
+}
+
+func (q *Queue) moveMsgToRealTimeQueue(msg *types.Message) error {
+	return q.realtime.Produce(context.Background(), msg)
 }
 
 // NewDelayQueue create a new DelayQueue

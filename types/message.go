@@ -5,6 +5,8 @@ import (
 	"time"
 )
 
+type HandleMessage func(msg *Message) error
+
 // Message 消息
 type Message struct {
 	Topic     string    // Message Topic

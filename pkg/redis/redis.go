@@ -10,7 +10,7 @@ import (
 	"github.com/bsm/redislock"
 	"github.com/go-redis/redis/v9"
 
-	"github.com/beihai0xff/pudding/configs"
+	"github.com/beihai0xff/pudding/pkg/configs"
 )
 
 var (
@@ -36,6 +36,8 @@ func NewRDB(c *configs.RedisConfig) *Client {
 			if err != nil {
 				panic(err)
 			}
+
+			opt.DialTimeout = time.Duration(c.DialTimeout) * time.Second
 
 			client = &Client{
 				client: redis.NewClient(opt),
@@ -93,6 +95,11 @@ func (c *Client) ZRem(ctx context.Context, key string, members ...interface{}) e
 // HGet 执行 Redis HGet 命令
 func (c *Client) HGet(ctx context.Context, key, field string) ([]byte, error) {
 	return c.client.HGet(ctx, key, field).Bytes()
+}
+
+// Del 执行 Redis Del 命令
+func (c *Client) Del(ctx context.Context, keys string) error {
+	return c.client.Del(ctx, keys).Err()
 }
 
 /*
