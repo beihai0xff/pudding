@@ -1,10 +1,11 @@
 package types
 
 import (
+	"context"
 	"encoding/json"
 )
 
-type HandleMessage func(msg *Message) error
+type HandleMessage func(ctx context.Context, msg *Message) error
 
 // Message 消息
 type Message struct {

@@ -73,7 +73,7 @@ func (q *DelayQueue) Consume(ctx context.Context, partition string, now, batchSi
 		for _, msg := range messages {
 
 			// 处理消息
-			err = fn(&msg)
+			err = fn(ctx, &msg)
 			if err != nil {
 				log.Errorf("failed to handle message: %+v, caused by: %v", msg, err)
 				continue

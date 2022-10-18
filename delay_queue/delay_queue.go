@@ -140,17 +140,17 @@ func (q *Queue) startConsumer(quit, token chan int64) error {
 			partition := q.getPartition(t)
 
 			// lock the token
-			tokenName := "consume" + q.getTokenName(time.Now().Unix())
-			locker, err := lock.NewRedLock(context.Background(), tokenName, time.Second*3)
+			consumer := "consumer" + q.getConsumer(time.Now().Unix())
+			locker, err := lock.NewRedLock(context.Background(), consumer, time.Second*3)
 			if err != nil {
 				if err != lock.ErrNotObtained {
-					log.Errorf("failed to new redlock : %s, caused by %v", tokenName, err)
+					log.Errorf("failed to get consumer lock: %s, caused by %v", consumer, err)
 				}
 				continue
 			}
 
 			if err := q.delay.Consume(ctx, partition, t, 100,
-				q.moveMsgToRealTimeQueue); err != nil {
+				q.ProduceRealTime); err != nil {
 				log.Errorf("failed to consume partition: %s, time token is: %d,caused by %v", partition, t, err)
 			}
 
@@ -163,8 +163,8 @@ func (q *Queue) startConsumer(quit, token chan int64) error {
 
 }
 
-func (q *Queue) moveMsgToRealTimeQueue(msg *types.Message) error {
-	return q.realtime.Produce(context.Background(), msg)
+func (q *Queue) getConsumer(time int64) string {
+	return fmt.Sprintf("key_token_%d", time)
 }
 
 func (q *Queue) startLimiter(token chan int) {
@@ -209,7 +209,7 @@ func (q *Queue) tryProduceToken() {
 		time.Sleep(time.Duration(random.GetRand(500, 1000)) * time.Millisecond)
 
 		ctx, cancel := context.WithTimeout(context.Background(), time.Second)
-		tokenName := "produce" + q.getTokenName(time.Now().Unix())
+		tokenName := q.getConsumer(time.Now().Unix())
 		locker, err := lock.NewRedLock(context.Background(), tokenName, time.Millisecond*500)
 		if err != nil {
 			if err != lock.ErrNotObtained {
@@ -234,5 +234,5 @@ func (q *Queue) tryProduceToken() {
 }
 
 func (q *Queue) getTokenName(time int64) string {
-	return fmt.Sprintf("_token_%d", time)
+	return fmt.Sprintf("key_token_%d", time)
 }
