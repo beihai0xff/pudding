@@ -2,7 +2,6 @@ package redis_broker
 
 import (
 	"context"
-	"encoding/json"
 	"fmt"
 
 	"github.com/go-redis/redis/v9"
@@ -17,12 +16,7 @@ type RealTimeQueue struct {
 
 // Produce produce a Message to the queue in realtime
 func (q *RealTimeQueue) Produce(ctx context.Context, msg *types.Message) error {
-	c, err := json.Marshal(msg)
-	if err != nil {
-		return fmt.Errorf("ProduceRealTime: failed to marshal message:%w", err)
-	}
-
-	return q.rdb.StreamSend(ctx, q.getTopicPartition(msg.Topic, msg.Partition), c)
+	return q.rdb.StreamSend(ctx, q.getTopicPartition(msg.Topic), msg.Body)
 }
 
 // NewConsumer consume Messages from the queue in real time
@@ -82,8 +76,8 @@ func (q *RealTimeQueue) handlerRealTimeMessage(msgs []redis.XMessage, topic, gro
 	return
 }
 
-func (q *RealTimeQueue) getTopicPartition(topic string, partition int) string {
-	return fmt.Sprintf("stream_%s:%d", topic, partition)
+func (q *RealTimeQueue) getTopicPartition(topic string) string {
+	return fmt.Sprintf("stream_%s", topic)
 }
 
 // Close close the queue

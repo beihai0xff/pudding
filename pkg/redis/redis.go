@@ -9,16 +9,16 @@ import (
 
 	"github.com/bsm/redislock"
 	"github.com/go-redis/redis/v9"
+	"github.com/go-redis/redis_rate/v10"
 
 	"github.com/beihai0xff/pudding/pkg/configs"
 )
 
 var (
-	// ErrNotObtained 分布式锁加锁失败：该锁已经被占用。配合 GetDistributeLock 使用
-	ErrNotObtained = redislock.ErrNotObtained
+
 	// ErrConsumerGroupExists 该
 	ErrConsumerGroupExists = errors.New("BUSYGROUP Consumer Group name already exists")
-	ClientOnce             sync.Once
+	clientOnce             sync.Once
 	client                 *Client
 )
 
@@ -26,11 +26,13 @@ var (
 type Client struct {
 	client *redis.Client
 	Config *configs.RedisConfig
+	// Create a new locker client.
+	locker *redislock.Client
 }
 
 // NewRDB 获取客户端
 func NewRDB(c *configs.RedisConfig) *Client {
-	ClientOnce.Do(
+	clientOnce.Do(
 		func() {
 			opt, err := redis.ParseURL(c.RedisURL)
 			if err != nil {
@@ -43,6 +45,7 @@ func NewRDB(c *configs.RedisConfig) *Client {
 				client: redis.NewClient(opt),
 				Config: c,
 			}
+			client.locker = redislock.New(client.client)
 		})
 
 	return client
@@ -164,11 +167,15 @@ func (c *Client) XAck(ctx context.Context, topic, group string, ids ...string) e
 // GetDistributeLock 获取一个分布式锁
 func (c *Client) GetDistributeLock(ctx context.Context, name string,
 	expireTime time.Duration) (*redislock.Lock, error) {
-	// Create a new lock client.
-	locker := redislock.New(c.client)
+	return c.locker.Obtain(ctx, name, expireTime, nil)
+}
 
-	// Try to obtain lock.
-	return locker.Obtain(ctx, name, expireTime, nil)
+/*
+	leaky bucket
+*/
+
+func (c *Client) GetLimiter() *redis_rate.Limiter {
+	return redis_rate.NewLimiter(client.client)
 }
 
 // Close redis client
