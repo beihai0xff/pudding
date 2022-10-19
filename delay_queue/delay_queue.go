@@ -175,6 +175,7 @@ func (q *Queue) startLimiter(token chan int) {
 			log.Errorf("failed to allow limiter: %v", err)
 		}
 		if res.Allowed == 1 {
+			token <- 1
 		}
 		time.Sleep(time.Duration(random.GetRand(500, 1000)) * time.Millisecond)
 	}
