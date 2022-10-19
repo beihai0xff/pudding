@@ -26,8 +26,8 @@ return 1
 `)
 
 	deleteScript = redis.NewScript(`
--- KEYS[1]: zset
--- KEYS[2]: hashtable
+-- KEYS[1]: zset Name
+-- KEYS[2]: hashtable Name
 -- ARGV[1]: Message Key
 local zset = KEYS[1]
 local hashtable = KEYS[2]

@@ -5,13 +5,16 @@ go 1.18
 require (
 	github.com/alicebob/miniredis/v2 v2.23.0
 	github.com/bsm/redislock v0.8.1
-	github.com/go-redis/redis/v9 v9.0.0-beta.3
+	github.com/go-redis/redis/v9 v9.0.0-rc.1
+	github.com/go-redis/redis_rate/v10 v10.0.0-00010101000000-000000000000
 	github.com/google/uuid v1.3.0
 	github.com/natefinch/lumberjack v2.0.0+incompatible
 	github.com/stretchr/testify v1.8.0
 	go.uber.org/zap v1.23.0
 	gopkg.in/yaml.v3 v3.0.1
 )
+
+replace github.com/go-redis/redis_rate/v10 => github.com/beihai0xff/redis_rate/v10 v10.0.0-20221018024645-a6a5d00e2135
 
 require (
 	github.com/BurntSushi/toml v1.2.0 // indirect

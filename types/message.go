@@ -1,20 +1,20 @@
 package types
 
 import (
+	"context"
 	"encoding/json"
-	"time"
 )
 
-type HandleMessage func(msg *Message) error
+type HandleMessage func(ctx context.Context, msg *Message) error
 
 // Message 消息
 type Message struct {
-	Topic     string    // Message Topic
-	Partition int       // Message Partition
-	Key       string    // Message Key
-	Body      []byte    // Message Body
-	Delay     int64     // Message Delay Time (Seconds)
-	ReadyTime time.Time // Message Ready Time（now + delay, Unix Timestamp, Seconds）
+	Topic     string // Message Topic
+	Partition int    // Message Partition
+	Key       string // Message Key
+	Body      []byte // Message Body
+	Delay     int64  // Message Delay Time (Seconds)
+	ReadyTime int64  // Message Ready Time（now + delay, Unix Timestamp, Seconds）
 }
 
 func GetMessageFromJSON(j []byte) (*Message, error) {

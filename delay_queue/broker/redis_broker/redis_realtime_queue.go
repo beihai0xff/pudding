@@ -2,7 +2,6 @@ package redis_broker
 
 import (
 	"context"
-	"encoding/json"
 	"fmt"
 
 	"github.com/go-redis/redis/v9"
@@ -17,25 +16,19 @@ type RealTimeQueue struct {
 
 // Produce produce a Message to the queue in realtime
 func (q *RealTimeQueue) Produce(ctx context.Context, msg *types.Message) error {
-	c, err := json.Marshal(msg)
-	if err != nil {
-		return fmt.Errorf("ProduceRealTime: failed to marshal message:%w", err)
-	}
-
-	return q.rdb.StreamSend(ctx, q.getTopicPartition(msg.Topic, msg.Partition), c)
+	return q.rdb.StreamSend(ctx, q.getTopicPartition(msg.Topic), msg.Body)
 }
 
 // NewConsumer consume Messages from the queue in real time
-func (q *RealTimeQueue) NewConsumer(topic, group, consumerName string, batchSize int,
-	fn func(msg *types.Message) error) {
+func (q *RealTimeQueue) NewConsumer(ctx context.Context, topic, group, consumerName string, batchSize int, fn types.HandleMessage) {
 
 	for {
 		// 拉取已经投递却未被 ACK 的消息，保证消息至少被成功消费1次
-		msgs, err := q.rdb.XGroupConsume(context.Background(), topic, group, consumerName, "0", batchSize)
+		msgs, err := q.rdb.XGroupConsume(ctx, topic, group, consumerName, "0", batchSize)
 		if err != nil {
 			// TODO: 记录错误日志
 		}
-		q.handlerRealTimeMessage(msgs, topic, group, fn)
+
 		if len(msgs) == batchSize {
 			// 如果一次未拉取完未被 ACK 的消息，则继续拉取
 			// 确保先消费完成未被 ACK 的消息
@@ -43,18 +36,18 @@ func (q *RealTimeQueue) NewConsumer(topic, group, consumerName string, batchSize
 		}
 
 		// 拉取新消息
-		msgs, err = q.rdb.XGroupConsume(context.Background(), topic, group, consumerName, ">", batchSize)
+		msgs, err = q.rdb.XGroupConsume(ctx, topic, group, consumerName, ">", batchSize)
 		if err != nil {
 			// TODO: 记录错误日志
 		}
-		q.handlerRealTimeMessage(msgs, topic, group, fn)
+		q.handlerRealTimeMessage(ctx, msgs, topic, group, fn)
 
 	}
 }
 
 // handlerRealTimeMessage handle Messages from the queue in real time
-func (q *RealTimeQueue) handlerRealTimeMessage(msgs []redis.XMessage, topic, group string,
-	fn func(msg *types.Message) error) {
+func (q *RealTimeQueue) handlerRealTimeMessage(ctx context.Context, msgs []redis.XMessage, topic, group string,
+	fn types.HandleMessage) {
 
 	// 遍历处理消息
 	for _, msg := range msgs {
@@ -67,13 +60,13 @@ func (q *RealTimeQueue) handlerRealTimeMessage(msgs []redis.XMessage, topic, gro
 		}
 
 		// handle message
-		if err := fn(m); err != nil {
+		if err := fn(ctx, m); err != nil {
 			// TODO: 记录错误日志
 			continue
 		}
 
 		// handle message success，ACK
-		if err := q.rdb.XAck(context.Background(), topic, group, msg.ID); err != nil {
+		if err := q.rdb.XAck(ctx, topic, group, msg.ID); err != nil {
 			// TODO: 记录错误日志
 			continue
 		}
@@ -82,8 +75,8 @@ func (q *RealTimeQueue) handlerRealTimeMessage(msgs []redis.XMessage, topic, gro
 	return
 }
 
-func (q *RealTimeQueue) getTopicPartition(topic string, partition int) string {
-	return fmt.Sprintf("stream_%s:%d", topic, partition)
+func (q *RealTimeQueue) getTopicPartition(topic string) string {
+	return fmt.Sprintf("stream_%s", topic)
 }
 
 // Close close the queue

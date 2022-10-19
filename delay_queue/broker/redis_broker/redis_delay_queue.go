@@ -5,11 +5,9 @@ import (
 	"encoding/json"
 	"fmt"
 	"strconv"
-	"time"
 
 	"github.com/go-redis/redis/v9"
 
-	"github.com/beihai0xff/pudding/pkg/configs"
 	"github.com/beihai0xff/pudding/pkg/errno"
 	"github.com/beihai0xff/pudding/pkg/log"
 	rdb "github.com/beihai0xff/pudding/pkg/redis"
@@ -22,9 +20,9 @@ type DelayQueue struct {
 	bucket map[string]int8
 }
 
-func NewDelayQueue() *DelayQueue {
+func NewDelayQueue(rdb *rdb.Client) *DelayQueue {
 	return &DelayQueue{
-		rdb: rdb.NewRDB(configs.GetRedisConfig()),
+		rdb: rdb,
 	}
 }
 
@@ -44,22 +42,23 @@ func (q *DelayQueue) pushToZSet(ctx context.Context, partition string, msg *type
 		return fmt.Errorf("pushToZSet: failed to marshal message:%w", err)
 	}
 
-	success, err := pushScript.Run(ctx, q.rdb.GetClient(), []string{q.getZSetName(partition),
-		q.getHashtableName(partition)}, msg.Key, c, msg.ReadyTime).Bool()
+	count, err := pushScript.Run(ctx, q.rdb.GetClient(), []string{q.getZSetName(partition),
+		q.getHashtableName(partition)}, msg.Key, c, msg.ReadyTime).Int()
 	if err != nil {
 		return fmt.Errorf("pushToZSet: failed to push message:%w", err)
 	}
-	if !success {
+	if count == 0 {
 		return errno.ErrDuplicateMessage
 	}
 	return nil
 }
 
-func (q *DelayQueue) Consume(ctx context.Context, partition string, batchSize int64, fn types.HandleMessage) error {
+func (q *DelayQueue) Consume(ctx context.Context, partition string, now, batchSize int64,
+	fn types.HandleMessage) error {
 
 	for {
 		// batch get messages which are ready to execute
-		messages, err := q.getFromZSetByScore(partition, batchSize)
+		messages, err := q.getFromZSetByScore(partition, now, batchSize)
 		// if you get error return directly
 		if err != nil {
 			return err
@@ -70,39 +69,32 @@ func (q *DelayQueue) Consume(ctx context.Context, partition string, batchSize in
 			break
 		}
 
-		zsetName := q.getZSetName(partition)
-		// 遍历每个消息
+		// iterate all messages
 		for _, msg := range messages {
-			if msg.ReadyTime.Unix() > time.Now().Unix() {
-				// if the message is not ready to execute,
-				// sleep 500 ms then break the loop
-				time.Sleep(500 * time.Millisecond)
-				continue
-			}
 
 			// 处理消息
-			err = fn(&msg)
+			err = fn(ctx, &msg)
 			if err != nil {
 				log.Errorf("failed to handle message: %+v, caused by: %v", msg, err)
 				continue
 			}
 
-			// 如果消息处理成功，删除消息
-			if err := q.rdb.ZRem(ctx, zsetName, msg.Key); err != nil {
+			// delete message from zset and hash table
+			if err := deleteScript.Run(ctx, q.rdb.GetClient(), []string{q.getZSetName(partition),
+				q.getHashtableName(partition)}, msg.Key).Err(); err != nil {
 				return err
 			}
 		}
 	}
 
-	// delete hashTable cache
-	return q.rdb.Del(ctx, q.getHashtableName(partition))
+	return nil
 }
 
-func (q *DelayQueue) getFromZSetByScore(partition string, batchSize int64) ([]types.Message, error) {
+func (q *DelayQueue) getFromZSetByScore(partition string, now, batchSize int64) ([]types.Message, error) {
 	// 批量获取已经准备好执行的消息
 	zs, err := q.rdb.ZRangeByScore(context.Background(), q.getZSetName(partition), &redis.ZRangeBy{
 		Min:    "-inf",
-		Max:    strconv.FormatInt(time.Now().Unix(), 10),
+		Max:    strconv.FormatInt(now, 10),
 		Offset: 0,
 		Count:  batchSize,
 	})
