@@ -11,6 +11,7 @@ import (
 	"time"
 
 	"github.com/alicebob/miniredis/v2"
+	"github.com/bsm/redislock"
 	"github.com/go-redis/redis/v9"
 )
 
@@ -44,6 +45,8 @@ func TestMain(m *testing.M) {
 			PoolSize: runtime.NumCPU() * 40,
 		}),
 	}
+
+	c.locker = redislock.New(c.client)
 
 	exitCode := m.Run()
 	// 退出
@@ -132,7 +135,7 @@ func TestClient_GetDistributeLock(t *testing.T) {
 				t.Errorf("mutex Lock error = %v, wantErr %v", err, tt.wantDLockErr)
 				return
 			}
-			if err == ErrNotObtained {
+			if err == redislock.ErrNotObtained {
 				fmt.Println(err)
 			}
 			if tt.unlock {
