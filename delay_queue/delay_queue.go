@@ -20,9 +20,9 @@ import (
 
 type DelayQueue interface {
 	// Produce produce a Message to DelayQueue
-	Produce(ctx context.Context, partition string, msg *types.Message) error
+	Produce(ctx context.Context, quantum string, msg *types.Message) error
 	// Consume New a consumer to consume Messages from the queue
-	Consume(ctx context.Context, partition string, now, batchSize int64, fn types.HandleMessage) error
+	Consume(ctx context.Context, quantum string, now, batchSize int64, fn types.HandleMessage) error
 	// Close the queue
 	Close() error
 }
@@ -49,7 +49,7 @@ func NewRealTimeQueue() RealTimeQueue {
 type Queue struct {
 	delay    DelayQueue
 	realtime RealTimeQueue
-	c        *configs.DelayQueueConfig
+	config   *configs.DelayQueueConfig
 	// partition interval (Seconds)
 	interval int64
 
@@ -62,13 +62,13 @@ func NewQueue() *Queue {
 	q := &Queue{
 		delay:    NewDelayQueue(client),
 		realtime: NewRealTimeQueue(),
-		c:        configs.GetDelayQueueConfig(),
+		config:   configs.GetDelayQueueConfig(),
 	}
 
-	// parse interval
-	t, err := time.ParseDuration(q.c.PartitionInterval)
+	// parse Polling delay queue interval
+	t, err := time.ParseDuration(q.config.PartitionInterval)
 	if err != nil {
-		panic(fmt.Errorf("failed to parse '%s' to time.Duration: %v", q.c.PartitionInterval, err))
+		panic(fmt.Errorf("failed to parse '%s' to time.Duration: %v", q.config.PartitionInterval, err))
 	}
 	q.interval = int64(t.Seconds())
 
@@ -93,11 +93,11 @@ func (q *Queue) Produce(ctx context.Context, msg *types.Message) error {
 		return err
 	}
 
-	pt := q.getPartition(msg.ReadyTime)
+	quantum := q.getQuantum(msg.ReadyTime)
 	for i := 0; i < 3; i++ {
-		if err = q.delay.Produce(ctx, pt, msg); err != nil {
+		if err = q.delay.Produce(ctx, quantum, msg); err != nil {
 			log.Errorf("DelayQueue: failed to produce message to Partition %s, err: %v, retry in %d times",
-				pt, err, i)
+				quantum, err, i)
 		} else {
 			break
 		}
@@ -126,7 +126,7 @@ func (q *Queue) checkParams(msg *types.Message) error {
 	return nil
 }
 
-func (q *Queue) getPartition(readyTime int64) string {
+func (q *Queue) getQuantum(readyTime int64) string {
 	startAt := (readyTime / q.interval) * q.interval
 	endAt := startAt + q.interval
 	return fmt.Sprintf("%d-%d", startAt, endAt)
@@ -137,7 +137,7 @@ func (q *Queue) startConsumer(quit, token chan int64) error {
 		select {
 		case t := <-token:
 			ctx := context.Background()
-			partition := q.getPartition(t)
+			quantum := q.getQuantum(t)
 
 			// lock the token
 			consumer := "consumer" + q.getConsumer(time.Now().Unix())
@@ -149,9 +149,9 @@ func (q *Queue) startConsumer(quit, token chan int64) error {
 				continue
 			}
 
-			if err := q.delay.Consume(ctx, partition, t, 100,
+			if err := q.delay.Consume(ctx, quantum, t, 100,
 				q.ProduceRealTime); err != nil {
-				log.Errorf("failed to consume partition: %s, time token is: %d,caused by %v", partition, t, err)
+				log.Errorf("failed to consume quantum: %s, time token is: %d,caused by %v", quantum, t, err)
 			}
 
 			// Release the lock
@@ -165,20 +165,6 @@ func (q *Queue) startConsumer(quit, token chan int64) error {
 
 func (q *Queue) getConsumer(time int64) string {
 	return fmt.Sprintf("key_token_%d", time)
-}
-
-func (q *Queue) startLimiter(token chan int) {
-
-	for {
-		res, err := q.limiter.Allow(context.Background(), "pudding:rate_every_second", redis_rate.PerSecond(1))
-		if err != nil {
-			log.Errorf("failed to allow limiter: %v", err)
-		}
-		if res.Allowed == 1 {
-			token <- 1
-		}
-		time.Sleep(time.Duration(random.GetRand(500, 1000)) * time.Millisecond)
-	}
 }
 
 /*
@@ -236,4 +222,22 @@ func (q *Queue) tryProduceToken() {
 
 func (q *Queue) getTokenName(time int64) string {
 	return fmt.Sprintf("key_token_%d", time)
+}
+
+/*
+	rate limit
+*/
+
+func (q *Queue) startLimiter(token chan int) {
+
+	for {
+		res, err := q.limiter.Allow(context.Background(), "pudding:rate_every_second", redis_rate.PerSecond(1))
+		if err != nil {
+			log.Errorf("failed to allow limiter: %v", err)
+		}
+		if res.Allowed == 1 {
+			token <- 1
+		}
+		time.Sleep(time.Duration(random.GetRand(500, 1000)) * time.Millisecond)
+	}
 }
