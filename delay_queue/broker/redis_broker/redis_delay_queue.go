@@ -2,7 +2,6 @@ package redis_broker
 
 import (
 	"context"
-	"encoding/json"
 	"fmt"
 	"strconv"
 
@@ -10,6 +9,7 @@ import (
 
 	"github.com/beihai0xff/pudding/pkg/errno"
 	"github.com/beihai0xff/pudding/pkg/log"
+	"github.com/beihai0xff/pudding/pkg/msgpack"
 	rdb "github.com/beihai0xff/pudding/pkg/redis"
 	"github.com/beihai0xff/pudding/types"
 )
@@ -37,7 +37,7 @@ func (q *DelayQueue) pushToZSet(ctx context.Context, partition string, msg *type
 			return fmt.Errorf("pushToZSet failed: %w", err)
 		}
 	*/
-	c, err := json.Marshal(msg)
+	c, err := msgpack.Encode(msg)
 	if err != nil {
 		return fmt.Errorf("pushToZSet: failed to marshal message:%w", err)
 	}
@@ -117,12 +117,12 @@ func (q *DelayQueue) getFromZSetByScore(partition string, now, batchSize int64) 
 		// 获取消息的 body
 		body, err := q.rdb.HGet(context.Background(), hashTable, key)
 		if err != nil {
-			// TODO: 记录错误日志
+			log.Errorf("failed to get message body from hashTable: %v", err)
 			continue
 		}
-		msg, err := types.GetMessageFromJSON(body)
-		if err != nil {
-			// TODO: 记录错误日志
+		msg := &types.Message{}
+		if err := msgpack.Decode(body, msg); err != nil {
+			log.Errorf("failed to decode message body: %v", err)
 			continue
 		}
 		res = append(res, *msg)
