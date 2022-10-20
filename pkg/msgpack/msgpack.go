@@ -27,7 +27,7 @@ type (
 	MarshalFunc    func(interface{}) ([]byte, error)
 	UnmarshalFunc  func([]byte, interface{}) error
 	CompressFunc   func(data []byte) []byte
-	DecompressFunc func(b []byte, value interface{}) error
+	DecompressFunc func(b []byte) ([]byte, error)
 
 	OptionFunc func(*MsgPack)
 )
@@ -102,7 +102,9 @@ func Decode(b []byte, value interface{}) error {
 		return nil
 	}
 
-	if err := defaultPack.decompress(b, value); err != nil {
+	var err error
+
+	if b, err = defaultPack.decompress(b); err != nil {
 		log.Errorf("Decompress failed: %v", err)
 		return err
 	}
@@ -131,19 +133,7 @@ func S2Compress(data []byte) []byte {
 	return b
 }
 
-func S2Decompress(b []byte, value interface{}) error {
-	switch value := value.(type) {
-	case nil:
-		return nil
-	case *[]byte:
-		clone := make([]byte, len(b))
-		copy(clone, b)
-		*value = clone
-		return nil
-	case *string:
-		*value = string(b)
-		return nil
-	}
+func S2Decompress(b []byte) ([]byte, error) {
 
 	switch c := b[len(b)-1]; c {
 	case noCompression:
@@ -154,11 +144,11 @@ func S2Decompress(b []byte, value interface{}) error {
 		var err error
 		b, err = s2.Decode(nil, b)
 		if err != nil {
-			return err
+			return b, err
 		}
 	default:
-		return fmt.Errorf("unknown compression method: %x", c)
+		return nil, fmt.Errorf("unknown compression method: %x", c)
 	}
 
-	return nil
+	return b, nil
 }
