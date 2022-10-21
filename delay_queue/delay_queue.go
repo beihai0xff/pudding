@@ -214,8 +214,6 @@ func (q *Queue) tryProduceToken() {
 				continue
 			}
 
-			// TODO: set token to realtime queue
-
 			if err := q.ProduceRealTime(ctx, &types.Message{Topic: "token", Key: tokenName}); err != nil {
 				log.Errorf("failed to produce token: %s, caused by %v", tokenName, err)
 			}
