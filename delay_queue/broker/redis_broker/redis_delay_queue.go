@@ -28,6 +28,7 @@ func NewDelayQueue(rdb *rdb.Client) *DelayQueue {
 
 func (q *DelayQueue) Produce(ctx context.Context, quantum string, msg *types.Message) error {
 	// member := &redis.Z{Score: float64(msg.ReadyTime.Unix()), Member: msg.Key}
+	log.Debugf("produce message: %+v", msg)
 	return q.pushToZSet(ctx, quantum, msg)
 }
 
@@ -75,7 +76,7 @@ func (q *DelayQueue) Consume(ctx context.Context, quantum string, now, batchSize
 			// 处理消息
 			err = fn(ctx, &msg)
 			if err != nil {
-				log.Errorf("failed to handle message: %+v, caused by: %v", msg, err)
+				log.Errorf("failed to handle message: %+v, caused by: %w", msg, err)
 				continue
 			}
 
@@ -107,7 +108,7 @@ func (q *DelayQueue) getFromZSetByScore(quantum string, now, batchSize int64) ([
 		return nil, nil
 	}
 
-	res := make([]types.Message, len(zs))
+	res := make([]types.Message, 0, len(zs))
 
 	hashTable := q.getHashtableName(quantum)
 
@@ -117,14 +118,15 @@ func (q *DelayQueue) getFromZSetByScore(quantum string, now, batchSize int64) ([
 		// 获取消息的 body
 		body, err := q.rdb.HGet(context.Background(), hashTable, key)
 		if err != nil {
-			log.Errorf("failed to get message body from hashTable: %v", err)
+			log.Errorf("failed to get message body from hashTable: %w", err)
 			continue
 		}
 		msg := &types.Message{}
 		if err := msgpack.Decode(body, msg); err != nil {
-			log.Errorf("failed to decode message body: %v", err)
+			log.Errorf("failed to decode message body: %w", err)
 			continue
 		}
+		log.Debugf("get message from zset: %+v", msg)
 		res = append(res, *msg)
 	}
 	return res, nil
@@ -136,7 +138,11 @@ func (q *DelayQueue) Close() error {
 }
 
 func (q *DelayQueue) getZSetName(quantum string) string {
-	return fmt.Sprintf("zset_quantum_%s_bucket_%8d", quantum, q.getBucket(quantum))
+	return fmt.Sprintf("zset_quantum_%s_bucket_%d", quantum, q.getBucket(quantum))
+}
+
+func (q *DelayQueue) getHashtableName(quantum string) string {
+	return fmt.Sprintf("hashTable_quantum_%s_bucket_%d", quantum, q.getBucket(quantum))
 }
 
 func (q *DelayQueue) getBucket(quantum string) int8 {
@@ -147,8 +153,4 @@ func (q *DelayQueue) getBucket(quantum string) int8 {
 	}
 
 	return 1
-}
-
-func (q *DelayQueue) getHashtableName(quantum string) string {
-	return fmt.Sprintf("hashTable_quantum_%s_bucket_%8d", quantum, q.getBucket(quantum))
 }

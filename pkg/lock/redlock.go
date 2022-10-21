@@ -10,7 +10,7 @@ import (
 	rdb "github.com/beihai0xff/pudding/pkg/redis"
 )
 
-var r = rdb.NewRDB(configs.GetRedisConfig())
+var r = rdb.New(configs.GetRedisConfig())
 
 type RedLock struct {
 	locker *redislock.Lock

@@ -4,6 +4,7 @@ package redis
 import (
 	"context"
 	"errors"
+	"runtime"
 	"sync"
 	"time"
 
@@ -30,8 +31,8 @@ type Client struct {
 	locker *redislock.Client
 }
 
-// NewRDB 获取客户端
-func NewRDB(c *configs.RedisConfig) *Client {
+// New 获取客户端
+func New(c *configs.RedisConfig) *Client {
 	clientOnce.Do(
 		func() {
 			opt, err := redis.ParseURL(c.RedisURL)
@@ -40,6 +41,7 @@ func NewRDB(c *configs.RedisConfig) *Client {
 			}
 
 			opt.DialTimeout = time.Duration(c.DialTimeout) * time.Second
+			opt.PoolSize = 40 * runtime.GOMAXPROCS(runtime.NumCPU())
 
 			client = &Client{
 				client: redis.NewClient(opt),

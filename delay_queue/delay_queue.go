@@ -58,7 +58,7 @@ type Queue struct {
 }
 
 func NewQueue() *Queue {
-	client := rdb.NewRDB(configs.GetRedisConfig())
+	client := rdb.New(configs.GetRedisConfig())
 	q := &Queue{
 		delay:    NewDelayQueue(client),
 		realtime: NewRealTimeQueue(),
