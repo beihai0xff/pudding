@@ -191,32 +191,41 @@ func (q *Queue) ProduceRealTime(ctx context.Context, msg *types.Message) error {
 
 // try to produce token to bucket
 func (q *Queue) tryProduceToken() {
+	now := time.Now()
+	timer := time.NewTimer(time.Unix(now.Unix()+1, 0).Sub(time.Now()) - time.Millisecond)
 
+	_ = <-timer.C // 从定时器拿数据
+
+	tick := time.NewTicker(1 * time.Second)
 	for {
-		time.Sleep(time.Duration(random.GetRand(500, 1000)) * time.Millisecond)
+		select {
+		case t := <-tick.C:
+			// get token name
+			tokenName := q.getConsumer(t.Unix())
 
-		ctx, cancel := context.WithTimeout(context.Background(), time.Second)
-		tokenName := q.getConsumer(time.Now().Unix())
-		locker, err := lock.NewRedLock(context.Background(), tokenName, time.Millisecond*500)
-		if err != nil {
-			if err != lock.ErrNotObtained {
-				log.Errorf("failed to get token lock: %s, caused by %v", tokenName, err)
+			// try to lock the token
+			ctx, cancel := context.WithTimeout(context.Background(), time.Second)
+			locker, err := lock.NewRedLock(context.Background(), tokenName, time.Millisecond*500)
+			if err != nil {
+				if err != lock.ErrNotObtained {
+					log.Errorf("failed to get token lock: %s, caused by %v", tokenName, err)
+				}
+
+				continue
 			}
 
-			continue
-		}
+			// TODO: set token to realtime queue
 
-		// TODO: set token to realtime queue
+			if err := q.ProduceRealTime(ctx, &types.Message{Topic: "token", Key: tokenName}); err != nil {
+				log.Errorf("failed to produce token: %s, caused by %v", tokenName, err)
+			}
 
-		if err := q.ProduceRealTime(ctx, &types.Message{Topic: "token", Key: tokenName}); err != nil {
-			log.Errorf("failed to produce token: %s, caused by %v", tokenName, err)
+			// extends the lock with a new TTL
+			if err := locker.Refresh(ctx, 3*time.Second); err != nil {
+				log.Errorf("failed to refresh locker: %s, caused by %v", tokenName, err)
+			}
+			cancel()
 		}
-
-		// extends the lock with a new TTL
-		if err := locker.Refresh(ctx, 2*time.Second); err != nil {
-			log.Errorf("failed to refresh locker: %s, caused by %v", tokenName, err)
-		}
-		cancel()
 	}
 }
 
