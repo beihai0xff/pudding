@@ -9,6 +9,7 @@ var c *Config
 type Config struct {
 	redis      *RedisConfig
 	delayQueue *DelayQueueConfig
+	pulsar     *PulsarConfig
 }
 
 func Init(filePath string) {
