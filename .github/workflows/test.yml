@@ -1,8 +1,14 @@
 on: [push, pull_request]
 name: Test
 jobs:
+  test:
+    strategy:
+      matrix:
+        go-version: [ 1.17.x, 1.18.x ]
+        os: [ ubuntu-latest ]
+    runs-on: ${{ matrix.os }}
   # Label of the container job
-  container-job:
+  runner-job:
     # Containers must run in Linux based operating systems
     runs-on: ubuntu-latest
 
@@ -22,12 +28,7 @@ jobs:
           # Maps tcp port 5432 on service container to the host
           - 6650:6650
           - 8080:8080
-  test:
-    strategy:
-      matrix:
-        go-version: [1.17.x, 1.18.x]
-        os: [ubuntu-latest]
-    runs-on: ${{ matrix.os }}
+
     steps:
       - name: Install Go
         uses: actions/setup-go@v2
