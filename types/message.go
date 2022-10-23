@@ -12,7 +12,7 @@ type Message struct {
 	Topic     string // Message Topic
 	Partition int    // Message Partition
 	Key       string // Message Key
-	Body      []byte // Message Body
+	Payload   []byte // Message Payload
 	Delay     int64  // Message Delay Time (Seconds)
 	ReadyTime int64  // Message Ready Time（now + delay, Unix Timestamp, Seconds）
 }

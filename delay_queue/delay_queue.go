@@ -31,7 +31,7 @@ type RealTimeQueue interface {
 	// Produce produce a Message to the queue in real time
 	Produce(ctx context.Context, msg *types.Message) error
 	// NewConsumer consume Messages from the queue in real time
-	NewConsumer(topic, group, consumerName string, batchSize int, fn func(msg *types.Message) error)
+	NewConsumer(topic, group string, batchSize int, fn types.HandleMessage)
 	// Close the queue
 	Close() error
 }
