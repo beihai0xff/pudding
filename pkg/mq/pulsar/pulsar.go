@@ -26,6 +26,7 @@ type Client struct {
 func New(config *configs.PulsarConfig) *Client {
 	clientOnce.Do(
 		func() {
+			// create pulsar client
 			c, err := pulsar.NewClient(pulsar.ClientOptions{
 				URL: config.PulsarURL,
 			})
@@ -41,6 +42,7 @@ func New(config *configs.PulsarConfig) *Client {
 				consumers: make(map[string]pulsar.Consumer),
 			}
 
+			// create producers
 			for _, pc := range config.ProducersConfig {
 				producer, err := c.CreateProducer(pc)
 				if err != nil {
@@ -49,17 +51,25 @@ func New(config *configs.PulsarConfig) *Client {
 				}
 				client.producers[pc.Topic] = producer
 			}
+
 		})
 
 	return client
 }
 
 func (c *Client) Produce(ctx context.Context, topic string, msg *pulsar.ProducerMessage) error {
-	_, err := c.producers[topic].Send(ctx, msg)
+	produce, ok := c.producers[topic]
+	if !ok {
+		return fmt.Errorf("producer for topic [%s] not exists", topic)
+	}
+	_, err := produce.Send(ctx, msg)
 	return err
 }
 
 func (c *Client) NewConsumer(topic, group string, fn func(msg pulsar.Message) error) error {
+	if topic == "" || group == "" {
+		return fmt.Errorf("topic and group can not be empty")
+	}
 	consumerName := c.getConsumerName(topic, group)
 
 	// check consumer exist
@@ -131,9 +141,15 @@ func (c *Client) getConsumerName(topic, group string) string {
 }
 
 func (c *Client) Close() {
+	//  close all producers
 	for _, producer := range c.producers {
 		producer.Close()
 	}
+	// close all consumers
+	for _, consumer := range c.consumers {
+		consumer.Close()
+	}
 
+	// close the client
 	c.client.Close()
 }
