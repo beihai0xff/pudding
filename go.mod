@@ -17,7 +17,7 @@ require (
 	gopkg.in/yaml.v3 v3.0.1
 )
 
-replace github.com/go-redis/redis_rate/v10 => github.com/beihai0xff/redis_rate/v10 v10.0.0-20221018024645-a6a5d00e2135
+replace github.com/go-redis/redis_rate/v10 => github.com/beihai0xff/redis_rate/v10 v10.0.0-rc.1
 
 require (
 	github.com/99designs/go-keychain v0.0.0-20191008050251-8e49817e8af4 // indirect

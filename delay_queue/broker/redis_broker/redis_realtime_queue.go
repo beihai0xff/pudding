@@ -2,7 +2,7 @@ package redis_broker
 
 import (
 	"context"
-	"fmt"
+	"time"
 
 	"github.com/go-redis/redis/v9"
 
@@ -11,20 +11,22 @@ import (
 )
 
 type RealTimeQueue struct {
-	rdb *rdb.Client // Redis客户端
+	rdb          *rdb.Client // Redis客户端
+	consumerName string
 }
 
 // Produce produce a Message to the queue in realtime
 func (q *RealTimeQueue) Produce(ctx context.Context, msg *types.Message) error {
-	return q.rdb.StreamSend(ctx, q.getTopicPartition(msg.Topic), msg.Body)
+	return q.rdb.StreamSend(ctx, msg.Topic, msg.Payload)
 }
 
 // NewConsumer consume Messages from the queue in real time
-func (q *RealTimeQueue) NewConsumer(ctx context.Context, topic, group, consumerName string, batchSize int, fn types.HandleMessage) {
+func (q *RealTimeQueue) NewConsumer(topic, group string, batchSize int, fn types.HandleMessage) {
 
 	for {
+		ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 		// 拉取已经投递却未被 ACK 的消息，保证消息至少被成功消费1次
-		msgs, err := q.rdb.XGroupConsume(ctx, topic, group, consumerName, "0", batchSize)
+		msgs, err := q.rdb.XGroupConsume(ctx, topic, group, q.consumerName, "0", batchSize)
 		if err != nil {
 			// TODO: 记录错误日志
 		}
@@ -36,12 +38,13 @@ func (q *RealTimeQueue) NewConsumer(ctx context.Context, topic, group, consumerN
 		}
 
 		// 拉取新消息
-		msgs, err = q.rdb.XGroupConsume(ctx, topic, group, consumerName, ">", batchSize)
+		msgs, err = q.rdb.XGroupConsume(ctx, topic, group, q.consumerName, ">", batchSize)
 		if err != nil {
 			// TODO: 记录错误日志
 		}
 		q.handlerRealTimeMessage(ctx, msgs, topic, group, fn)
 
+		cancel()
 	}
 }
 
@@ -73,10 +76,6 @@ func (q *RealTimeQueue) handlerRealTimeMessage(ctx context.Context, msgs []redis
 	}
 
 	return
-}
-
-func (q *RealTimeQueue) getTopicPartition(topic string) string {
-	return fmt.Sprintf("stream_%s", topic)
 }
 
 // Close close the queue

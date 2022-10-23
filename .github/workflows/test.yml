@@ -1,13 +1,18 @@
 on: [push, pull_request]
 name: Test
 jobs:
+
+  # Label of the container job
   test:
     strategy:
       matrix:
         go-version: [1.17.x, 1.18.x]
         os: [ubuntu-latest]
     runs-on: ${{ matrix.os }}
+
     steps:
+      - name: Set up Apache Pulsar
+        uses: reugn/github-action-pulsar@v1
       - name: Install Go
         uses: actions/setup-go@v2
         with:

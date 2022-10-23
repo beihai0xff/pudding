@@ -1,5 +1,7 @@
 package errno
 
-import "errors"
+import (
+	"fmt"
+)
 
-var ErrDuplicateMessage = errors.New("duplicate message key")
+var ErrDuplicateMessage = fmt.Errorf("duplicate message key")

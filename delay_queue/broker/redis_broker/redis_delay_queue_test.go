@@ -37,7 +37,7 @@ func TestRealTimeQueue_Produce(t *testing.T) {
 	msg := &types.Message{
 		Topic:     "test_Topic",
 		Partition: 0,
-		Body:      []byte("12345678900987654321"),
+		Payload:   []byte("12345678900987654321"),
 		Delay:     0,
 		ReadyTime: 10,
 	}
@@ -49,7 +49,7 @@ func TestRealTimeQueue_Produce(t *testing.T) {
 	}
 
 	q.Consume(context.Background(), "test_bucket", 11, 10, func(ctx context.Context, msg *types.Message) error {
-		assert.Equal(t, []byte("12345678900987654321"), msg.Body)
+		assert.Equal(t, []byte("12345678900987654321"), msg.Payload)
 		return nil
 	})
 
@@ -59,7 +59,7 @@ func TestDelayQueue_getFromZSetByScore(t *testing.T) {
 	msg := &types.Message{
 		Topic:     "test_Topic",
 		Partition: 0,
-		Body:      []byte("12345678900987654321"),
+		Payload:   []byte("12345678900987654321"),
 		Delay:     0,
 		ReadyTime: 10,
 	}
