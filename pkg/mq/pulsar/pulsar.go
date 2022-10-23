@@ -143,6 +143,7 @@ func (c *Client) getConsumerName(topic, group string) string {
 func (c *Client) Close() {
 	//  close all producers
 	for _, producer := range c.producers {
+		producer.Flush()
 		producer.Close()
 	}
 	// close all consumers
