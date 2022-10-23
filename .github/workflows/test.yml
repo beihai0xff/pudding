@@ -1,16 +1,14 @@
 on: [push, pull_request]
 name: Test
 jobs:
+
+  # Label of the container job
   test:
     strategy:
       matrix:
-        go-version: [ 1.17.x, 1.18.x ]
-        os: [ ubuntu-latest ]
+        go-version: [1.17.x, 1.18.x]
+        os: [ubuntu-latest]
     runs-on: ${{ matrix.os }}
-  # Label of the container job
-  runner-job:
-    # Containers must run in Linux based operating systems
-    runs-on: ubuntu-latest
 
     # Service containers to run with `container-job`
     services:
