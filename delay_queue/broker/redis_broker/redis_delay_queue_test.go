@@ -45,7 +45,7 @@ func TestRealTimeQueue_Produce(t *testing.T) {
 	for i := 1; i <= 100; i++ {
 		msg.Key = uuid.New().String()
 		msg.ReadyTime = int64(i)
-		assert.Equal(t, nil, q.Produce(context.Background(), "test_bucket", msg))
+		assert.Equal(t, nil, q.Produce(context.Background(), "test_bucket_Produce", msg))
 	}
 
 	q.Consume(context.Background(), "test_bucket", 11, 10, func(ctx context.Context, msg *types.Message) error {
@@ -56,6 +56,7 @@ func TestRealTimeQueue_Produce(t *testing.T) {
 }
 
 func TestDelayQueue_getFromZSetByScore(t *testing.T) {
+	bucket := "test_bucket_getFromZSetByScore"
 	msg := &types.Message{
 		Topic:     "test_Topic",
 		Partition: 0,
@@ -67,23 +68,31 @@ func TestDelayQueue_getFromZSetByScore(t *testing.T) {
 	for i := 1; i <= 100; i++ {
 		msg.Key = uuid.New().String()
 		msg.ReadyTime = int64(i)
-		assert.Equal(t, nil, q.Produce(context.Background(), "test_bucket", msg))
+		assert.Equal(t, nil, q.Produce(context.Background(), bucket, msg))
 	}
 
-	if msgs, err := q.getFromZSetByScore("test_bucket", 10, 10); err != nil {
+	for i := 1; i <= 5; i++ {
+		msg.Key = uuid.New().String()
+		msg.ReadyTime = 200
+		assert.Equal(t, nil, q.Produce(context.Background(), bucket, msg))
+	}
+
+	if msgs, err := q.getFromZSetByScore(bucket, 10, 10); err != nil {
 		t.Errorf("getFromZSetByScore error: %v", err)
-	} else if len(msgs) != 10 {
+	} else if len(msgs) != 1 {
 		t.Errorf("getFromZSetByScore length is: %d", len(msgs))
 	}
 
-	msgs, _ := q.getFromZSetByScore("test_bucket", 10, 11)
-	assert.Equal(t, 10, len(msgs))
-	msgs, _ = q.getFromZSetByScore("test_bucket", 10, 12)
-	assert.Equal(t, 10, len(msgs))
-	msgs, _ = q.getFromZSetByScore("test_bucket", 10, 5)
+	msgs, _ := q.getFromZSetByScore(bucket, 10, 11)
+	assert.Equal(t, 1, len(msgs))
+	msgs, _ = q.getFromZSetByScore(bucket, 10, 12)
+	assert.Equal(t, 1, len(msgs))
+	msgs, _ = q.getFromZSetByScore(bucket, 200, 10)
 	assert.Equal(t, 5, len(msgs))
-	msgs, _ = q.getFromZSetByScore("test_bucket", 10, 200)
-	assert.Equal(t, 10, len(msgs))
+	msgs, _ = q.getFromZSetByScore(bucket, 200, 3)
+	assert.Equal(t, 3, len(msgs))
+	msgs, _ = q.getFromZSetByScore(bucket, 200, 200)
+	assert.Equal(t, 5, len(msgs))
 }
 
 func TestRealTimeQueue_getZSetName(t *testing.T) {
