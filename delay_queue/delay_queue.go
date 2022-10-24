@@ -31,7 +31,7 @@ type RealTimeQueue interface {
 	// Produce produce a Message to the queue in real time
 	Produce(ctx context.Context, msg *types.Message) error
 	// NewConsumer consume Messages from the queue in real time
-	NewConsumer(topic, group string, batchSize int, fn types.HandleMessage)
+	NewConsumer(topic, group string, batchSize int, fn types.HandleMessage) error
 	// Close the queue
 	Close() error
 }
@@ -55,6 +55,9 @@ type Queue struct {
 
 	// rate limiter
 	limiter *redis_rate.Limiter
+
+	token chan int64
+	quit  chan int64
 }
 
 func NewQueue() *Queue {
@@ -63,6 +66,8 @@ func NewQueue() *Queue {
 		delay:    NewDelayQueue(client),
 		realtime: NewRealTimeQueue(),
 		config:   configs.GetDelayQueueConfig(),
+		token:    make(chan int64),
+		quit:     make(chan int64),
 	}
 
 	// parse Polling delay queue interval
@@ -79,6 +84,15 @@ func NewQueue() *Queue {
 	}
 
 	return q
+}
+
+func (q *Queue) Start() {
+	go q.tryProduceToken()
+	q.getToken(q.token)
+	if err := q.startConsumer(q.quit, q.token); err != nil {
+		log.Errorf("start Queue failed: %v", err)
+		panic(err)
+	}
 }
 
 /*
@@ -149,8 +163,7 @@ func (q *Queue) startConsumer(quit, token chan int64) error {
 				continue
 			}
 
-			if err := q.delay.Consume(ctx, quantum, t, 100,
-				q.ProduceRealTime); err != nil {
+			if err := q.delay.Consume(ctx, quantum, t, 100, q.ProduceRealTime); err != nil {
 				log.Errorf("failed to consume quantum: %s, time token is: %d,caused by %v", quantum, t, err)
 			}
 
@@ -164,7 +177,7 @@ func (q *Queue) startConsumer(quit, token chan int64) error {
 }
 
 func (q *Queue) getConsumer(time int64) string {
-	return fmt.Sprintf("key_token_%d", time)
+	return fmt.Sprintf("key_consumer_token_%d", time)
 }
 
 /*
@@ -183,52 +196,6 @@ func (q *Queue) ProduceRealTime(ctx context.Context, msg *types.Message) error {
 		}
 	}
 	return err
-}
-
-/*
-	Produce or Consume token
-*/
-
-// try to produce token to bucket
-func (q *Queue) tryProduceToken() {
-	now := time.Now()
-	timer := time.NewTimer(time.Unix(now.Unix()+1, 0).Sub(time.Now()) - time.Millisecond)
-
-	_ = <-timer.C // 从定时器拿数据
-
-	tick := time.NewTicker(1 * time.Second)
-	for {
-		select {
-		case t := <-tick.C:
-			// get token name
-			tokenName := q.getConsumer(t.Unix())
-
-			// try to lock the token
-			ctx, cancel := context.WithTimeout(context.Background(), time.Second)
-			locker, err := lock.NewRedLock(context.Background(), tokenName, time.Millisecond*500)
-			if err != nil {
-				if err != lock.ErrNotObtained {
-					log.Errorf("failed to get token lock: %s, caused by %v", tokenName, err)
-				}
-
-				continue
-			}
-
-			if err := q.ProduceRealTime(ctx, &types.Message{Topic: "token", Key: tokenName}); err != nil {
-				log.Errorf("failed to produce token: %s, caused by %v", tokenName, err)
-			}
-
-			// extends the lock with a new TTL
-			if err := locker.Refresh(ctx, 3*time.Second); err != nil {
-				log.Errorf("failed to refresh locker: %s, caused by %v", tokenName, err)
-			}
-			cancel()
-		}
-	}
-}
-
-func (q *Queue) getTokenName(time int64) string {
-	return fmt.Sprintf("key_token_%d", time)
 }
 
 /*
