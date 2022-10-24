@@ -79,12 +79,17 @@ func TestClient_NewConsumer(t *testing.T) {
 	// produce test data
 	TestClient_Produce(t)
 
-	handle := func(msg pulsar.Message) error { assert.Equal(t, "hello", "hello"); return nil }
+	handle := HandleMessage(
+		func(ctx context.Context, msg pulsar.Message) error {
+			assert.Equal(t, "hello", string(msg.Payload()))
+			return nil
+		},
+	)
 
 	type args struct {
 		topic string
 		group string
-		fn    func(msg pulsar.Message) error
+		fn    HandleMessage
 	}
 	tests := []struct {
 		name    string

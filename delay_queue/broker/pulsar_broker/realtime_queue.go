@@ -4,6 +4,8 @@ import (
 	"context"
 	"fmt"
 
+	p "github.com/apache/pulsar-client-go/pulsar"
+
 	"github.com/beihai0xff/pudding/pkg/mq/pulsar"
 	"github.com/beihai0xff/pudding/types"
 )
@@ -27,8 +29,12 @@ func (q *RealTimeQueue) Produce(ctx context.Context, msg *types.Message) error {
 }
 
 // NewConsumer consume Messages from the queue in real time
-func (q *RealTimeQueue) NewConsumer(topic, group string, batchSize int, fn types.HandleMessage) {
+func (q *RealTimeQueue) NewConsumer(topic, group string, batchSize int, fn types.HandleMessage) error {
+	var f pulsar.HandleMessage = func(ctx context.Context, msg p.Message) error {
+		return fn(ctx, convertPulsarMessageToDelayMessage(msg))
+	}
 
+	return q.pulsar.NewConsumer(topic, group, f)
 }
 
 // Close the queue
