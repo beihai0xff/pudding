@@ -94,7 +94,7 @@ func (q *DelayQueue) Consume(ctx context.Context, quantum string, now, batchSize
 func (q *DelayQueue) getFromZSetByScore(quantum string, now, batchSize int64) ([]types.Message, error) {
 	// 批量获取已经准备好执行的消息
 	zs, err := q.rdb.ZRangeByScore(context.Background(), q.getZSetName(quantum), &redis.ZRangeBy{
-		Min:    "-inf",
+		Min:    strconv.FormatInt(now, 10),
 		Max:    strconv.FormatInt(now, 10),
 		Offset: 0,
 		Count:  batchSize,
