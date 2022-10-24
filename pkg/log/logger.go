@@ -16,7 +16,8 @@ func NewLogger(c *OutputConfig) *zap.Logger {
 // newZapLogWithCallerSkip new a zap log
 func newZapLogWithCallerSkip(c *OutputConfig, callerSkip int) *zap.Logger {
 	if c.Writer == OutputFile {
-		// 	TODO: file output
+		// TODO: file output
+		panic("not support file output")
 	}
 	core := newConsoleCore(c)
 
