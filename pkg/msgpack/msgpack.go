@@ -51,27 +51,17 @@ func New(opts ...OptionFunc) *MsgPack {
 	Functional Options Pattern
 */
 
-func WithMarshalFunc(fn MarshalFunc) OptionFunc {
+func WithMarshalFunc(fnm MarshalFunc, fnu UnmarshalFunc) OptionFunc {
 	return func(p *MsgPack) {
-		p.marshal = fn
+		p.marshal = fnm
+		p.unmarshal = fnu
 	}
 }
 
-func WithUnmarshalFunc(fn UnmarshalFunc) OptionFunc {
+func WithCompressFunc(fnc CompressFunc, fnd DecompressFunc) OptionFunc {
 	return func(p *MsgPack) {
-		p.unmarshal = fn
-	}
-}
-
-func WithCompressFunc(fn CompressFunc) OptionFunc {
-	return func(p *MsgPack) {
-		p.compress = fn
-	}
-}
-
-func WithDecompressFunc(fn DecompressFunc) OptionFunc {
-	return func(p *MsgPack) {
-		p.decompress = fn
+		p.compress = fnc
+		p.decompress = fnd
 	}
 }
 
@@ -79,7 +69,18 @@ func WithDecompressFunc(fn DecompressFunc) OptionFunc {
 	Encode and decode like below:
 */
 
+// Encode wrap for msgpack.Encode
 func Encode(item interface{}) ([]byte, error) {
+	return defaultPack.Encode(item)
+}
+
+// Decode wrap for msgpack.Decode
+func Decode(b []byte, value interface{}) error {
+	return defaultPack.Decode(b, value)
+}
+
+// Encode wraps msgpack.Marshal and compresses the result.
+func (p *MsgPack) Encode(item interface{}) ([]byte, error) {
 	switch value := item.(type) {
 	case nil:
 		return nil, nil
@@ -89,26 +90,27 @@ func Encode(item interface{}) ([]byte, error) {
 		return []byte(value), nil
 	}
 
-	b, err := defaultPack.marshal(item)
+	b, err := p.marshal(item)
 	if err != nil {
 		return nil, err
 	}
 
-	return defaultPack.compress(b), nil
+	return p.compress(b), nil
 }
 
-func Decode(b []byte, value interface{}) error {
+// Decode a msgpack encoded byte array
+func (p *MsgPack) Decode(b []byte, value interface{}) error {
 	if len(b) == 0 {
 		return nil
 	}
 
 	var err error
 
-	if b, err = defaultPack.decompress(b); err != nil {
+	if b, err = p.decompress(b); err != nil {
 		log.Errorf("Decompress failed: %v", err)
 		return err
 	}
-	return defaultPack.unmarshal(b, value)
+	return p.unmarshal(b, value)
 }
 
 /*
