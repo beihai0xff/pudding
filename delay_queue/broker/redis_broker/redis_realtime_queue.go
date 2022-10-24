@@ -6,6 +6,7 @@ import (
 
 	"github.com/go-redis/redis/v9"
 
+	"github.com/beihai0xff/pudding/pkg/log"
 	rdb "github.com/beihai0xff/pudding/pkg/redis"
 	"github.com/beihai0xff/pudding/types"
 )
@@ -28,7 +29,7 @@ func (q *RealTimeQueue) NewConsumer(topic, group string, batchSize int, fn types
 		// 拉取已经投递却未被 ACK 的消息，保证消息至少被成功消费1次
 		msgs, err := q.rdb.XGroupConsume(ctx, topic, group, q.consumerName, "0", batchSize)
 		if err != nil {
-			// TODO: 记录错误日志
+			log.Errorf("XGroupConsume unack message error: %v", err)
 		}
 
 		if len(msgs) == batchSize {
@@ -40,7 +41,7 @@ func (q *RealTimeQueue) NewConsumer(topic, group string, batchSize int, fn types
 		// 拉取新消息
 		msgs, err = q.rdb.XGroupConsume(ctx, topic, group, q.consumerName, ">", batchSize)
 		if err != nil {
-			// TODO: 记录错误日志
+			log.Errorf("XGroupConsume message error: %v", err)
 		}
 		q.handlerRealTimeMessage(ctx, msgs, topic, group, fn)
 
