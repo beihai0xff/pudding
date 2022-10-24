@@ -12,3 +12,11 @@ func convertToPulsarProducerMessage(msg *types.Message) *pulsar.ProducerMessage 
 		Key:     msg.Key,
 	}
 }
+
+func convertPulsarMessageToDelayMessage(msg pulsar.Message) *types.Message {
+	return &types.Message{
+		Topic:   msg.Topic(),
+		Key:     msg.Key(),
+		Payload: msg.Payload(),
+	}
+}

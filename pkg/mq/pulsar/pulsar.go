@@ -17,6 +17,9 @@ var (
 	client     *Client
 )
 
+// HandleMessage is the function type for handling message
+type HandleMessage func(ctx context.Context, msg pulsar.Message) error
+
 type Client struct {
 	client    pulsar.Client
 	producers map[string]pulsar.Producer
@@ -66,7 +69,7 @@ func (c *Client) Produce(ctx context.Context, topic string, msg *pulsar.Producer
 	return err
 }
 
-func (c *Client) NewConsumer(topic, group string, fn func(msg pulsar.Message) error) error {
+func (c *Client) NewConsumer(topic, group string, fn HandleMessage) error {
 	if topic == "" || group == "" {
 		return fmt.Errorf("topic and group can not be empty")
 	}
@@ -99,8 +102,10 @@ func (c *Client) NewConsumer(topic, group string, fn func(msg pulsar.Message) er
 
 	go func() {
 		for {
+
+			ctx := context.Background()
 			// receive message, block if queue is empty
-			msg, err := consumer.Receive(context.Background())
+			msg, err := consumer.Receive(ctx)
 			if err != nil {
 				log.Errorf("receive message failed: %v, message msgId: %#v -- content: '%s'\n",
 					err, msg.ID(), string(msg.Payload()))
@@ -116,7 +121,7 @@ func (c *Client) NewConsumer(topic, group string, fn func(msg pulsar.Message) er
 			log.Debugf("Received message msgId: %#v -- content: '%s'\n",
 				msg.ID(), string(msg.Payload()))
 
-			if err := fn(msg); err != nil {
+			if err := fn(ctx, msg); err != nil {
 				log.Errorf("handle message failed: %v, message msgId: %#v -- content: '%s'\n",
 					err, msg.ID(), string(msg.Payload()))
 				continue
