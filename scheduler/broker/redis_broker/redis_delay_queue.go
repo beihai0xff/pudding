@@ -26,14 +26,14 @@ func NewDelayQueue(rdb *rdb.Client) *DelayQueue {
 	}
 }
 
-func (q *DelayQueue) Produce(ctx context.Context, quantum string, msg *types.Message) error {
+func (q *DelayQueue) Produce(ctx context.Context, timeSlice string, msg *types.Message) error {
 	// member := &redis.Z{Score: float64(msg.ReadyTime.Unix()), Member: msg.Key}
 	log.Debugf("produce message: %+v", msg)
-	return q.pushToZSet(ctx, quantum, msg)
+	return q.pushToZSet(ctx, timeSlice, msg)
 }
 
-func (q *DelayQueue) pushToZSet(ctx context.Context, quantum string, msg *types.Message) error {
-	/*	err := q.rdb.ZAddNX(ctx, q.getZSetName(quantum), *member)
+func (q *DelayQueue) pushToZSet(ctx context.Context, timeSlice string, msg *types.Message) error {
+	/*	err := q.rdb.ZAddNX(ctx, q.getZSetName(timeSlice), *member)
 		if err != nil {
 			return fmt.Errorf("pushToZSet failed: %w", err)
 		}
@@ -43,8 +43,8 @@ func (q *DelayQueue) pushToZSet(ctx context.Context, quantum string, msg *types.
 		return fmt.Errorf("pushToZSet: failed to marshal message:%w", err)
 	}
 
-	count, err := pushScript.Run(ctx, q.rdb.GetClient(), []string{q.getZSetName(quantum),
-		q.getHashtableName(quantum)}, msg.Key, c, msg.ReadyTime).Int()
+	count, err := pushScript.Run(ctx, q.rdb.GetClient(), []string{q.getZSetName(timeSlice),
+		q.getHashtableName(timeSlice)}, msg.Key, c, msg.ReadyTime).Int()
 	if err != nil {
 		return fmt.Errorf("pushToZSet: failed to push message:%w", err)
 	}
@@ -54,18 +54,18 @@ func (q *DelayQueue) pushToZSet(ctx context.Context, quantum string, msg *types.
 	return nil
 }
 
-func (q *DelayQueue) Consume(ctx context.Context, quantum string, now, batchSize int64,
+func (q *DelayQueue) Consume(ctx context.Context, timeSlice string, now, batchSize int64,
 	fn types.HandleMessage) error {
 
 	for {
 		// batch get messages which are ready to execute
-		messages, err := q.getFromZSetByScore(quantum, now, batchSize)
+		messages, err := q.getFromZSetByScore(timeSlice, now, batchSize)
 		// if you get error return directly
 		if err != nil {
 			return err
 		}
 
-		// if no data in the quantum, break the loop
+		// if no data in the timeSlice, break the loop
 		if messages == nil || len(messages) == 0 {
 			break
 		}
@@ -81,8 +81,8 @@ func (q *DelayQueue) Consume(ctx context.Context, quantum string, now, batchSize
 			}
 
 			// delete message from zset and hash table
-			if err := deleteScript.Run(ctx, q.rdb.GetClient(), []string{q.getZSetName(quantum),
-				q.getHashtableName(quantum)}, msg.Key).Err(); err != nil {
+			if err := deleteScript.Run(ctx, q.rdb.GetClient(), []string{q.getZSetName(timeSlice),
+				q.getHashtableName(timeSlice)}, msg.Key).Err(); err != nil {
 				return err
 			}
 		}
@@ -91,9 +91,9 @@ func (q *DelayQueue) Consume(ctx context.Context, quantum string, now, batchSize
 	return nil
 }
 
-func (q *DelayQueue) getFromZSetByScore(quantum string, now, batchSize int64) ([]types.Message, error) {
+func (q *DelayQueue) getFromZSetByScore(timeSlice string, now, batchSize int64) ([]types.Message, error) {
 	// 批量获取已经准备好执行的消息
-	zs, err := q.rdb.ZRangeByScore(context.Background(), q.getZSetName(quantum), &redis.ZRangeBy{
+	zs, err := q.rdb.ZRangeByScore(context.Background(), q.getZSetName(timeSlice), &redis.ZRangeBy{
 		Min:    strconv.FormatInt(now, 10),
 		Max:    strconv.FormatInt(now, 10),
 		Offset: 0,
@@ -110,7 +110,7 @@ func (q *DelayQueue) getFromZSetByScore(quantum string, now, batchSize int64) ([
 
 	res := make([]types.Message, 0, len(zs))
 
-	hashTable := q.getHashtableName(quantum)
+	hashTable := q.getHashtableName(timeSlice)
 
 	// 遍历每个 message key，根据 message key 获取 message body
 	for _, z := range zs {
@@ -137,18 +137,18 @@ func (q *DelayQueue) Close() error {
 	return nil
 }
 
-func (q *DelayQueue) getZSetName(quantum string) string {
-	return fmt.Sprintf("zset_quantum_%s_bucket_%d", quantum, q.getBucket(quantum))
+func (q *DelayQueue) getZSetName(timeSlice string) string {
+	return fmt.Sprintf("zset_timeSlice_%s_bucket_%d", timeSlice, q.getBucket(timeSlice))
 }
 
-func (q *DelayQueue) getHashtableName(quantum string) string {
-	return fmt.Sprintf("hashTable_quantum_%s_bucket_%d", quantum, q.getBucket(quantum))
+func (q *DelayQueue) getHashtableName(timeSlice string) string {
+	return fmt.Sprintf("hashTable_timeSlice_%s_bucket_%d", timeSlice, q.getBucket(timeSlice))
 }
 
-func (q *DelayQueue) getBucket(quantum string) int8 {
-	buckets := q.bucket[quantum]
+func (q *DelayQueue) getBucket(timeSlice string) int8 {
+	buckets := q.bucket[timeSlice]
 	if buckets <= 0 {
-		q.bucket[quantum] = 1
+		q.bucket[timeSlice] = 1
 		return 1
 	}
 
