@@ -1,4 +1,4 @@
-package delay_queue
+package scheduler
 
 import (
 	"context"
@@ -15,40 +15,41 @@ import (
 // token is the time of the token bucket
 // used to consume delayed message every second
 
+const prefixToken = "pudding_token:"
+
 /*
 	Produce or Consume token
 */
 
 // try to produce token to bucket
-func (q *Queue) tryProduceToken() {
+func (s *Scheduler) tryProduceToken() {
 	now := time.Now()
 	timer := time.NewTimer(time.Unix(now.Unix()+1, 0).Sub(time.Now()) - time.Millisecond)
 
 	_ = <-timer.C // 从定时器拿数据
 
-	tick := time.NewTicker(1 * time.Second)
+	tick := time.NewTicker(time.Duration(s.interval) * time.Second)
 	for {
 		select {
 		case t := <-tick.C:
 			// get token name
-			tokenName := q.formatTokenName(t.Unix())
+			tokenName := s.formatTokenName(t.Unix())
 
 			// try to lock the token
 			ctx, cancel := context.WithTimeout(context.Background(), time.Second)
 			locker, err := lock.NewRedLock(context.Background(), tokenName, time.Millisecond*500)
 			if err != nil {
-				// if the token is locked, skip it
-
 				// if the token is not locked, but the error is not ErrNotObtained, log it
 				if err != lock.ErrNotObtained {
 					log.Errorf("failed to get token lock: %s, caused by %v", tokenName, err)
 				}
 
+				// if the token is locked, skip it
 				continue
 			}
 
-			// if get token produce lock, send it to token topic
-			if err := q.ProduceRealTime(ctx, &types.Message{Topic: types.TokenTopic, Payload: []byte(tokenName)}); err != nil {
+			// if get token lock, send it to token topic
+			if err := s.produceRealTime(ctx, &types.Message{Topic: types.TokenTopic, Payload: []byte(tokenName)}); err != nil {
 				log.Errorf("failed to produce token: %s, caused by %v", tokenName, err)
 			}
 
@@ -62,10 +63,14 @@ func (q *Queue) tryProduceToken() {
 }
 
 // try to consume token and send to channel
-func (q *Queue) getToken(token chan int64) {
-	if err := q.realtime.NewConsumer(types.TokenTopic, types.TokenGroup, 1,
+func (s *Scheduler) getToken(token chan int64) {
+	if err := s.realtime.NewConsumer(types.TokenTopic, types.TokenGroup, 1,
 		func(ctx context.Context, msg *types.Message) error {
-			token <- q.parseNowFromToken(string(msg.Payload))
+			t := s.parseNowFromToken(string(msg.Payload))
+			if t <= 0 {
+				return fmt.Errorf("failed to parse token: %s", string(msg.Payload))
+			}
+			token <- t
 			return nil
 		}); err != nil {
 		log.Errorf("failed to get token, caused by %v", err)
@@ -74,15 +79,15 @@ func (q *Queue) getToken(token chan int64) {
 	return
 }
 
-func (q *Queue) formatTokenName(time int64) string {
-	return fmt.Sprintf("key_token_%d", time)
+func (s *Scheduler) formatTokenName(time int64) string {
+	return fmt.Sprintf(prefixToken+"%d", time)
 }
 
 // parseNowFromToken parse token from token name
 // if return value is -1, means parse failed
-func (q *Queue) parseNowFromToken(token string) int64 {
-	if strings.HasPrefix(token, "key_token_") {
-		t, err := strconv.ParseInt(token[10:], 10, 64)
+func (s *Scheduler) parseNowFromToken(token string) int64 {
+	if strings.HasPrefix(token, prefixToken) {
+		t, err := strconv.ParseInt(token[len(prefixToken):], 10, 64)
 		if err != nil {
 			log.Errorf("failed to parse token token: %s, caused by %v", token, err)
 			return -1

@@ -14,7 +14,7 @@ type RealTimeQueue struct {
 	pulsar *pulsar.Client
 }
 
-func New(client *pulsar.Client) *RealTimeQueue {
+func NewRealTimeQueue(client *pulsar.Client) *RealTimeQueue {
 	return &RealTimeQueue{
 		pulsar: client,
 	}

@@ -97,18 +97,18 @@ func TestDelayQueue_getFromZSetByScore(t *testing.T) {
 
 func TestRealTimeQueue_getZSetName(t *testing.T) {
 
-	assert.Equal(t, "zset_quantum_10_bucket_1", q.getZSetName("10"))
-	assert.Equal(t, "zset_quantum_11_bucket_1", q.getZSetName("11"))
-	assert.Equal(t, "zset_quantum_12_bucket_1", q.getZSetName("12"))
-	assert.Equal(t, "zset_quantum_13_bucket_1", q.getZSetName("13"))
+	assert.Equal(t, "zset_timeSlice_10_bucket_1", q.getZSetName("10"))
+	assert.Equal(t, "zset_timeSlice_11_bucket_1", q.getZSetName("11"))
+	assert.Equal(t, "zset_timeSlice_12_bucket_1", q.getZSetName("12"))
+	assert.Equal(t, "zset_timeSlice_13_bucket_1", q.getZSetName("13"))
 }
 
 func TestRealTimeQueue_getHashtableName(t *testing.T) {
 
-	assert.Equal(t, "hashTable_quantum_10_bucket_1", q.getHashtableName("10"))
-	assert.Equal(t, "hashTable_quantum_11_bucket_1", q.getHashtableName("11"))
-	assert.Equal(t, "hashTable_quantum_12_bucket_1", q.getHashtableName("12"))
-	assert.Equal(t, "hashTable_quantum_13_bucket_1", q.getHashtableName("13"))
+	assert.Equal(t, "hashTable_timeSlice_10_bucket_1", q.getHashtableName("10"))
+	assert.Equal(t, "hashTable_timeSlice_11_bucket_1", q.getHashtableName("11"))
+	assert.Equal(t, "hashTable_timeSlice_12_bucket_1", q.getHashtableName("12"))
+	assert.Equal(t, "hashTable_timeSlice_13_bucket_1", q.getHashtableName("13"))
 }
 
 func TestRealTimeQueue_getBucket(t *testing.T) {
