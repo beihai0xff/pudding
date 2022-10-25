@@ -14,9 +14,14 @@ import (
 	"github.com/beihai0xff/pudding/types"
 )
 
+const (
+	zsetNameFormat      = "zset_timeSlice_%s_bucket_%d"
+	hashtableNameFormat = "hashTable_timeSlice_%s_bucket_%d"
+)
+
 type DelayQueue struct {
 	rdb *rdb.Client // Redis Client
-	// key is partition, value is the bucket nums in the partition
+	// key is timeSlice name, value is the bucket nums in the partition
 	bucket map[string]int8
 }
 
@@ -138,11 +143,11 @@ func (q *DelayQueue) Close() error {
 }
 
 func (q *DelayQueue) getZSetName(timeSlice string) string {
-	return fmt.Sprintf("zset_timeSlice_%s_bucket_%d", timeSlice, q.getBucket(timeSlice))
+	return fmt.Sprintf(zsetNameFormat, timeSlice, q.getBucket(timeSlice))
 }
 
 func (q *DelayQueue) getHashtableName(timeSlice string) string {
-	return fmt.Sprintf("hashTable_timeSlice_%s_bucket_%d", timeSlice, q.getBucket(timeSlice))
+	return fmt.Sprintf(hashtableNameFormat, timeSlice, q.getBucket(timeSlice))
 }
 
 func (q *DelayQueue) getBucket(timeSlice string) int8 {
