@@ -5,7 +5,7 @@ go 1.18
 require (
 	github.com/alicebob/miniredis/v2 v2.23.0
 	github.com/apache/pulsar-client-go v0.9.0
-	github.com/bsm/redislock v0.8.1
+	github.com/bsm/redislock v0.8.2
 	github.com/go-redis/redis/v9 v9.0.0-rc.1
 	github.com/go-redis/redis_rate/v10 v10.0.0-00010101000000-000000000000
 	github.com/google/uuid v1.3.0
