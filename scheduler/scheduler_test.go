@@ -5,16 +5,18 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
+	"golang.org/x/net/context"
 
 	"github.com/beihai0xff/pudding/pkg/mq/pulsar"
 	rdb "github.com/beihai0xff/pudding/pkg/redis"
+	"github.com/beihai0xff/pudding/types"
 )
 
-var s *Scheduler
+var s *Schedule
 
 func TestMain(m *testing.M) {
 
-	s = &Scheduler{
+	s = &Schedule{
 		delay:    NewDelayQueue(rdb.NewMockRdb()),
 		realtime: NewRealTimeQueue(pulsar.NewMockPulsar()),
 		interval: 60,
@@ -44,4 +46,92 @@ func TestScheduler_getTimeSlice(t *testing.T) {
 	for _, tt := range tests {
 		assert.Equal(t, tt.want, s.getTimeSlice(tt.args.readyTime))
 	}
+}
+
+func TestSchedule_checkParams(t *testing.T) {
+	var err error
+	// no delay no ready time
+	err = s.checkParams(&types.Message{Key: "12345"})
+	assert.Error(t, err)
+	if err != nil {
+		assert.EqualError(t, err, errInvalidMessageDelay.Error())
+	}
+
+	// test ReadyTime less than now
+	err = nil
+	err = s.checkParams(&types.Message{Key: "12345", Delay: 50, ReadyTime: 60})
+	assert.Error(t, err)
+	if err != nil {
+		assert.EqualError(t, err, errInvalidMessageReady.Error())
+	}
+
+	// test ReadyTime greater than now
+	err = nil
+	msg := &types.Message{Delay: 50, ReadyTime: 60000000000}
+	err = s.checkParams(msg)
+	assert.NoError(t, err)
+	// test ReadyTime
+	assert.Equal(t, int64(60000000000), msg.ReadyTime)
+	// test no topic set
+	assert.Equalf(t, types.DefaultTopic, msg.Topic, "msg.topic: %s", msg.Topic)
+	// test no uuid set
+	assert.NotEqualf(t, "", msg.Key, "msg.key: %s", msg.Key)
+
+	msg = &types.Message{Topic: "test_topic", Key: "test_key", Delay: 50, ReadyTime: 60000000000}
+	err = s.checkParams(msg)
+	assert.NoError(t, err)
+	// test ReadyTime
+	assert.Equal(t, int64(60000000000), msg.ReadyTime)
+	// test no topic set
+	assert.Equalf(t, "test_topic", msg.Topic, "msg.topic: %s", msg.Topic)
+	// test no uuid set
+	assert.Equalf(t, "test_key", msg.Key, "msg.Key: %s", msg.Key)
+}
+
+func TestSchedule_Produce(t *testing.T) {
+	ctx := context.Background()
+	var err error
+	// no delay no ready time
+	err = s.Produce(ctx, &types.Message{Key: "12345"})
+	assert.Error(t, err)
+	if err != nil {
+		assert.EqualError(t, err, "check message params failed: "+errInvalidMessageDelay.Error())
+	}
+
+	// test ReadyTime less than now
+	err = nil
+	err = s.Produce(ctx, &types.Message{Key: "12345", Delay: 50, ReadyTime: 60})
+	assert.Error(t, err)
+	if err != nil {
+		assert.EqualError(t, err, "check message params failed: "+errInvalidMessageReady.Error())
+	}
+
+	// test ReadyTime greater than now
+	err = nil
+	msg := &types.Message{Delay: 50, ReadyTime: 60000000000}
+	err = s.Produce(ctx, msg)
+	assert.NoError(t, err)
+	// test ReadyTime
+	assert.Equal(t, int64(60000000000), msg.ReadyTime)
+	// test no topic set
+	assert.Equalf(t, types.DefaultTopic, msg.Topic, "msg.topic: %s", msg.Topic)
+	// test no uuid set
+	assert.NotEqualf(t, "", msg.Key, "msg.key: %s", msg.Key)
+
+	msg = &types.Message{Topic: "test_topic", Key: "test_key", Delay: 50, ReadyTime: 60000000000}
+	err = s.Produce(ctx, msg)
+	assert.NoError(t, err)
+	// test ReadyTime
+	assert.Equal(t, int64(60000000000), msg.ReadyTime)
+	// test no topic set
+	assert.Equalf(t, "test_topic", msg.Topic, "msg.topic: %s", msg.Topic)
+	// test no uuid set
+	assert.Equalf(t, "test_key", msg.Key, "msg.Key: %s", msg.Key)
+}
+
+func TestSchedule_getLockerName(t *testing.T) {
+	assert.Equal(t, "key_locker_time_5", s.getLockerName(5))
+	assert.Equal(t, "key_locker_time_60", s.getLockerName(60))
+	assert.Equal(t, "key_locker_time_60000000000", s.getLockerName(60000000000))
+	assert.Equal(t, "key_locker_time_1321131", s.getLockerName(1321131))
 }

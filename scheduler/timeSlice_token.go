@@ -22,7 +22,7 @@ const prefixToken = "pudding_token:"
 */
 
 // try to produce token to bucket
-func (s *Scheduler) tryProduceToken() {
+func (s *Schedule) tryProduceToken() {
 	now := time.Now()
 	timer := time.NewTimer(time.Unix(now.Unix()+1, 0).Sub(time.Now()) - time.Millisecond)
 
@@ -63,7 +63,7 @@ func (s *Scheduler) tryProduceToken() {
 }
 
 // try to consume token and send to channel
-func (s *Scheduler) getToken(token chan int64) {
+func (s *Schedule) getToken(token chan int64) {
 	if err := s.realtime.NewConsumer(types.TokenTopic, types.TokenGroup, 1,
 		func(ctx context.Context, msg *types.Message) error {
 			t := s.parseNowFromToken(string(msg.Payload))
@@ -79,13 +79,13 @@ func (s *Scheduler) getToken(token chan int64) {
 	return
 }
 
-func (s *Scheduler) formatTokenName(time int64) string {
+func (s *Schedule) formatTokenName(time int64) string {
 	return fmt.Sprintf(prefixToken+"%d", time)
 }
 
 // parseNowFromToken parse token from token name
 // if return value is -1, means parse failed
-func (s *Scheduler) parseNowFromToken(token string) int64 {
+func (s *Schedule) parseNowFromToken(token string) int64 {
 	if strings.HasPrefix(token, prefixToken) {
 		t, err := strconv.ParseInt(token[len(prefixToken):], 10, 64)
 		if err != nil {

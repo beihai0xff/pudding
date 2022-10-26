@@ -20,7 +20,16 @@ import (
 	"github.com/beihai0xff/pudding/types"
 )
 
-const prefixTimeSliceLocker = "key_locker_time_%d"
+var (
+	// error when the message delay is invalid
+	errInvalidMessageDelay = errors.New("message delay must be greater than 0")
+	// error when the message ready time is invalid
+	errInvalidMessageReady = errors.New("ReadyTime must be greater than the current time")
+)
+
+const (
+	prefixTimeSliceLocker = "key_locker_time_%d"
+)
 
 type DelayQueue interface {
 	// Produce produce a Message to DelayQueue
@@ -50,7 +59,14 @@ func NewRealTimeQueue(c *pulsar.Client) RealTimeQueue {
 	return pulsar_broker.NewRealTimeQueue(c)
 }
 
-type Scheduler struct {
+type Scheduler interface {
+	// Produce produce a Message to DelayQueue
+	Produce(ctx context.Context, msg *types.Message) error
+	// NewConsumer consume Messages from the realtime queue
+	NewConsumer(topic, group string, batchSize int, fn types.HandleMessage) error
+}
+
+type Schedule struct {
 	delay    DelayQueue
 	realtime RealTimeQueue
 	config   *configs.DelayQueueConfig
@@ -66,10 +82,10 @@ type Scheduler struct {
 	quit chan int64
 }
 
-func New() *Scheduler {
+func New() *Schedule {
 	redisClient := rdb.New(configs.GetRedisConfig())
 	pulsarClient := pulsar.New(configs.GetPulsarConfig())
-	q := &Scheduler{
+	q := &Schedule{
 		delay:    NewDelayQueue(redisClient),
 		realtime: NewRealTimeQueue(pulsarClient),
 		config:   configs.GetDelayQueueConfig(),
@@ -93,20 +109,20 @@ func New() *Scheduler {
 	return q
 }
 
-func (s *Scheduler) Run() {
+func (s *Schedule) Run() {
 	go s.tryProduceToken()
 	s.getToken(s.token)
-	if err := s.startScheduler(s.quit, s.token); err != nil {
-		log.Errorf("start Scheduler failed: %v", err)
+	if err := s.startSchedule(s.quit, s.token); err != nil {
+		log.Errorf("start Schedule failed: %v", err)
 		panic(err)
 	}
 }
 
 /*
-	Produce or Consume Delay Scheduler
+	Produce or Consume Delay Schedule
 */
 
-func (s *Scheduler) Produce(ctx context.Context, msg *types.Message) error {
+func (s *Schedule) Produce(ctx context.Context, msg *types.Message) error {
 	var err error
 
 	if err = s.checkParams(msg); err != nil {
@@ -121,29 +137,33 @@ func (s *Scheduler) Produce(ctx context.Context, msg *types.Message) error {
 			break
 		}
 		// if produce failed, retry in three times
-		log.Errorf("DelayQueue: failed to produce message to timeSlice %s, err: %w, retry in %d times",
+		log.Warnf("DelayQueue: failed to produce message to timeSlice %s, err: %w, retry in %d times",
 			timeSlice, err, i)
 	}
 	return err
 }
 
-func (s *Scheduler) checkParams(msg *types.Message) error {
+func (s *Schedule) checkParams(msg *types.Message) error {
 	// if Message.ReadyTime is set, use ReadyTime
 	// otherwise use current time + Delay Seconds
 	if msg.ReadyTime <= 0 {
 		if msg.Delay <= 0 {
-			return errors.New("message delay must be greater than 0")
+			return errInvalidMessageDelay
 		}
 		msg.ReadyTime = time.Now().Unix() + msg.Delay
 	} else {
 		if time.Unix(msg.ReadyTime, 0).Before(time.Now()) {
-			return errors.New("ReadyTime must be greater than the current time")
+			return errInvalidMessageReady
 		}
 	}
 
 	// if Message.Key is not set, generate a random ID
 	if msg.Key == "" {
 		msg.Key = uuid.NewString()
+	}
+
+	if msg.Topic == "" {
+		msg.Topic = types.DefaultTopic
 	}
 
 	return nil
@@ -155,18 +175,19 @@ func (s *Scheduler) checkParams(msg *types.Message) error {
 // 59 => 0~60
 // 60 => 60~120
 // 61 => 60~120
-func (s *Scheduler) getTimeSlice(readyTime int64) string {
+func (s *Schedule) getTimeSlice(readyTime int64) string {
 	startAt := (readyTime / s.interval) * s.interval
 	endAt := startAt + s.interval
 	return fmt.Sprintf("%d~%d", startAt, endAt)
 }
 
-// startScheduler start a scheduler to consume DelayQueue
+// startSchedule start a scheduler to consume DelayQueue
 // and move delayed messages to RealTimeQueue
-func (s *Scheduler) startScheduler(quit, token chan int64) error {
+func (s *Schedule) startSchedule(quit, token chan int64) error {
 	for {
 		select {
 		case t := <-token:
+			log.Debugf("get token: %d", t)
 			ctx := context.Background()
 			timeSlice := s.getTimeSlice(t)
 
@@ -193,16 +214,16 @@ func (s *Scheduler) startScheduler(quit, token chan int64) error {
 
 }
 
-func (s *Scheduler) getLockerName(t int64) string {
+func (s *Schedule) getLockerName(t int64) string {
 	return fmt.Sprintf(prefixTimeSliceLocker, t)
 }
 
 /*
-	Produce or Consume RealTime Scheduler
+	Produce or Consume RealTime Schedule
 */
 
 // produceRealTime produce a Message to the queue in realtime
-func (s *Scheduler) produceRealTime(ctx context.Context, msg *types.Message) error {
+func (s *Schedule) produceRealTime(ctx context.Context, msg *types.Message) error {
 	var err error
 	for i := 0; i < 3; i++ {
 		if err = s.realtime.Produce(ctx, msg); err != nil {
@@ -215,7 +236,7 @@ func (s *Scheduler) produceRealTime(ctx context.Context, msg *types.Message) err
 	return err
 }
 
-func (s *Scheduler) NewConsumer(topic, group string, batchSize int, fn types.HandleMessage) error {
+func (s *Schedule) NewConsumer(topic, group string, batchSize int, fn types.HandleMessage) error {
 	return s.realtime.NewConsumer(topic, group, batchSize, fn)
 }
 
@@ -223,7 +244,7 @@ func (s *Scheduler) NewConsumer(topic, group string, batchSize int, fn types.Han
 	rate limit
 */
 
-func (s *Scheduler) startLimiter(token chan int) {
+func (s *Schedule) startLimiter(token chan int) {
 
 	for {
 		res, err := s.limiter.Allow(context.Background(), "pudding:rate_every_second", redis_rate.PerSecond(1))
