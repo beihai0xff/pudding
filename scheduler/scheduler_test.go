@@ -4,25 +4,19 @@ import (
 	"os"
 	"testing"
 
-	"github.com/alicebob/miniredis/v2"
 	"github.com/stretchr/testify/assert"
 
-	"github.com/beihai0xff/pudding/pkg/configs"
+	"github.com/beihai0xff/pudding/pkg/mq/pulsar"
 	rdb "github.com/beihai0xff/pudding/pkg/redis"
 )
 
 var s *Scheduler
 
 func TestMain(m *testing.M) {
-	// initial Redis DB
-	miniRedis, _ := miniredis.Run()
 
 	s = &Scheduler{
-		delay: NewDelayQueue(rdb.New(&configs.RedisConfig{
-			RedisURL:    "redis://" + miniRedis.Addr(),
-			DialTimeout: 10,
-		})),
-		// realtime: NewRealTimeQueue(pulsar.New(configs.GetPulsarConfig())),
+		delay:    NewDelayQueue(rdb.NewMockRdb()),
+		realtime: NewRealTimeQueue(pulsar.NewMockPulsar()),
 		interval: 60,
 	}
 

@@ -5,48 +5,25 @@ import (
 	"fmt"
 	"os"
 	"reflect"
-	"runtime"
 	"strconv"
 	"testing"
 	"time"
 
-	"github.com/alicebob/miniredis/v2"
 	"github.com/bsm/redislock"
 	"github.com/go-redis/redis/v9"
 )
 
 var (
-	key, value  = "GetKey", "GetValue"
-	table, zset = "hash_test", "zset_test"
-	c           *Client
+	c *Client
 )
 
 // redis_test.go 测试文件对 Redis 客户端对外暴漏的方法进行了功能测试，连接的是 dev 环境的数据库 。
 // 下面的单元测试也可以作为使用范例参考
 
 func TestMain(m *testing.M) {
-	// initial Redis DB
-	s, _ := miniredis.Run()
-
-	s.ZAdd(zset, 1, "a")
-	s.ZAdd(zset, 2, "b")
-	s.ZAdd(zset, 3, "c")
-
-	s.HSet(table, key, value)
-
-	s.Set(key, value)
-	s.SetTTL("GetKey", 60*time.Second)
 
 	// initial Redis Client
-	c = &Client{
-		client: redis.NewClient(&redis.Options{
-			Addr:     s.Addr(),
-			DB:       0,
-			PoolSize: runtime.NumCPU() * 40,
-		}),
-	}
-
-	c.locker = redislock.New(c.client)
+	c = NewMockRdb()
 
 	exitCode := m.Run()
 	// 退出
@@ -82,7 +59,7 @@ func TestClient_Set(t *testing.T) {
 
 // TestClient_Get 测试 Get 方法
 func TestClient_Get(t *testing.T) {
-
+	c.Set(context.Background(), "GetKey", "GetValue", 60*time.Second)
 	type args struct {
 		key string
 	}

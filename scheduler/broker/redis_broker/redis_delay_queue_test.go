@@ -5,11 +5,9 @@ import (
 	"os"
 	"testing"
 
-	"github.com/alicebob/miniredis/v2"
 	"github.com/google/uuid"
 	"github.com/stretchr/testify/assert"
 
-	"github.com/beihai0xff/pudding/pkg/configs"
 	rdb "github.com/beihai0xff/pudding/pkg/redis"
 	"github.com/beihai0xff/pudding/types"
 )
@@ -17,13 +15,9 @@ import (
 var q *DelayQueue
 
 func TestMain(m *testing.M) {
-	// initial Redis DB
-	s, _ := miniredis.Run()
 
 	q = &DelayQueue{
-		rdb: rdb.New(&configs.RedisConfig{
-			RedisURL: "redis://" + s.Addr(),
-		}),
+		rdb:    rdb.NewMockRdb(),
 		bucket: map[string]int8{},
 	}
 
