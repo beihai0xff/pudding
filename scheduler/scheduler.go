@@ -20,7 +20,7 @@ import (
 	"github.com/beihai0xff/pudding/types"
 )
 
-const prefixQuantumLocker = "key_locker_timeSlice_%s"
+const prefixTimeSliceLocker = "key_locker_time_%d"
 
 type DelayQueue interface {
 	// Produce produce a Message to DelayQueue
@@ -114,14 +114,15 @@ func (s *Scheduler) Produce(ctx context.Context, msg *types.Message) error {
 		return fmt.Errorf("check message params failed: %w", err)
 	}
 
-	quantum := s.getTimeSlice(msg.ReadyTime)
+	timeSlice := s.getTimeSlice(msg.ReadyTime)
 	for i := 0; i < 3; i++ {
-		if err = s.delay.Produce(ctx, quantum, msg); err != nil {
-			log.Errorf("DelayQueue: failed to produce message to Partition %s, err: %v, retry in %d times",
-				quantum, err, i)
-		} else {
+		err = s.delay.Produce(ctx, timeSlice, msg)
+		if err == nil {
 			break
 		}
+		// if produce failed, retry in three times
+		log.Errorf("DelayQueue: failed to produce message to timeSlice %s, err: %w, retry in %d times",
+			timeSlice, err, i)
 	}
 	return err
 }
@@ -130,7 +131,7 @@ func (s *Scheduler) checkParams(msg *types.Message) error {
 	// if Message.ReadyTime is set, use ReadyTime
 	// otherwise use current time + Delay Seconds
 	if msg.ReadyTime <= 0 {
-		if msg.Delay == 0 {
+		if msg.Delay <= 0 {
 			return errors.New("message delay must be greater than 0")
 		}
 		msg.ReadyTime = time.Now().Unix() + msg.Delay
@@ -140,6 +141,7 @@ func (s *Scheduler) checkParams(msg *types.Message) error {
 		}
 	}
 
+	// if Message.Key is not set, generate a random ID
 	if msg.Key == "" {
 		msg.Key = uuid.NewString()
 	}
@@ -147,10 +149,16 @@ func (s *Scheduler) checkParams(msg *types.Message) error {
 	return nil
 }
 
+// getTimeSlice get the time slice of the given time
+// Left closed right open interval
+// e.g. the given interval is 60, the range is [0, 60)、[60, 120)、[120, 180)...
+// 59 => 0~60
+// 60 => 60~120
+// 61 => 60~120
 func (s *Scheduler) getTimeSlice(readyTime int64) string {
 	startAt := (readyTime / s.interval) * s.interval
 	endAt := startAt + s.interval
-	return fmt.Sprintf("%d-%d", startAt, endAt)
+	return fmt.Sprintf("%d~%d", startAt, endAt)
 }
 
 // startScheduler start a scheduler to consume DelayQueue
@@ -163,7 +171,7 @@ func (s *Scheduler) startScheduler(quit, token chan int64) error {
 			timeSlice := s.getTimeSlice(t)
 
 			// lock the timeSlice
-			name := s.getLockerName(timeSlice)
+			name := s.getLockerName(t)
 			locker, err := lock.NewRedLock(context.Background(), name, time.Second*3)
 			if err != nil {
 				if err != lock.ErrNotObtained {
@@ -185,8 +193,8 @@ func (s *Scheduler) startScheduler(quit, token chan int64) error {
 
 }
 
-func (s *Scheduler) getLockerName(quantum string) string {
-	return fmt.Sprintf(prefixQuantumLocker, quantum)
+func (s *Scheduler) getLockerName(t int64) string {
+	return fmt.Sprintf(prefixTimeSliceLocker, t)
 }
 
 /*

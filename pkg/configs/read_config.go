@@ -4,7 +4,7 @@ import (
 	"github.com/beihai0xff/pudding/pkg/yaml"
 )
 
-var c *Config
+var c = &Config{}
 
 type Config struct {
 	redis      *RedisConfig
