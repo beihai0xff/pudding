@@ -151,11 +151,6 @@ func (q *DelayQueue) getHashtableName(timeSlice string) string {
 }
 
 func (q *DelayQueue) getBucket(timeSlice string) int8 {
-	buckets := q.bucket[timeSlice]
-	if buckets <= 0 {
-		q.bucket[timeSlice] = 1
-		return 1
-	}
 
 	return 1
 }

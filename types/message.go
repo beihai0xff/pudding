@@ -5,6 +5,11 @@ import (
 	"encoding/json"
 )
 
+const (
+	// DefaultTopic if no topic set, use the default topic
+	DefaultTopic = "default_topic"
+)
+
 type HandleMessage func(ctx context.Context, msg *Message) error
 
 // Message 消息
