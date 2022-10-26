@@ -97,10 +97,10 @@ func TestDelayQueue_getFromZSetByScore(t *testing.T) {
 
 func TestRealTimeQueue_getZSetName(t *testing.T) {
 
-	assert.Equal(t, "zset_timeSlice_10_bucket_1", q.getZSetName("10"))
-	assert.Equal(t, "zset_timeSlice_11_bucket_1", q.getZSetName("11"))
-	assert.Equal(t, "zset_timeSlice_12_bucket_1", q.getZSetName("12"))
-	assert.Equal(t, "zset_timeSlice_13_bucket_1", q.getZSetName("13"))
+	assert.Equal(t, "zset_timeSlice_60~120_bucket_1", q.getZSetName("60~120"))
+	assert.Equal(t, "zset_timeSlice_120~180_bucket_1", q.getZSetName("120~180"))
+	assert.Equal(t, "zset_timeSlice_12~13_bucket_1", q.getZSetName("12~13"))
+	assert.Equal(t, "zset_timeSlice_13~15_bucket_1", q.getZSetName("13~15"))
 }
 
 func TestRealTimeQueue_getHashtableName(t *testing.T) {
