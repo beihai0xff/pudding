@@ -4,17 +4,11 @@ import (
 	"context"
 	"fmt"
 	"os"
-	"sync"
 
 	"github.com/apache/pulsar-client-go/pulsar"
 
 	"github.com/beihai0xff/pudding/pkg/configs"
 	"github.com/beihai0xff/pudding/pkg/log"
-)
-
-var (
-	clientOnce sync.Once
-	client     *Client
 )
 
 // HandleMessage is the function type for handling message
@@ -27,35 +21,32 @@ type Client struct {
 }
 
 func New(config *configs.PulsarConfig) *Client {
-	clientOnce.Do(
-		func() {
-			// create pulsar client
-			c, err := pulsar.NewClient(pulsar.ClientOptions{
-				URL: config.PulsarURL,
-			})
+	// create pulsar client
+	c, err := pulsar.NewClient(pulsar.ClientOptions{
+		URL: config.PulsarURL,
+	})
 
-			if err != nil {
-				log.Errorf("create pulsar client failed: %v", err)
-				panic(err)
-			}
+	if err != nil {
+		log.Errorf("create pulsar client failed: %v", err)
+		panic(err)
+	}
 
-			client = &Client{
-				client:    c,
-				producers: make(map[string]pulsar.Producer),
-				consumers: make(map[string]pulsar.Consumer),
-			}
+	// create wrapper client
+	client := &Client{
+		client:    c,
+		producers: make(map[string]pulsar.Producer),
+		consumers: make(map[string]pulsar.Consumer),
+	}
 
-			// create producers
-			for _, pc := range config.ProducersConfig {
-				producer, err := c.CreateProducer(pc)
-				if err != nil {
-					log.Errorf("create pulsar Producer %s failed: %v", pc.Topic, err)
-					panic(err)
-				}
-				client.producers[pc.Topic] = producer
-			}
-
-		})
+	// create producers
+	for _, pc := range config.ProducersConfig {
+		producer, err := c.CreateProducer(pc)
+		if err != nil {
+			log.Errorf("create pulsar Producer %s failed: %v", pc.Topic, err)
+			panic(err)
+		}
+		client.producers[pc.Topic] = producer
+	}
 
 	return client
 }

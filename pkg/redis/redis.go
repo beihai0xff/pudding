@@ -26,7 +26,7 @@ var (
 // Client Redis 客户端
 type Client struct {
 	client *redis.Client
-	Config *configs.RedisConfig
+	config *configs.RedisConfig
 	// Create a new locker client.
 	locker *redislock.Client
 }
@@ -45,7 +45,7 @@ func New(c *configs.RedisConfig) *Client {
 
 			client = &Client{
 				client: redis.NewClient(opt),
-				Config: c,
+				config: c,
 			}
 			client.locker = redislock.New(client.client)
 		})
