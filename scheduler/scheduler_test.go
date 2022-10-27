@@ -107,7 +107,7 @@ func TestSchedule_checkParams(t *testing.T) {
 }
 
 func TestSchedule_Produce(t *testing.T) {
-	beforeEach(t)
+	// beforeEach(t)
 
 	ctx := context.Background()
 	var err error
