@@ -24,6 +24,8 @@ const prefixToken = "pudding_token:"
 
 // try to produce token to bucket
 func (s *Schedule) tryProduceToken() {
+	log.Infof("start produce token")
+
 	now := time.Now()
 	timer := time.NewTimer(time.Until(now))
 
@@ -64,8 +66,9 @@ func (s *Schedule) tryProduceToken() {
 	}
 }
 
-// try to consume token and send to channel
+// try to consume token and send to token channel
 func (s *Schedule) getToken(token chan int64) {
+	log.Infof("start consume token")
 	if err := s.realtime.NewConsumer(types.TokenTopic, types.TokenGroup, 1,
 		func(ctx context.Context, msg *types.Message) error {
 			t := s.parseNowFromToken(string(msg.Payload))
