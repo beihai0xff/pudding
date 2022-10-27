@@ -1,34 +1,62 @@
 # 检测基本配置
 run:
-  skip-dirs: # 设置要忽略的目录
-    - util
+  # The default concurrency value is the number of available CPU.
+  concurrency: 4
+  # Which dirs to skip: issues from them won't be reported.
+  skip-dirs:
     - .*~
     - api/swagger/docs
-  skip-files: # 设置不需要检查的go源码文件，支持正则匹配
+  # Which files to skip: they will be analyzed, but issues from them won't be reported.
+  skip-files:
     - _test.go
+    - _mock.go
 linters:
   disable-all: true
   enable: # please keep this alphabetized
     # Don't use soon to deprecated[1] linters that lead to false
     # https://github.com/golangci/golangci-lint/issues/1841
-    # - deadcode
-    # - structcheck
-    # - varcheck
+    - gosimple
+    - errcheck
     - ineffassign
     - staticcheck
+    - errname
+    - errorlint
+    - bodyclose
+    - goimports
+    - lll
+    - misspell
+    - prealloc
+    - revive
+    - stylecheck
+    - unconvert
+    - unparam
+    - typecheck
     # 后续添加
     # - unused
 
 linters-settings: # please keep this alphabetized
   staticcheck:
-    go: "1.17"
-    checks: [
-      "all",
-      "-S1*",    # TODO(fix) Omit code simplifications for now.
-      "-ST1*",   # Mostly stylistic, redundant w/ golint
-      "-SA5011", # TODO(fix) Possible nil pointer dereference
-      "-SA1019", # TODO(fix) Using a deprecated function, variable, constant or field
-      "-SA2002"  # TODO(fix) Called testing.T.FailNow or SkipNow in a goroutine, which isn’t allowed
-    ]
-  unused:
-    go: "1.17"
+    checks:
+      - "all"
+      - "-SA1019" # TODO(fix) Using a deprecated function, variable, constant or field
+      - "-SA2002"  # TODO(fix) Called testing.T.FailNow or SkipNow in a goroutine, which isn’t allowed
+  stylecheck:
+    checks:
+      - "ST1019"  # Importing the same package multiple times.
+  lll:
+    line-length: 120
+  typecheck:
+    check-type-assertions: true
+    check-blank: true
+    enable: all
+
+issues:
+  # List of regexps of issue texts to exclude.
+
+  # Excluding configuration per-path, per-linter, per-text and per-source
+  exclude-rules:
+
+    # Exclude some `typecheck` messages.
+    - linters:
+        - typecheck
+      text: "undeclared name:"

@@ -27,7 +27,7 @@ func (s *Schedule) tryProduceToken() {
 	timer := time.NewTimer(time.Unix(now.Unix()+1, 0).Sub(time.Now()) - time.Millisecond)
 
 	// wait for the next second
-	_ = <-timer.C
+	<-timer.C
 
 	tick := time.NewTicker(time.Duration(s.interval) * time.Second)
 	for {
