@@ -63,7 +63,7 @@ func newEncoder(c *OutputConfig) zapcore.Encoder {
 	}
 
 	encoder := zapcore.NewConsoleEncoder(encoderCfg)
-	if c.Formatter == EncoderTypeJson {
+	if c.Formatter == EncoderTypeJSON {
 		encoder = zapcore.NewJSONEncoder(encoderCfg)
 	}
 

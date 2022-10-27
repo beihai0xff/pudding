@@ -68,7 +68,7 @@ func (c *Client) NewConsumer(topic, group string, fn HandleMessage) error {
 
 	// check consumer exist
 	// if consumer already exists, return error
-	if c.consumers[topic] != nil {
+	if _, ok := c.consumers[topic]; ok {
 		return fmt.Errorf("consumer for group [%s] topic [%s]  already exists", group, topic)
 	}
 
@@ -80,8 +80,13 @@ func (c *Client) NewConsumer(topic, group string, fn HandleMessage) error {
 		Name:             consumerName,
 	})
 	if err != nil {
-		return fmt.Errorf("create pulsar Consumer %s failed: %v", group, err)
+		return fmt.Errorf("create pulsar Consumer %s failed: %w", group, err)
 	}
+
+	defer func() {
+		// when consumer created, add it to the map
+		c.consumers[topic] = consumer
+	}()
 
 	// wrap the ack function
 	ack := func(msg pulsar.Message) {
@@ -123,8 +128,6 @@ func (c *Client) NewConsumer(topic, group string, fn HandleMessage) error {
 		}
 	}()
 
-	// when consumer created, add it to the map
-	c.consumers[topic] = consumer
 	return nil
 }
 
