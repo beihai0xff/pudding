@@ -34,7 +34,6 @@ type Scheduler interface {
 	Run()
 	// Produce produce a Message to DelayQueue
 	Produce(ctx context.Context, msg *types.Message) error
-
 	// NewConsumer consume Messages from the realtime queue
 	NewConsumer(topic, group string, batchSize int, fn types.HandleMessage) error
 }
@@ -69,7 +68,7 @@ func New() *Schedule {
 	// parse Polling delay queue interval
 	t, err := time.ParseDuration(q.config.PartitionInterval)
 	if err != nil {
-		panic(fmt.Errorf("failed to parse '%s' to time.Duration: %v", q.config.PartitionInterval, err))
+		panic(fmt.Errorf("failed to parse '%s' to time.Duration: %w", q.config.PartitionInterval, err))
 	}
 	q.interval = int64(t.Seconds())
 
@@ -168,7 +167,7 @@ func (s *Schedule) startSchedule(quit, token chan int64) error {
 			name := s.getLockerName(t)
 			locker, err := lock.NewRedLock(context.Background(), name, time.Second*3)
 			if err != nil {
-				if err != lock.ErrNotObtained {
+				if errors.Is(err, lock.ErrNotObtained) {
 					log.Errorf("failed to get timeSlice locker: %s, caused by %v", name, err)
 				}
 				continue
@@ -179,7 +178,10 @@ func (s *Schedule) startSchedule(quit, token chan int64) error {
 			}
 
 			// Release the lock
-			locker.Release(ctx)
+			if err := locker.Release(ctx); err != nil {
+				log.Errorf("failed to release timeSlice locker: %s, caused by %w", name, err)
+			}
+
 		case <-quit:
 			break
 		}

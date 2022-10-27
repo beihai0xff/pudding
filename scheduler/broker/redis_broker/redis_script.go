@@ -1,4 +1,4 @@
-package redis_broker
+package redisbroker
 
 import "github.com/go-redis/redis/v9"
 

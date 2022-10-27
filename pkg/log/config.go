@@ -20,8 +20,8 @@ const (
 
 	// EncoderTypeConsole log format console encoder
 	EncoderTypeConsole = "console"
-	// EncoderTypeJson log format json encoder
-	EncoderTypeJson = "json"
+	// EncoderTypeJSON log format json encoder
+	EncoderTypeJSON = "json"
 )
 
 var defaultConfig = &OutputConfig{

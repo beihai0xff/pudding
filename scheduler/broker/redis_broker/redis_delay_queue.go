@@ -1,4 +1,4 @@
-package redis_broker
+package redisbroker
 
 import (
 	"context"
@@ -71,7 +71,7 @@ func (q *DelayQueue) Consume(ctx context.Context, timeSlice string, now, batchSi
 		}
 
 		// if no data in the timeSlice, break the loop
-		if messages == nil || len(messages) == 0 {
+		if len(messages) == 0 {
 			break
 		}
 
@@ -109,7 +109,7 @@ func (q *DelayQueue) getFromZSetByScore(timeSlice string, now, batchSize int64) 
 		return nil, fmt.Errorf("failed to get messages from zset: %w", err)
 	}
 
-	if zs == nil || len(zs) == 0 {
+	if len(zs) == 0 {
 		return nil, nil
 	}
 

@@ -1,4 +1,4 @@
-package redis_broker
+package redisbroker
 
 import (
 	"context"
@@ -75,8 +75,6 @@ func (q *RealTimeQueue) handlerRealTimeMessage(ctx context.Context, msgs []redis
 			continue
 		}
 	}
-
-	return
 }
 
 // Close close the queue

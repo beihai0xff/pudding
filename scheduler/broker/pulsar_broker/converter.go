@@ -1,4 +1,4 @@
-package pulsar_broker
+package pulsarbroker
 
 import (
 	"github.com/apache/pulsar-client-go/pulsar"

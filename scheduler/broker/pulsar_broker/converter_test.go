@@ -1,4 +1,4 @@
-package pulsar_broker
+package pulsarbroker
 
 import (
 	"testing"

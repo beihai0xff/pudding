@@ -32,10 +32,10 @@ type RealTimeQueue interface {
 
 // NewDelayQueue create a new DelayQueue
 func NewDelayQueue(c *rdb.Client) DelayQueue {
-	return redis_broker.NewDelayQueue(c)
+	return redisbroker.NewDelayQueue(c)
 }
 
 // NewRealTimeQueue create a new RealTimeQueue
 func NewRealTimeQueue(c *pulsar.Client) RealTimeQueue {
-	return pulsar_broker.NewRealTimeQueue(c)
+	return pulsarbroker.NewRealTimeQueue(c)
 }

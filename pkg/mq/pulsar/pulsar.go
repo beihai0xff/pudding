@@ -80,7 +80,7 @@ func (c *Client) NewConsumer(topic, group string, fn HandleMessage) error {
 		Name:             consumerName,
 	})
 	if err != nil {
-		return fmt.Errorf("create pulsar Consumer %s failed: %v", group, err)
+		return fmt.Errorf("create pulsar Consumer %s failed: %w", group, err)
 	}
 
 	defer func() {
