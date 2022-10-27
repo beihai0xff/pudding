@@ -10,7 +10,8 @@ import (
 	"github.com/beihai0xff/pudding/types"
 )
 
-//go:generate mockgen -destination=../test/mock/queue_mock.go -package=scheduler_test github.com/beihai0xff/pudding/scheduler DelayQueue,RealTimeQueue
+// nolint
+//go:generate mockgen -destination=../test/mock/queue_mock.go github.com/beihai0xff/pudding/scheduler DelayQueue,RealTimeQueue
 
 type DelayQueue interface {
 	// Produce produce a Message to DelayQueue
@@ -32,10 +33,10 @@ type RealTimeQueue interface {
 
 // NewDelayQueue create a new DelayQueue
 func NewDelayQueue(c *rdb.Client) DelayQueue {
-	return redisbroker.NewDelayQueue(c)
+	return redis_broker.NewDelayQueue(c)
 }
 
 // NewRealTimeQueue create a new RealTimeQueue
 func NewRealTimeQueue(c *pulsar.Client) RealTimeQueue {
-	return pulsarbroker.NewRealTimeQueue(c)
+	return pulsar_broker.NewRealTimeQueue(c)
 }

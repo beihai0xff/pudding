@@ -60,3 +60,6 @@ issues:
     - linters:
         - typecheck
       text: "undeclared name:"
+    - linters:
+        - revive
+      text: "var-naming: don't use an underscore in package name"

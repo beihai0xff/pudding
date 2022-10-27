@@ -1,4 +1,4 @@
-package pulsarbroker
+package pulsar_broker
 
 import (
 	"context"
