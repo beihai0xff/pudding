@@ -156,6 +156,8 @@ func (s *Schedule) getTimeSlice(readyTime int64) string {
 // startSchedule start a scheduler to consume DelayQueue
 // and move delayed messages to RealTimeQueue
 func (s *Schedule) startSchedule(quit, token chan int64) error {
+	log.Infof("start Schedule")
+
 	for {
 		select {
 		case t := <-token:

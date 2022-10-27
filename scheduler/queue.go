@@ -11,7 +11,7 @@ import (
 )
 
 // nolint
-//go:generate mockgen -destination=../test/mock/queue_mock.go github.com/beihai0xff/pudding/scheduler DelayQueue,RealTimeQueue
+//go:generate mockgen -destination=../test/mock/queue_mock.go --package=mock github.com/beihai0xff/pudding/scheduler DelayQueue,RealTimeQueue
 
 type DelayQueue interface {
 	// Produce produce a Message to DelayQueue

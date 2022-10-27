@@ -1,14 +1,16 @@
 package scheduler
 
 import (
+	"errors"
 	"os"
 	"testing"
 
+	"github.com/golang/mock/gomock"
 	"github.com/stretchr/testify/assert"
 	"golang.org/x/net/context"
 
-	"github.com/beihai0xff/pudding/pkg/mq/pulsar"
 	rdb "github.com/beihai0xff/pudding/pkg/redis"
+	"github.com/beihai0xff/pudding/test/mock"
 	"github.com/beihai0xff/pudding/types"
 )
 
@@ -18,13 +20,29 @@ func TestMain(m *testing.M) {
 
 	s = &Schedule{
 		delay:    NewDelayQueue(rdb.NewMockRdb()),
-		realtime: NewRealTimeQueue(pulsar.NewMockPulsar()),
 		interval: 60,
 	}
 
 	exitCode := m.Run()
 	// Exit
 	os.Exit(exitCode)
+}
+
+func beforeEach(t *testing.T) {
+	mockCtrl := gomock.NewController(t)
+	defer mockCtrl.Finish()
+
+	realtime := mock.NewMockRealTimeQueue(mockCtrl)
+	realtime.EXPECT().Produce(gomock.Any(), gomock.Any()).Return(nil).Times(1)
+	realtime.EXPECT().Produce(gomock.Any(), &types.Message{
+		Topic:     "test_topic",
+		Key:       "produce failed three times",
+		Payload:   []byte("test_payload"),
+		Delay:     10,
+		ReadyTime: 0,
+	}).Return(errors.New("broken connection")).Times(3)
+
+	s.realtime = realtime
 }
 
 func TestScheduler_getTimeSlice(t *testing.T) {
@@ -89,6 +107,8 @@ func TestSchedule_checkParams(t *testing.T) {
 }
 
 func TestSchedule_Produce(t *testing.T) {
+	// beforeEach(t)
+
 	ctx := context.Background()
 	var err error
 	// no delay no ready time
