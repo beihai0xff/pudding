@@ -1,31 +1,46 @@
 package configs
 
 import (
-	"github.com/apache/pulsar-client-go/pulsar"
+	"bytes"
+	"encoding/json"
 
+	"github.com/beihai0xff/pudding/pkg/log"
 	"github.com/beihai0xff/pudding/pkg/yaml"
 	"github.com/beihai0xff/pudding/types"
 )
 
-var c = &Config{
-	redis:      &RedisConfig{},
-	delayQueue: &DelayQueueConfig{},
-	pulsar:     &PulsarConfig{},
-}
+var c = &Config{}
 
 type Config struct {
-	redis      *RedisConfig
-	delayQueue *DelayQueueConfig
-	pulsar     *PulsarConfig
+	Broker       string       `json:"broker" yaml:"broker"`
+	MessageQueue string       `json:"messageQueue" yaml:"messageQueue"`
+	Redis        *RedisConfig `json:"redisConfig" yaml:"redisConfig"`
+	delayQueue   *DelayQueueConfig
+	Pulsar       *PulsarConfig `json:"pulsarConfig" yaml:"pulsarConfig"`
+}
+
+func (c *Config) JSON() []byte {
+	b, err := json.Marshal(c)
+	if err != nil {
+		log.Errorf("marshal config failed: %v", err)
+		return nil
+	}
+
+	return b
 }
 
 func Init(filePath string) {
 	if err := yaml.Parse(filePath, c); err != nil {
 		panic(err)
 	}
-	c.pulsar.ProducersConfig = append(c.pulsar.ProducersConfig, pulsar.ProducerOptions{
-		Topic:           types.DefaultTopic,
-		SendTimeout:     10,
-		CompressionType: pulsar.ZSTD,
+	c.Pulsar.ProducersConfig = append(c.Pulsar.ProducersConfig, ProducerConfig{
+		Topic:                   types.DefaultTopic,
+		BatchingMaxPublishDelay: 20,
+		BatchingMaxMessages:     100,
+		BatchingMaxSize:         1024,
 	})
+
+	var str bytes.Buffer
+	_ = json.Indent(&str, c.JSON(), "", "    ")
+	log.Infof("config: %s \n", str.String())
 }
