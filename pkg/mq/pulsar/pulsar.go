@@ -44,7 +44,7 @@ func New(config *configs.PulsarConfig) *Client {
 		po := pulsar.ProducerOptions{
 			Topic:                   pc.Topic,
 			Name:                    "",
-			SendTimeout:             10,
+			SendTimeout:             10 * time.Second,
 			CompressionType:         pulsar.ZSTD,
 			BatchingMaxPublishDelay: time.Duration(pc.BatchingMaxPublishDelay) * time.Millisecond,
 			BatchingMaxMessages:     pc.BatchingMaxMessages,

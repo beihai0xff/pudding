@@ -14,7 +14,7 @@ import (
 var c *Client
 
 func TestMain(m *testing.M) {
-	c = NewMockPulsar()
+	c = newMockPulsar()
 
 	exitCode := m.Run()
 	// 退出
