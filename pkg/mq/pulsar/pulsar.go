@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"os"
+	"time"
 
 	"github.com/apache/pulsar-client-go/pulsar"
 
@@ -40,7 +41,16 @@ func New(config *configs.PulsarConfig) *Client {
 
 	// create producers
 	for _, pc := range config.ProducersConfig {
-		producer, err := c.CreateProducer(pc)
+		po := pulsar.ProducerOptions{
+			Topic:                   pc.Topic,
+			Name:                    "",
+			SendTimeout:             10,
+			CompressionType:         pulsar.ZSTD,
+			BatchingMaxPublishDelay: time.Duration(pc.BatchingMaxPublishDelay) * time.Millisecond,
+			BatchingMaxMessages:     pc.BatchingMaxMessages,
+			BatchingMaxSize:         pc.BatchingMaxSize * 1024,
+		}
+		producer, err := c.CreateProducer(po)
 		if err != nil {
 			log.Errorf("create pulsar Producer %s failed: %v", pc.Topic, err)
 			panic(err)

@@ -7,5 +7,5 @@ type RedisConfig struct {
 }
 
 func GetRedisConfig() *RedisConfig {
-	return c.redis
+	return c.Redis
 }

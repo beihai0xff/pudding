@@ -58,7 +58,7 @@ func (c *Client) GetClient() *redis.Client {
 }
 
 /*
-	String 相关 Command
+	JSON 相关 Command
 */
 
 // Set 执行 Redis SET 命令，expireTime 时间单位为秒
