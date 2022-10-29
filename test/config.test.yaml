@@ -8,7 +8,7 @@ redisConfig:
   redisURL: redis://default:default@localhost:6379/11
   dialTimeout: 20
 pulsarConfig:
-  pulsarURL: pulsar://192.168.10.219:6650
+  pulsarURL: pulsar://localhost:6650
   connectionTimeout: 10
   producersConfig:
     - topic: token
