@@ -1,4 +1,0 @@
-- name: redis
-  redisURL: redis://default:default@192.168.10.117:6379/11
-  maxIdle: 100
-  dialTimeout: 5
