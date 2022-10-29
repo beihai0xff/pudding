@@ -129,7 +129,7 @@ func (c *Client) XGroupCreate(ctx context.Context, topic, group, start string) e
 	// 如果 group 已经存在了则会返回错误
 	// 也不能在不存在的 stream 上创建 group
 	err := c.client.XGroupCreateMkStream(ctx, topic, group, start).Err()
-	if err != nil && errors.Is(err, ErrConsumerGroupExists) {
+	if err != nil && !errors.Is(err, ErrConsumerGroupExists) {
 		return err
 	}
 

@@ -26,7 +26,7 @@ var (
 )
 
 const (
-	prefixTimeSliceLocker = "key_locker_time_%d"
+	prefixTimeSliceLocker = "pudding_locker_time:%d"
 )
 
 type Scheduler interface {
@@ -41,7 +41,7 @@ type Scheduler interface {
 type Schedule struct {
 	delay    DelayQueue
 	realtime RealTimeQueue
-	config   *configs.DelayQueueConfig
+	config   *configs.SchedulerConfig
 	// timeSlice interval (Seconds)
 	interval int64
 
@@ -60,17 +60,18 @@ func New() *Schedule {
 	q := &Schedule{
 		delay:    NewDelayQueue(redisClient),
 		realtime: NewRealTimeQueue(pulsarClient),
-		config:   configs.GetDelayQueueConfig(),
+		config:   configs.GetSchedulerConfig(),
 		token:    make(chan int64),
 		quit:     make(chan int64),
 	}
 
 	// parse Polling delay queue interval
-	t, err := time.ParseDuration(q.config.PartitionInterval)
+	t, err := time.ParseDuration(q.config.TimeSliceInterval)
 	if err != nil {
-		panic(fmt.Errorf("failed to parse '%s' to time.Duration: %w", q.config.PartitionInterval, err))
+		panic(fmt.Errorf("failed to parse '%s' to time.Duration: %w", q.config.TimeSliceInterval, err))
 	}
 	q.interval = int64(t.Seconds())
+	log.Debugf("timeSlice interval is: %d seconds", q.interval)
 
 	// init rate limiter
 	q.limiter = redisClient.GetLimiter()
@@ -156,20 +157,19 @@ func (s *Schedule) getTimeSlice(readyTime int64) string {
 // startSchedule start a scheduler to consume DelayQueue
 // and move delayed messages to RealTimeQueue
 func (s *Schedule) startSchedule(quit, token chan int64) error {
-	log.Infof("start Schedule")
+	log.Infof("start Scheduler")
 
 	for {
 		select {
 		case t := <-token:
-			log.Debugf("get token: %d", t)
 			ctx := context.Background()
 			timeSlice := s.getTimeSlice(t)
 
 			// lock the timeSlice
 			name := s.getLockerName(t)
-			locker, err := lock.NewRedLock(context.Background(), name, time.Second*3)
+			locker, err := lock.NewRedLock(ctx, name, time.Second*3)
 			if err != nil {
-				if errors.Is(err, lock.ErrNotObtained) {
+				if !errors.Is(err, lock.ErrNotObtained) {
 					log.Errorf("failed to get timeSlice locker: %s, caused by %v", name, err)
 				}
 				continue

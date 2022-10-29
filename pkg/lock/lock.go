@@ -8,10 +8,10 @@ import (
 
 var (
 	// ErrNotObtained is returned when a lock cannot be obtained.
-	ErrNotObtained = errors.New("lock: not obtained")
+	ErrNotObtained = errors.New("locker: lock not obtained")
 
 	// ErrLockNotHeld is returned when trying to release an inactive lock.
-	ErrLockNotHeld = errors.New("lock: lock not held")
+	ErrLockNotHeld = errors.New("locker: lock not held")
 )
 
 type Lock interface {
