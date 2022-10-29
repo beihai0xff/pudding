@@ -16,7 +16,10 @@ import (
 // token is the time of the token bucket
 // used to consume delayed message every second
 
-const prefixToken = "pudding_token:"
+const (
+	prefixToken       = "pudding_token:"
+	prefixTokenLocker = "pudding_locker_token:"
+)
 
 /*
 	Produce or Consume token
@@ -27,12 +30,12 @@ func (s *Schedule) tryProduceToken() {
 	log.Infof("start produce token")
 
 	now := time.Now()
-	timer := time.NewTimer(time.Until(now))
+	timer := time.NewTimer(time.Until(now) + time.Second)
 
 	// wait for the next second
 	<-timer.C
 
-	tick := time.NewTicker(time.Duration(s.interval) * time.Second)
+	tick := time.NewTicker(1 * time.Second)
 	for {
 
 		t := <-tick.C
@@ -41,10 +44,10 @@ func (s *Schedule) tryProduceToken() {
 
 		// try to lock the token
 		ctx, cancel := context.WithTimeout(context.Background(), time.Second)
-		locker, err := lock.NewRedLock(context.Background(), tokenName, time.Millisecond*500)
+		locker, err := lock.NewRedLock(context.Background(), s.formatTokenLockerName(t.Unix()), time.Millisecond*500)
 		if err != nil {
 			// if the token is not locked, but the error is not ErrNotObtained, log it
-			if errors.Is(err, lock.ErrNotObtained) {
+			if !errors.Is(err, lock.ErrNotObtained) {
 				log.Errorf("failed to get token lock: %s, caused by %v", tokenName, err)
 			}
 
@@ -55,7 +58,10 @@ func (s *Schedule) tryProduceToken() {
 		// if get token lock, send it to token topic
 		if err := s.produceRealTime(ctx, &types.Message{Topic: types.TokenTopic, Payload: []byte(tokenName)}); err != nil {
 			log.Errorf("failed to produce token: %s, caused by %v", tokenName, err)
+			continue
 		}
+
+		log.Debugf("success produce token: %s", tokenName)
 
 		// extends the lock with a new TTL
 		if err := locker.Refresh(ctx, 3*time.Second); err != nil {
@@ -71,6 +77,8 @@ func (s *Schedule) getToken(token chan int64) {
 	log.Infof("start consume token")
 	if err := s.realtime.NewConsumer(types.TokenTopic, types.TokenGroup, 1,
 		func(ctx context.Context, msg *types.Message) error {
+			log.Debugf("get token: %s", string(msg.Payload))
+
 			t := s.parseNowFromToken(string(msg.Payload))
 			if t <= 0 {
 				return fmt.Errorf("failed to parse token: %s", string(msg.Payload))
@@ -86,6 +94,10 @@ func (s *Schedule) getToken(token chan int64) {
 
 func (s *Schedule) formatTokenName(time int64) string {
 	return fmt.Sprintf(prefixToken+"%d", time)
+}
+
+func (s *Schedule) formatTokenLockerName(time int64) string {
+	return fmt.Sprintf(prefixTokenLocker+"%d", time)
 }
 
 // parseNowFromToken parse token from token name

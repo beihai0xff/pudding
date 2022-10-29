@@ -150,8 +150,8 @@ func TestSchedule_Produce(t *testing.T) {
 }
 
 func TestSchedule_getLockerName(t *testing.T) {
-	assert.Equal(t, "key_locker_time_5", s.getLockerName(5))
-	assert.Equal(t, "key_locker_time_60", s.getLockerName(60))
-	assert.Equal(t, "key_locker_time_60000000000", s.getLockerName(60000000000))
-	assert.Equal(t, "key_locker_time_1321131", s.getLockerName(1321131))
+	assert.Equal(t, "pudding_locker_time:5", s.getLockerName(5))
+	assert.Equal(t, "pudding_locker_time:60", s.getLockerName(60))
+	assert.Equal(t, "pudding_locker_time:60000000000", s.getLockerName(60000000000))
+	assert.Equal(t, "pudding_locker_time:1321131", s.getLockerName(1321131))
 }

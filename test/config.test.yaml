@@ -2,13 +2,19 @@ name: pudding
 time: 2022
 broker: redis
 messageQueue: pulsar
+schedulerConfig:
+  timeSliceInterval: 60s
 redisConfig:
-  address: redis://default:default@192.168.10.117:6379/11
+  redisURL: redis://default:default@localhost:6379/11
   dialTimeout: 20
 pulsarConfig:
   pulsarURL: pulsar://localhost:6650
   connectionTimeout: 10
   producersConfig:
+    - topic: token
+      batchingMaxPublishDelay: 10
+      batchingMaxMessages: 100
+      batchingMaxSize: 5
     - topic: test_topic_1
       # BatchingMaxPublishDelay specifies the time period within which the messages sent will be batched (default: 10ms)
       batchingMaxPublishDelay: 10

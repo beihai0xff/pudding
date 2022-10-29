@@ -12,11 +12,11 @@ import (
 var c = &Config{}
 
 type Config struct {
-	Broker       string       `json:"broker" yaml:"broker"`
-	MessageQueue string       `json:"messageQueue" yaml:"messageQueue"`
-	Redis        *RedisConfig `json:"redisConfig" yaml:"redisConfig"`
-	delayQueue   *DelayQueueConfig
-	Pulsar       *PulsarConfig `json:"pulsarConfig" yaml:"pulsarConfig"`
+	Broker       string           `json:"broker" yaml:"broker"`
+	MessageQueue string           `json:"messageQueue" yaml:"messageQueue"`
+	Redis        *RedisConfig     `json:"redisConfig" yaml:"redisConfig"`
+	Scheduler    *SchedulerConfig `json:"schedulerConfig" yaml:"schedulerConfig"`
+	Pulsar       *PulsarConfig    `json:"pulsarConfig" yaml:"pulsarConfig"`
 }
 
 func (c *Config) JSON() []byte {

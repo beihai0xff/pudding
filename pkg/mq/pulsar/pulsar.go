@@ -62,6 +62,7 @@ func New(config *configs.PulsarConfig) *Client {
 }
 
 func (c *Client) Produce(ctx context.Context, topic string, msg *pulsar.ProducerMessage) error {
+	log.Debugf("produce message to topic %s: %s", topic, string(msg.Payload))
 	produce, ok := c.producers[topic]
 	if !ok {
 		return fmt.Errorf("producer for topic [%s] not exists", topic)
