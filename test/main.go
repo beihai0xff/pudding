@@ -28,7 +28,7 @@ func main() {
 			ReadyTime: time.Now().Unix() + 30,
 		}
 		fmt.Println(msg.ReadyTime)
-		s.Produce(context.Background(), msg)
+		_ = s.Produce(context.Background(), msg)
 	}
 	time.Sleep(5 * time.Minute)
 	// Exit
