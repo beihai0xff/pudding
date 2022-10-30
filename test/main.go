@@ -1,7 +1,6 @@
 package main
 
 import (
-	"fmt"
 	"os"
 	"time"
 
@@ -27,7 +26,6 @@ func main() {
 			Payload:   []byte("hello"),
 			ReadyTime: time.Now().Unix() + 30,
 		}
-		fmt.Println(msg.ReadyTime)
 		_ = s.Produce(context.Background(), msg)
 	}
 	time.Sleep(5 * time.Minute)
