@@ -7,6 +7,7 @@ import (
 	"gorm.io/gorm"
 
 	"github.com/beihai0xff/pudding/configs"
+	"github.com/beihai0xff/pudding/pkg/logger"
 )
 
 type Client struct {
@@ -24,6 +25,7 @@ func New(c configs.MySQLConfig) *Client {
 	}), &gorm.Config{
 		SkipDefaultTransaction: true,
 		DisableAutomaticPing:   false,
+		Logger:                 logger.GetGORMLogger(),
 	})
 
 	if err != nil {
