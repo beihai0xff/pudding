@@ -5,15 +5,6 @@ import (
 	"go.uber.org/zap/zapcore"
 )
 
-type Logger interface {
-	// Debug logs to DEBUG log
-	Debug(args ...interface{})
-	// Info logs to INFO log
-	Info(args ...interface{})
-	// Warn logs to WARN log
-	Warn(args ...interface{})
-}
-
 // Debug logs to DEBUG log
 func Debug(args ...interface{}) {
 	defaultLogger.Debug(args...)

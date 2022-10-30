@@ -12,7 +12,8 @@ type PulsarLogger struct {
 }
 
 func (p *PulsarLogger) SubLogger(fields plog.Fields) plog.Logger {
-	var f []interface{}
+	f := make([]interface{}, 2*len(fields))
+
 	for K, v := range fields {
 		f = append(f, K, v)
 	}
@@ -20,8 +21,8 @@ func (p *PulsarLogger) SubLogger(fields plog.Fields) plog.Logger {
 }
 
 func (p *PulsarLogger) WithFields(fields plog.Fields) plog.Entry {
+	f := make([]interface{}, 2*len(fields))
 
-	var f []interface{}
 	for K, v := range fields {
 		f = append(f, K, v)
 	}
