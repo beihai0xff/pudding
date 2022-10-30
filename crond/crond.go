@@ -26,7 +26,7 @@ func (d *CronD) Tracking() {
 		ReadyTime: t.Unix(),
 	}
 
-	d.s.Produce(context.Background(), msg)
+	_ = d.s.Produce(context.Background(), msg)
 }
 
 func (d *CronD) getNextTime(expr string) (time.Time, error) {
