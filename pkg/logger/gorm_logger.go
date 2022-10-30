@@ -74,7 +74,7 @@ func GetGORMLogger() *GORMLogger {
 			Writer:     "",
 			Formatter:  log.OutputConsole,
 			Level:      "debug",
-			CallerSkip: 2,
+			CallerSkip: 3,
 		}).Sugar().With("module", "backend"),
 		level:                     logger.Info,
 		IgnoreRecordNotFoundError: false,
