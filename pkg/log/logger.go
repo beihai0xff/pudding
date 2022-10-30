@@ -10,11 +10,11 @@ import (
 
 // NewLogger new a zap log, default callerSkip is 1
 func NewLogger(c *OutputConfig) *zap.Logger {
-	return newZapLogWithCallerSkip(c, 1)
+	return newZapLogWithCallerSkip(c)
 }
 
 // newZapLogWithCallerSkip new a zap log
-func newZapLogWithCallerSkip(c *OutputConfig, callerSkip int) *zap.Logger {
+func newZapLogWithCallerSkip(c *OutputConfig) *zap.Logger {
 	if c.Writer == OutputFile {
 		// TODO: file output
 		panic("not support file output")
@@ -23,7 +23,7 @@ func newZapLogWithCallerSkip(c *OutputConfig, callerSkip int) *zap.Logger {
 
 	return zap.New(
 		zapcore.NewTee(core),
-		zap.AddCallerSkip(callerSkip),
+		zap.AddCallerSkip(c.CallerSkip),
 		zap.AddCaller(),
 		zap.AddStacktrace(zapcore.WarnLevel),
 	)
