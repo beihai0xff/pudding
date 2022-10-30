@@ -9,7 +9,7 @@ import (
 	"github.com/go-redis/redis_rate/v10"
 	"github.com/google/uuid"
 
-	configs2 "github.com/beihai0xff/pudding/configs"
+	"github.com/beihai0xff/pudding/configs"
 	"github.com/beihai0xff/pudding/pkg/lock"
 	"github.com/beihai0xff/pudding/pkg/log"
 	"github.com/beihai0xff/pudding/pkg/mq/pulsar"
@@ -41,7 +41,7 @@ type Scheduler interface {
 type Schedule struct {
 	delay    DelayQueue
 	realtime RealTimeQueue
-	config   *configs2.SchedulerConfig
+	config   *configs.SchedulerConfig
 	// timeSlice interval (Seconds)
 	interval int64
 
@@ -55,12 +55,12 @@ type Schedule struct {
 }
 
 func New() *Schedule {
-	redisClient := rdb.New(configs2.GetRedisConfig())
-	pulsarClient := pulsar.New(configs2.GetPulsarConfig())
+	redisClient := rdb.New(configs.GetRedisConfig())
+	pulsarClient := pulsar.New(configs.GetPulsarConfig())
 	q := &Schedule{
 		delay:    NewDelayQueue(redisClient),
 		realtime: NewRealTimeQueue(pulsarClient),
-		config:   configs2.GetSchedulerConfig(),
+		config:   configs.GetSchedulerConfig(),
 		token:    make(chan int64),
 		quit:     make(chan int64),
 	}
