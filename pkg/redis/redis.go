@@ -12,7 +12,7 @@ import (
 	"github.com/go-redis/redis/v9"
 	"github.com/go-redis/redis_rate/v10"
 
-	"github.com/beihai0xff/pudding/pkg/configs"
+	"github.com/beihai0xff/pudding/configs"
 )
 
 var (

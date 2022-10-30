@@ -3,7 +3,7 @@ package redis
 import (
 	"github.com/alicebob/miniredis/v2"
 
-	"github.com/beihai0xff/pudding/pkg/configs"
+	"github.com/beihai0xff/pudding/configs"
 )
 
 var (
