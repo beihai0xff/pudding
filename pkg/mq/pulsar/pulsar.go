@@ -10,6 +10,7 @@ import (
 
 	"github.com/beihai0xff/pudding/pkg/configs"
 	"github.com/beihai0xff/pudding/pkg/log"
+	"github.com/beihai0xff/pudding/pkg/logger"
 )
 
 // HandleMessage is the function type for handling message
@@ -24,7 +25,8 @@ type Client struct {
 func New(config *configs.PulsarConfig) *Client {
 	// create pulsar client
 	c, err := pulsar.NewClient(pulsar.ClientOptions{
-		URL: config.PulsarURL,
+		URL:    config.PulsarURL,
+		Logger: logger.GetPulsarLogger(),
 	})
 
 	if err != nil {
