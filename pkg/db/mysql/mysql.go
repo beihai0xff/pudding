@@ -6,7 +6,7 @@ import (
 	"gorm.io/driver/mysql"
 	"gorm.io/gorm"
 
-	"github.com/beihai0xff/pudding/pkg/configs"
+	"github.com/beihai0xff/pudding/configs"
 )
 
 type Client struct {
