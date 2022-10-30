@@ -7,6 +7,7 @@ import (
 	"github.com/go-redis/redis/v9"
 
 	"github.com/beihai0xff/pudding/pkg/log"
+	"github.com/beihai0xff/pudding/pkg/msgpack"
 	rdb "github.com/beihai0xff/pudding/pkg/redis"
 	"github.com/beihai0xff/pudding/types"
 )
@@ -18,7 +19,12 @@ type RealTimeQueue struct {
 
 // Produce produce a Message to the queue in realtime
 func (q *RealTimeQueue) Produce(ctx context.Context, msg *types.Message) error {
-	return q.rdb.StreamSend(ctx, msg.Topic, msg.Payload)
+	b, err := msgpack.Encode(msg)
+	if err != nil {
+		log.Errorf("msgpack encode message error: %v", err)
+		return err
+	}
+	return q.rdb.StreamSend(ctx, msg.Topic, b)
 }
 
 // NewConsumer consume Messages from the queue in real time
@@ -55,9 +61,9 @@ func (q *RealTimeQueue) handlerRealTimeMessage(ctx context.Context, msgs []redis
 
 	// 遍历处理消息
 	for _, msg := range msgs {
-
+		var m *types.Message
 		// TODO: 消费超过三次的消息，记录错误日志，并添加到死信队列
-		m, err := types.GetMessageFromJSON(msg.Values["body"].([]byte))
+		err := msgpack.Decode(msg.Values["body"].([]byte), m)
 		if err != nil {
 			// TODO: 记录错误日志
 			continue
