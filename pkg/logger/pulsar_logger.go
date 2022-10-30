@@ -44,5 +44,5 @@ func GetPulsarLogger() *PulsarLogger {
 		Formatter:  log.OutputConsole,
 		Level:      "debug",
 		CallerSkip: 1,
-	}).Sugar().With("pulsar")}
+	}).Sugar().With("module", "pulsar")}
 }

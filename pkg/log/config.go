@@ -25,9 +25,10 @@ const (
 )
 
 var defaultConfig = &OutputConfig{
-	Writer:    OutputConsole,
-	Level:     "debug",
-	Formatter: EncoderTypeConsole,
+	Writer:     OutputConsole,
+	Level:      "debug",
+	Formatter:  EncoderTypeConsole,
+	CallerSkip: 1,
 }
 
 // OutputConfig log output: console file remote
