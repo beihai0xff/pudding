@@ -32,6 +32,16 @@ func newZapLogWithCallerSkip(c *OutputConfig, callerSkip int) *zap.Logger {
 
 func newConsoleCore(c *OutputConfig) zapcore.Core {
 	level := zap.NewAtomicLevelAt(Levels[c.Level])
+
+	var writes = []zapcore.WriteSyncer{zapcore.AddSync(os.Stdout)}
+	return zapcore.NewCore(
+		newEncoder(c),
+		zapcore.NewMultiWriteSyncer(writes...),
+		level)
+}
+
+func newFileCore(c *OutputConfig) zapcore.Core {
+	level := zap.NewAtomicLevelAt(Levels[c.Level])
 	hook := lumberjack.Logger{
 		Filename:   "./log/pudding.log", // 日志文件路径
 		MaxSize:    128,                 // 每个日志文件保存的大小 单位:M

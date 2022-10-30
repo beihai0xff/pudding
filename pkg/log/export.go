@@ -5,6 +5,31 @@ import (
 	"go.uber.org/zap/zapcore"
 )
 
+// Debug logs to DEBUG log
+func Debug(args ...interface{}) {
+	defaultLogger.Debug(args...)
+}
+
+// Info logs to INFO log
+func Info(args ...interface{}) {
+	defaultLogger.Info(args...)
+}
+
+// Warn logs to WARN log
+func Warn(args ...interface{}) {
+	defaultLogger.Warn(args...)
+}
+
+// Error logs to ERROR log
+func Error(args ...interface{}) {
+	defaultLogger.Error(args...)
+}
+
+// Fatal logs to FATAL log
+func Fatal(args ...interface{}) {
+	defaultLogger.Fatal(args...)
+}
+
 // Debugf logs to DEBUG log, Arguments will be formatted with Sprint, Sprintf, or neither.
 func Debugf(format string, args ...interface{}) {
 	defaultLogger.Debugf(format, args...)
@@ -15,7 +40,7 @@ func Infof(format string, args ...interface{}) {
 	defaultLogger.Infof(format, args...)
 }
 
-// Warnf logs to WARNING log, Arguments will be formatted with Sprint, Sprintf, or neither.
+// Warnf logs to WARN log, Arguments will be formatted with Sprint, Sprintf, or neither.
 func Warnf(format string, args ...interface{}) {
 	defaultLogger.Warnf(format, args...)
 }
