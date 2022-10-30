@@ -7,7 +7,7 @@ import (
 
 	"github.com/bsm/redislock"
 
-	"github.com/beihai0xff/pudding/pkg/configs"
+	"github.com/beihai0xff/pudding/configs"
 	rdb "github.com/beihai0xff/pudding/pkg/redis"
 )
 

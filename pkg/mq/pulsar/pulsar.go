@@ -8,7 +8,7 @@ import (
 
 	"github.com/apache/pulsar-client-go/pulsar"
 
-	"github.com/beihai0xff/pudding/pkg/configs"
+	"github.com/beihai0xff/pudding/configs"
 	"github.com/beihai0xff/pudding/pkg/log"
 	"github.com/beihai0xff/pudding/pkg/logger"
 )

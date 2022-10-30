@@ -12,7 +12,7 @@ import (
 	"github.com/dolthub/go-mysql-server/sql/information_schema"
 	"github.com/stretchr/testify/assert"
 
-	"github.com/beihai0xff/pudding/pkg/configs"
+	"github.com/beihai0xff/pudding/configs"
 )
 
 // Example of how to implement a MySQL server based on a Engine:
