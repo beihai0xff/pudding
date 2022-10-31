@@ -17,21 +17,28 @@ func TestMain(m *testing.M) {
 }
 
 func TestNewLogger(t *testing.T) {
-	logger := NewLogger(defaultConfig)
-	assert.NotNil(t, logger)
+	l := newLog(defaultConfig)
+	assert.NotNil(t, l)
 }
 
 func Test_ZapLog(t *testing.T) {
+	Debug("hello world")
+	Info("hello world")
+	Warn("hello world")
+	Error("hello world")
+	// Fatal("hello world")
 	Debugf("hello world")
 	Infof("hello world")
 	Warnf("hello world")
 	Errorf("hello world")
+	// Fatalf("hello world")
 
 	pudding := "pudding"
 	Debugf("hello world %s", pudding)
 	Infof("hello world %s", pudding)
 	Warnf("hello world %s", pudding)
 	Errorf("hello world %s", pudding)
+	// Fatalf("hello world %s", pudding)
 
 	WithFields("field", "testfield").Debug("testdebug")
 }

@@ -2,13 +2,14 @@ package logger
 
 import (
 	plog "github.com/apache/pulsar-client-go/pulsar/log"
-	"go.uber.org/zap"
 
+	"github.com/beihai0xff/pudding/pkg/configs"
 	"github.com/beihai0xff/pudding/pkg/log"
 )
 
 type PulsarLogger struct {
-	*zap.SugaredLogger
+	log.Logger
+	with func(fields ...interface{}) log.Logger
 }
 
 func (p *PulsarLogger) SubLogger(fields plog.Fields) plog.Logger {
@@ -17,7 +18,7 @@ func (p *PulsarLogger) SubLogger(fields plog.Fields) plog.Logger {
 	for K, v := range fields {
 		f = append(f, K, v)
 	}
-	return &PulsarLogger{p.With(f...)}
+	return &PulsarLogger{Logger: p.with(f...), with: p.with}
 }
 
 func (p *PulsarLogger) WithFields(fields plog.Fields) plog.Entry {
@@ -26,23 +27,24 @@ func (p *PulsarLogger) WithFields(fields plog.Fields) plog.Entry {
 	for K, v := range fields {
 		f = append(f, K, v)
 	}
-	return &PulsarLogger{p.With(f...)}
 
+	return &PulsarLogger{Logger: p.with(f...), with: p.with}
 }
 
 func (p *PulsarLogger) WithField(name string, value interface{}) plog.Entry {
-	return &PulsarLogger{p.With(name, value)}
+	return &PulsarLogger{Logger: p.with(name, value), with: p.with}
 }
 
 func (p *PulsarLogger) WithError(err error) plog.Entry {
-	return &PulsarLogger{p.With("error", err)}
+	return &PulsarLogger{Logger: p.with("error", err), with: p.with}
 }
 
 func GetPulsarLogger() *PulsarLogger {
-	return &PulsarLogger{log.NewLogger(&log.OutputConfig{
-		Writer:     "",
-		Formatter:  log.OutputConsole,
-		Level:      "debug",
+	l := log.NewLogger(&configs.OutputConfig{
+		Writers:    []string{"console"},
+		Formatter:  configs.OutputConsole,
+		Level:      "info",
 		CallerSkip: 1,
-	}).Sugar().With("module", "pulsar")}
+	}).WithFields("module", "pulsar")
+	return &PulsarLogger{Logger: l, with: l.WithFields}
 }

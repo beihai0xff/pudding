@@ -7,7 +7,7 @@ import (
 	"gorm.io/gorm"
 
 	"github.com/beihai0xff/pudding/configs"
-	"github.com/beihai0xff/pudding/pkg/logger"
+	"github.com/beihai0xff/pudding/pkg/log/logger"
 )
 
 type Client struct {

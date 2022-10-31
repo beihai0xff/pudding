@@ -1,9 +1,32 @@
 package log
 
-import (
-	"go.uber.org/zap"
-	"go.uber.org/zap/zapcore"
-)
+type Logger interface {
+	// Debug logs to DEBUG log
+	Debug(args ...interface{})
+	// Info logs to INFO log
+	Info(args ...interface{})
+	// Warn logs to WARN log
+	Warn(args ...interface{})
+	// Error logs to ERROR log
+	Error(args ...interface{})
+	// Fatal logs to FATAL log
+	Fatal(args ...interface{})
+	// Debugf logs to DEBUG log, Arguments will be formatted with Sprint, Sprintf, or neither.
+	Debugf(format string, args ...interface{})
+	// Infof logs to INFO log, Arguments will be formatted with Sprint, Sprintf, or neither.
+	Infof(format string, args ...interface{})
+	// Warnf logs to WARN log, Arguments will be formatted with Sprint, Sprintf, or neither.
+	Warnf(format string, args ...interface{})
+	// Errorf logs to ERROR log, Arguments will be formatted with Sprint, Sprintf, or neither.
+	Errorf(format string, args ...interface{})
+	// Fatalf logs to FATAL log, Arguments will be formatted with Sprint, Sprintf, or neither.
+	Fatalf(format string, args ...interface{})
+	// Sync calls the zap defaultLogger's Sync method, flushing any buffered log entries.
+	// Applications should take care to call Sync before exiting.
+	Sync() error
+	// WithFields set some business custom data to each log
+	WithFields(fields ...interface{}) Logger
+}
 
 // Debug logs to DEBUG log
 func Debug(args ...interface{}) {
@@ -62,6 +85,6 @@ func Sync() error {
 }
 
 // WithFields 设置一些业务自定义数据到每条 log 中
-func WithFields(fields ...interface{}) *zap.SugaredLogger {
-	return defaultLogger.WithOptions(zap.AddStacktrace(zapcore.WarnLevel)).With(fields...)
+func WithFields(fields ...interface{}) Logger {
+	return defaultLogger.WithFields(fields...)
 }
