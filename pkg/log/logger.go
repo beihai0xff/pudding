@@ -34,6 +34,7 @@ func newZapLogWithCallerSkip(c *configs.OutputConfig) *zap.Logger {
 func newCore(c *configs.OutputConfig) zapcore.Core {
 	level := zap.NewAtomicLevelAt(configs.Levels[c.Level])
 
+	// get log output writer
 	var writes []zapcore.WriteSyncer
 	for _, writer := range c.Writers {
 		if writer == configs.OutputConsole {
@@ -44,7 +45,6 @@ func newCore(c *configs.OutputConfig) zapcore.Core {
 		}
 	}
 
-	writes = append(writes, getConsoleWriter())
 	return zapcore.NewCore(
 		newEncoder(c),
 		zapcore.NewMultiWriteSyncer(writes...),

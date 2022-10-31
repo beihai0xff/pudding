@@ -24,7 +24,7 @@ type Logger interface {
 	// Sync calls the zap defaultLogger's Sync method, flushing any buffered log entries.
 	// Applications should take care to call Sync before exiting.
 	Sync() error
-	// WithFields 设置一些业务自定义数据到每条 log 中
+	// WithFields set some business custom data to each log
 	WithFields(fields ...interface{}) Logger
 }
 
