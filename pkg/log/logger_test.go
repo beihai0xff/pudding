@@ -17,7 +17,7 @@ func TestMain(m *testing.M) {
 }
 
 func TestNewLogger(t *testing.T) {
-	logger := NewLog(defaultConfig)
+	logger := newLog(defaultConfig)
 	assert.NotNil(t, logger)
 }
 

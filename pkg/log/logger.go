@@ -15,8 +15,8 @@ func NewLogger(c *configs.OutputConfig) Logger {
 	return &logger{newZapLogWithCallerSkip(c).Sugar()}
 }
 
-// NewLog new a zap log, default callerSkip is 1
-func NewLog(c *configs.OutputConfig) *logger {
+// newLog new a zap log, default callerSkip is 1
+func newLog(c *configs.OutputConfig) *logger {
 	return &logger{newZapLogWithCallerSkip(c).Sugar()}
 }
 

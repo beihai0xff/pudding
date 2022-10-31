@@ -17,7 +17,7 @@ var defaultConfig = &configs.OutputConfig{
 }
 
 func init() {
-	defaultLogger = NewLog(defaultConfig)
+	defaultLogger = newLog(defaultConfig)
 }
 
 type logger struct {
