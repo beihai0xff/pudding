@@ -10,7 +10,7 @@ import (
 
 	"github.com/beihai0xff/pudding/configs"
 	"github.com/beihai0xff/pudding/pkg/log"
-	"github.com/beihai0xff/pudding/pkg/logger"
+	"github.com/beihai0xff/pudding/pkg/log/logger"
 )
 
 // HandleMessage is the function type for handling message
@@ -104,8 +104,8 @@ func (c *Client) NewConsumer(topic, group string, fn HandleMessage) error {
 	// wrap the ack function
 	ack := func(msg pulsar.Message) {
 		if err := consumer.Ack(msg); err != nil {
-			log.Errorf("ack message failed: %v, message msgId: %#v -- content: '%s'\n",
-				err, msg.ID(), string(msg.Payload()))
+			log.Errorf("ack message failed: %v, message msgId: %#v -- content: '%s'",
+				err, msg.ID().EntryID(), string(msg.Payload()))
 		}
 	}
 
@@ -116,23 +116,23 @@ func (c *Client) NewConsumer(topic, group string, fn HandleMessage) error {
 			// receive message, block if queue is empty
 			msg, err := consumer.Receive(ctx)
 			if err != nil {
-				log.Errorf("receive message failed: %v, message msgId: %#v -- content: '%s'\n",
-					err, msg.ID(), string(msg.Payload()))
+				log.Errorf("receive message failed: %v, message msgId: %#v -- content: '%s'",
+					msg.ID().EntryID(), string(msg.Payload()))
 			}
 
 			if msg.RedeliveryCount() > 3 {
-				log.Errorf("message redelivery count exceed 3, message msgId: %#v -- content: '%s'\n",
-					msg.ID(), string(msg.Payload()))
+				log.Errorf("message redelivery count exceed 3, message msgId: %#v -- content: '%s'",
+					msg.ID().EntryID(), string(msg.Payload()))
 				ack(msg)
 				continue
 			}
 
-			log.Debugf("Received message msgId: %#v -- content: '%s'\n",
-				msg.ID(), string(msg.Payload()))
+			log.Debugf("Received message msgId: %#v -- content: '%s'",
+				msg.ID().EntryID(), string(msg.Payload()))
 
 			if err := fn(ctx, msg); err != nil {
-				log.Errorf("handle message failed: %v, message msgId: %#v -- content: '%s'\n",
-					err, msg.ID(), string(msg.Payload()))
+				log.Errorf("handle message failed: %v, message msgId: %#v -- content: '%s'",
+					err, msg.ID().EntryID(), string(msg.Payload()))
 				continue
 			}
 

@@ -6,10 +6,10 @@ import (
 	"fmt"
 	"time"
 
-	"go.uber.org/zap"
 	"gorm.io/gorm"
 	"gorm.io/gorm/logger"
 
+	"github.com/beihai0xff/pudding/pkg/configs"
 	"github.com/beihai0xff/pudding/pkg/log"
 )
 
@@ -19,8 +19,18 @@ const (
 	traceErrStr  = "%s\n[%dms] [rows:%v] %s"
 )
 
+// levels gorm logger level
+var levels = map[string]logger.LogLevel{
+	"":       logger.Info,
+	"debug":  logger.Info,
+	"info":   logger.Info,
+	"warn":   logger.Warn,
+	"error":  logger.Error,
+	"silent": logger.Silent,
+}
+
 type GORMLogger struct {
-	l                                   *zap.SugaredLogger
+	l                                   log.Logger
 	level                               logger.LogLevel
 	IgnoreRecordNotFoundError           bool
 	SlowThreshold                       time.Duration
@@ -70,13 +80,13 @@ func (l *GORMLogger) Trace(c context.Context, begin time.Time, fc func() (sql st
 
 func GetGORMLogger() *GORMLogger {
 	return &GORMLogger{
-		l: log.NewLogger(&log.OutputConfig{
-			Writer:     "",
-			Formatter:  log.OutputConsole,
+		l: log.NewLogger(&configs.OutputConfig{
+			Writers:    []string{"console"},
+			Formatter:  configs.OutputConsole,
 			Level:      "debug",
 			CallerSkip: 3,
-		}).Sugar().With("module", "backend"),
-		level:                     logger.Info,
+		}).WithFields("module", "backend"),
+		level:                     levels["debug"],
 		IgnoreRecordNotFoundError: false,
 		SlowThreshold:             1 * time.Second,
 		traceStr:                  traceStr,
