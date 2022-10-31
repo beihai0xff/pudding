@@ -24,15 +24,15 @@ const (
 	EncoderTypeJSON = "json"
 )
 
-// OutputConfig log output: console file remote
-type OutputConfig struct {
+// LogConfig log output: console file remote
+type LogConfig struct {
 	// Writers log output(console, file)
 	Writers []string `yaml:"writers"`
 	// FileConfig 日志文件配置，如果 Writers 为 file 则该配置不能为空
 	FileConfig *FileConfig `yaml:"file_config"`
 
-	// Formatter log format type (console, json)
-	Formatter string `yaml:"formatter"`
+	// Format log format type (console, json)
+	Format string `yaml:"format"`
 
 	// Level log level debug info error...
 	Level string `yaml:"level"`
@@ -43,8 +43,8 @@ type OutputConfig struct {
 
 // FileConfig 日志文件的配置
 type FileConfig struct {
-	// Filename log file name
-	Filename string `yaml:"filename"`
+	// Filepath log file path
+	Filepath string `yaml:"filepath"`
 	// MaxAge log file max age, days
 	MaxAge int `yaml:"max_age"`
 	// MaxBackups max backup files

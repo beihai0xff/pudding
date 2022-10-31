@@ -3,13 +3,38 @@ package configs
 import (
 	"bytes"
 	"encoding/json"
+	"log"
 
-	"github.com/beihai0xff/pudding/pkg/log"
 	"github.com/beihai0xff/pudding/pkg/yaml"
 	"github.com/beihai0xff/pudding/types"
 )
 
-var c = &Config{}
+var c = &Config{
+	Broker:       "",
+	MessageQueue: "",
+	Scheduler:    nil,
+	Redis:        nil,
+	Pulsar: &PulsarConfig{
+		PulsarURL:         "",
+		ConnectionTimeout: 0,
+		ProducersConfig:   nil,
+		Log: &LogConfig{
+			Writers:    []string{"console"},
+			Format:     OutputConsole,
+			Level:      "info",
+			CallerSkip: 1,
+		},
+	},
+	MySQL: &MySQLConfig{
+		DSN: "",
+		Log: &LogConfig{
+			Writers:    []string{"console"},
+			Format:     OutputConsole,
+			Level:      "info",
+			CallerSkip: 3,
+		},
+	},
+}
 
 type Config struct {
 	Broker       string           `json:"broker" yaml:"broker"`
@@ -24,7 +49,7 @@ type Config struct {
 func (c *Config) JSON() []byte {
 	b, err := json.Marshal(c)
 	if err != nil {
-		log.Errorf("marshal config failed: %v", err)
+		log.Panicf("marshal config failed: %v", err)
 		return nil
 	}
 
@@ -44,5 +69,5 @@ func Init(filePath string) {
 
 	var str bytes.Buffer
 	_ = json.Indent(&str, c.JSON(), "", "    ")
-	log.Infof("config: %s \n", str.String())
+	log.Printf("config: %s \n", str.String())
 }

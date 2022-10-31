@@ -9,7 +9,7 @@ import (
 	"gorm.io/gorm"
 	"gorm.io/gorm/logger"
 
-	"github.com/beihai0xff/pudding/pkg/configs"
+	"github.com/beihai0xff/pudding/configs"
 	"github.com/beihai0xff/pudding/pkg/log"
 )
 
@@ -78,14 +78,10 @@ func (l *GORMLogger) Trace(c context.Context, begin time.Time, fc func() (sql st
 	}
 }
 
-func GetGORMLogger() *GORMLogger {
+func GetGORMLogger(c *configs.LogConfig) *GORMLogger {
+	c.CallerSkip = 3
 	return &GORMLogger{
-		l: log.NewLogger(&configs.OutputConfig{
-			Writers:    []string{"console"},
-			Formatter:  configs.OutputConsole,
-			Level:      "debug",
-			CallerSkip: 3,
-		}).WithFields("module", "backend"),
+		l:                         log.NewLogger(c).WithFields("module", "backend"),
 		level:                     levels["debug"],
 		IgnoreRecordNotFoundError: false,
 		SlowThreshold:             1 * time.Second,
