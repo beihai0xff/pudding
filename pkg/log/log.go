@@ -4,14 +4,14 @@ import (
 	"go.uber.org/zap"
 	"go.uber.org/zap/zapcore"
 
-	"github.com/beihai0xff/pudding/pkg/configs"
+	"github.com/beihai0xff/pudding/configs"
 )
 
 var defaultLogger *logger
 
-var defaultConfig = &configs.OutputConfig{
+var defaultConfig = &configs.LogConfig{
 	Writers:    []string{configs.OutputConsole},
-	Formatter:  configs.EncoderTypeConsole,
+	Format:     configs.EncoderTypeConsole,
 	Level:      "debug",
 	CallerSkip: 1,
 }

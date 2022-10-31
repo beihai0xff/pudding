@@ -14,7 +14,7 @@ type Client struct {
 	*gorm.DB
 }
 
-func New(c configs.MySQLConfig) *Client {
+func New(c *configs.MySQLConfig) *Client {
 	db, err := gorm.Open(mysql.New(mysql.Config{
 		DSN:                       c.DSN, // DSN data source name
 		DefaultStringSize:         256,
@@ -25,7 +25,7 @@ func New(c configs.MySQLConfig) *Client {
 	}), &gorm.Config{
 		SkipDefaultTransaction: true,
 		DisableAutomaticPing:   false,
-		Logger:                 logger.GetGORMLogger(),
+		Logger:                 logger.GetGORMLogger(c.Log),
 	})
 
 	if err != nil {

@@ -7,21 +7,21 @@ import (
 	"go.uber.org/zap/zapcore"
 	"gopkg.in/natefinch/lumberjack.v2"
 
-	"github.com/beihai0xff/pudding/pkg/configs"
+	"github.com/beihai0xff/pudding/configs"
 )
 
 // NewLogger new a zap logger, default callerSkip is 1
-func NewLogger(c *configs.OutputConfig) Logger {
+func NewLogger(c *configs.LogConfig) Logger {
 	return &logger{newZapLogWithCallerSkip(c).Sugar()}
 }
 
 // newLog new a zap log, default callerSkip is 1
-func newLog(c *configs.OutputConfig) *logger {
+func newLog(c *configs.LogConfig) *logger {
 	return &logger{newZapLogWithCallerSkip(c).Sugar()}
 }
 
 // newZapLogWithCallerSkip new a zap log
-func newZapLogWithCallerSkip(c *configs.OutputConfig) *zap.Logger {
+func newZapLogWithCallerSkip(c *configs.LogConfig) *zap.Logger {
 	return zap.New(
 		zapcore.NewTee(newCore(c)),
 		zap.AddCallerSkip(c.CallerSkip),
@@ -31,7 +31,7 @@ func newZapLogWithCallerSkip(c *configs.OutputConfig) *zap.Logger {
 
 }
 
-func newCore(c *configs.OutputConfig) zapcore.Core {
+func newCore(c *configs.LogConfig) zapcore.Core {
 	level := zap.NewAtomicLevelAt(configs.Levels[c.Level])
 
 	// get log output writer
@@ -59,7 +59,7 @@ func getConsoleWriter() zapcore.WriteSyncer {
 // getFileWriter write log to file
 func getFileWriter(c *configs.FileConfig) zapcore.WriteSyncer {
 	lumberJackLogger := &lumberjack.Logger{
-		Filename:   c.Filename,   // 日志文件路径
+		Filename:   c.Filepath,   // 日志文件路径
 		MaxSize:    c.MaxSize,    // 每个日志文件保存的大小 单位:M
 		MaxAge:     c.MaxAge,     // 文件最多保存多少天
 		MaxBackups: c.MaxBackups, // 日志文件最多保存多少个备份
@@ -69,7 +69,7 @@ func getFileWriter(c *configs.FileConfig) zapcore.WriteSyncer {
 	return zapcore.AddSync(lumberJackLogger)
 }
 
-func newEncoder(c *configs.OutputConfig) zapcore.Encoder {
+func newEncoder(c *configs.LogConfig) zapcore.Encoder {
 	encoderCfg := zapcore.EncoderConfig{
 		TimeKey:    "time",
 		LevelKey:   "level",
@@ -86,7 +86,7 @@ func newEncoder(c *configs.OutputConfig) zapcore.Encoder {
 	}
 
 	encoder := zapcore.NewConsoleEncoder(encoderCfg)
-	if c.Formatter == configs.EncoderTypeJSON {
+	if c.Format == configs.EncoderTypeJSON {
 		encoder = zapcore.NewJSONEncoder(encoderCfg)
 	}
 
