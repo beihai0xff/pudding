@@ -15,7 +15,7 @@ var validate = validator.New()
 
 func CronTemplateEntityTOPo(e *entity.CrontriggerTemplate) (*po.CronTriggerTemplate, error) {
 	if err := validate.Struct(e); err != nil {
-		return nil, fmt.Errorf("invalid validation error: %v", err.Error())
+		return nil, fmt.Errorf("invalid validation error: %w", err)
 	}
 
 	p := &po.CronTriggerTemplate{}
