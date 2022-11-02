@@ -6,8 +6,8 @@ import (
 	validator "github.com/go-playground/validator/v10"
 	"github.com/jinzhu/copier"
 
-	"github.com/beihai0xff/pudding/trigger/cron/dao/storage/po"
-	"github.com/beihai0xff/pudding/trigger/cron/domain/entity"
+	"github.com/beihai0xff/pudding/trigger/dao/storage/po"
+	"github.com/beihai0xff/pudding/trigger/entity"
 )
 
 // use a single instance of Validate, it caches struct info

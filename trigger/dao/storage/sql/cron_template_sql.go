@@ -9,13 +9,13 @@ import (
 	"gorm.io/gorm/clause"
 
 	"github.com/beihai0xff/pudding/pkg/db/mysql"
-	"github.com/beihai0xff/pudding/trigger/cron/dao/convertor"
-	"github.com/beihai0xff/pudding/trigger/cron/dao/storage/po"
-	"github.com/beihai0xff/pudding/trigger/cron/domain/entity"
+	"github.com/beihai0xff/pudding/trigger/dao/convertor"
+	"github.com/beihai0xff/pudding/trigger/dao/storage/po"
+	"github.com/beihai0xff/pudding/trigger/entity"
 	"github.com/beihai0xff/pudding/types"
 )
 
-type tempHandler func(results *po.CronTriggerTemplate) error
+type CronTempHandler func(results *po.CronTriggerTemplate) error
 
 type CronTemplate struct {
 	db *mysql.Client
@@ -41,7 +41,7 @@ func (dao *CronTemplate) Update(ctx context.Context, e *entity.CrontriggerTempla
 	return dao.db.WithContext(ctx).Updates(p).Error
 }
 
-func (dao *CronTemplate) FindEnableRecords(ctx context.Context, t time.Time, batchSize int, f tempHandler) error {
+func (dao *CronTemplate) FindEnableRecords(ctx context.Context, t time.Time, batchSize int, f CronTempHandler) error {
 	var results []po.CronTriggerTemplate
 
 	// handle function
