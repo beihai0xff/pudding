@@ -18,19 +18,19 @@ const (
 	defaultMaximumLoopTimes = 1 << 10
 )
 
-type CronTrigger struct {
+type Trigger struct {
 	s   scheduler.Scheduler
 	dao dao.CronTemplateDAO
 }
 
-func NewCron(db *mysql.Client, s scheduler.Scheduler) *CronTrigger {
-	return &CronTrigger{
+func NewCron(db *mysql.Client, s scheduler.Scheduler) *Trigger {
+	return &Trigger{
 		s:   s,
 		dao: dao.NewCronTemplateDAO(db),
 	}
 }
 
-func (t *CronTrigger) Tracking(temp *entity.CrontriggerTemplate) error {
+func (t *Trigger) Tracking(temp *entity.CrontriggerTemplate) error {
 	if temp.LoopedTimes > defaultMaximumLoopTimes {
 		temp.Status = types.TemplateStatusMaxTimes
 	}
@@ -67,7 +67,7 @@ func (t *CronTrigger) Tracking(temp *entity.CrontriggerTemplate) error {
 	return nil
 }
 
-func (t *CronTrigger) getNextTime(expr string) (time.Time, error) {
+func (t *Trigger) getNextTime(expr string) (time.Time, error) {
 	expression, err := cronexpr.Parse(expr)
 	if err != nil {
 		return time.Time{}, err
