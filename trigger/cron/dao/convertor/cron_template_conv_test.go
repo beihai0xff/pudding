@@ -8,6 +8,7 @@ import (
 
 	"github.com/beihai0xff/pudding/trigger/cron/dao/storage/po"
 	"github.com/beihai0xff/pudding/trigger/cron/domain/entity"
+	"github.com/beihai0xff/pudding/types"
 )
 
 func TestCronTemplateEntityTOPo(t *testing.T) {
@@ -26,7 +27,7 @@ func TestCronTemplateEntityTOPo(t *testing.T) {
 				ExceptedEndTime:   time.Date(2020, 1, 2, 0, 0, 0, 0, time.UTC),
 				ExceptedLoopTimes: 1,
 				LoopedTimes:       1,
-				Status:            entity.TemplateStatusEnable,
+				Status:            types.TemplateStatusEnable,
 			},
 			want: &po.CronTriggerTemplate{
 				CronExpr:          "0 0 0 * * *",
@@ -34,7 +35,7 @@ func TestCronTemplateEntityTOPo(t *testing.T) {
 				ExceptedEndTime:   time.Date(2020, 1, 2, 0, 0, 0, 0, time.UTC),
 				ExceptedLoopTimes: 1,
 				LoopedTimes:       1,
-				Status:            entity.TemplateStatusEnable,
+				Status:            types.TemplateStatusEnable,
 			},
 			wantErr:   assert.NoError,
 			assertion: assert.Equal,
@@ -45,7 +46,7 @@ func TestCronTemplateEntityTOPo(t *testing.T) {
 				ExceptedEndTime:   time.Date(2020, 1, 2, 0, 0, 0, 0, time.UTC),
 				ExceptedLoopTimes: 1,
 				LoopedTimes:       1,
-				Status:            entity.TemplateStatusEnable,
+				Status:            types.TemplateStatusEnable,
 			},
 			want:      nil,
 			wantErr:   assert.Error,
