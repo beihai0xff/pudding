@@ -6,8 +6,8 @@ import (
 
 	"github.com/stretchr/testify/assert"
 
-	"github.com/beihai0xff/pudding/trigger/cron/dao/storage/po"
-	"github.com/beihai0xff/pudding/trigger/cron/domain/entity"
+	"github.com/beihai0xff/pudding/trigger/dao/storage/po"
+	"github.com/beihai0xff/pudding/trigger/entity"
 	"github.com/beihai0xff/pudding/types"
 )
 

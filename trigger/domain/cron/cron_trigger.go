@@ -5,33 +5,44 @@ import (
 	"time"
 
 	"github.com/beihai0xff/pudding/pkg/cronexpr"
+	"github.com/beihai0xff/pudding/pkg/db/mysql"
 	"github.com/beihai0xff/pudding/pkg/log"
 	"github.com/beihai0xff/pudding/scheduler"
-	"github.com/beihai0xff/pudding/trigger/cron/domain/entity"
+	"github.com/beihai0xff/pudding/trigger/dao"
+	"github.com/beihai0xff/pudding/trigger/entity"
 	"github.com/beihai0xff/pudding/types"
 )
 
 const (
+	// defaultMaximumLoopTimes  Maximum Loop Times of Cron Trigger: 1024
 	defaultMaximumLoopTimes = 1 << 10
 )
 
-type Cron struct {
-	s scheduler.Scheduler
+type Trigger struct {
+	s   scheduler.Scheduler
+	dao dao.CronTemplateDAO
 }
 
-func (c *Cron) Tracking(temp *entity.CrontriggerTemplate) error {
+func NewCron(db *mysql.Client, s scheduler.Scheduler) *Trigger {
+	return &Trigger{
+		s:   s,
+		dao: dao.NewCronTemplateDAO(db),
+	}
+}
+
+func (t *Trigger) Tracking(temp *entity.CrontriggerTemplate) error {
 	if temp.LoopedTimes > defaultMaximumLoopTimes {
 		temp.Status = types.TemplateStatusMaxTimes
 	}
 
-	t, err := c.getNextTime(temp.CronExpr)
+	nextTime, err := t.getNextTime(temp.CronExpr)
 	if err != nil {
 		log.Errorf("failed to get next time, caused by %v", err)
 		return err
 	}
 
 	// 到达取消执行时间
-	if t == temp.LastExecutionTime {
+	if nextTime == temp.LastExecutionTime {
 		temp.Status = types.TemplateStatusMaxAge
 		return nil
 	}
@@ -39,10 +50,10 @@ func (c *Cron) Tracking(temp *entity.CrontriggerTemplate) error {
 	msg := &types.Message{
 		Topic:     temp.Topic,
 		Payload:   temp.Payload,
-		ReadyTime: t.Unix(),
+		ReadyTime: nextTime.Unix(),
 	}
 
-	if err = c.s.Produce(context.Background(), msg); err != nil {
+	if err = t.s.Produce(context.Background(), msg); err != nil {
 		log.Errorf("failed to produce message, caused by %v", err)
 		return err
 	}
@@ -56,7 +67,7 @@ func (c *Cron) Tracking(temp *entity.CrontriggerTemplate) error {
 	return nil
 }
 
-func (c *Cron) getNextTime(expr string) (time.Time, error) {
+func (t *Trigger) getNextTime(expr string) (time.Time, error) {
 	expression, err := cronexpr.Parse(expr)
 	if err != nil {
 		return time.Time{}, err
