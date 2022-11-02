@@ -23,6 +23,8 @@ func TestCronTemplateEntityTOPo(t *testing.T) {
 			name: "normal",
 			e: &entity.CrontriggerTemplate{
 				CronExpr:          "0 0 0 * * *",
+				Topic:             "test",
+				Payload:           []byte("hello"),
 				LastExecutionTime: time.Date(2020, 1, 1, 0, 0, 0, 0, time.UTC),
 				ExceptedEndTime:   time.Date(2020, 1, 2, 0, 0, 0, 0, time.UTC),
 				ExceptedLoopTimes: 1,
@@ -31,6 +33,8 @@ func TestCronTemplateEntityTOPo(t *testing.T) {
 			},
 			want: &po.CronTriggerTemplate{
 				CronExpr:          "0 0 0 * * *",
+				Topic:             "test",
+				Payload:           []byte("hello"),
 				LastExecutionTime: time.Date(2020, 1, 1, 0, 0, 0, 0, time.UTC),
 				ExceptedEndTime:   time.Date(2020, 1, 2, 0, 0, 0, 0, time.UTC),
 				ExceptedLoopTimes: 1,
