@@ -25,6 +25,7 @@ GOLANG_IMAGE = golang:$(GO_VERSION)
 
 lint:
 	golangci-lint run
+	go test ./...
 
 container:
 	docker build -t ${IMAGE_NAME} --build-arg GOLANG_IMAGE="${GOLANG_IMAGE}" \
