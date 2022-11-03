@@ -20,7 +20,7 @@ jobs:
         with:
           mysql-version: '8.0.31'
           root-password: 'my-secret-pw'
-      - run: mysql -uroot -h127.0.0.1 -e 'create database test;'
+      - run: mysql -u root -h 127.0.0.1 -p my-secret-pw -e 'create database test;'
       - name: Install Go
         uses: actions/setup-go@v3
         with:
