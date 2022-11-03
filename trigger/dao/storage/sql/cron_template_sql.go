@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/go-playground/validator/v10"
 	"gorm.io/gorm"
 	"gorm.io/gorm/clause"
 
@@ -15,7 +16,8 @@ import (
 	"github.com/beihai0xff/pudding/types"
 )
 
-type CronTempHandler func(results *po.CronTriggerTemplate) error
+// use a single instance of Validate, it caches struct info
+var validate = validator.New()
 
 type CronTemplate struct {
 	db *mysql.Client
@@ -25,15 +27,24 @@ func NewCronTemplate(db *mysql.Client) *CronTemplate {
 	return &CronTemplate{db: db}
 }
 
-func (dao *CronTemplate) Insert(ctx context.Context, e *entity.CrontriggerTemplate) error {
+func (dao *CronTemplate) Insert(ctx context.Context, e *entity.CronTriggerTemplate) error {
+	if err := validate.Struct(e); err != nil {
+		return fmt.Errorf("invalid validation error: %w", err)
+	}
+
 	p, err := convertor.CronTemplateEntityTOPo(e)
 	if err != nil {
 		return fmt.Errorf("convert entity to po failed: %w", err)
 	}
-	return dao.db.WithContext(ctx).Create(p).Error
+	if err := dao.db.WithContext(ctx).Create(p).Error; err != nil {
+		return err
+	}
+	e.ID = p.ID
+
+	return nil
 }
 
-func (dao *CronTemplate) Update(ctx context.Context, e *entity.CrontriggerTemplate) error {
+func (dao *CronTemplate) Update(ctx context.Context, e *entity.CronTriggerTemplate) error {
 	p, err := convertor.CronTemplateEntityTOPo(e)
 	if err != nil {
 		return fmt.Errorf("convert entity to po failed: %w", err)
@@ -41,13 +52,18 @@ func (dao *CronTemplate) Update(ctx context.Context, e *entity.CrontriggerTempla
 	return dao.db.WithContext(ctx).Updates(p).Error
 }
 
-func (dao *CronTemplate) FindEnableRecords(ctx context.Context, t time.Time, batchSize int, f CronTempHandler) error {
+func (dao *CronTemplate) FindEnableRecords(ctx context.Context, t time.Time, batchSize int,
+	f types.CronTempHandler) error {
 	var results []po.CronTriggerTemplate
 
 	// handle function
 	fc := func(tx *gorm.DB, batch int) error {
-		for _, t := range results {
-			if err := f(&t); err != nil {
+		for _, res := range results {
+			e, err := convertor.CronTemplatePoTOEntity(&res)
+			if err != nil {
+				return err
+			}
+			if err := f(e); err != nil {
 				return err
 			}
 		}
@@ -61,7 +77,23 @@ func (dao *CronTemplate) FindEnableRecords(ctx context.Context, t time.Time, bat
 	return dao.db.WithContext(ctx).Clauses(clause.Locking{
 		Strength: "UPDATE",
 		Options:  "SKIP LOCKED",
-	}).Where("status = ? AND last_execution_time > ", types.TemplateStatusEnable, t).
-		FindInBatches(results, batchSize, fc).Error
+	}).Where("status = ? AND last_execution_time <= ?", types.TemplateStatusEnable, &t).
+		FindInBatches(&results, batchSize, fc).Error
+
+}
+
+func (dao *CronTemplate) FindByID(ctx context.Context, id uint) (*entity.CronTriggerTemplate, error) {
+	var res po.CronTriggerTemplate
+
+	// SELECT * FROM pudding_cron_trigger_template WHERE id =
+	if err := dao.db.WithContext(ctx).Find(&res, id).Error; err != nil {
+		return nil, err
+	}
+
+	e, err := convertor.CronTemplatePoTOEntity(&res)
+	if err != nil {
+		return nil, err
+	}
+	return e, nil
 
 }

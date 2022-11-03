@@ -23,9 +23,10 @@ func New(c *configs.MySQLConfig) *Client {
 		DontSupportRenameColumn:   true,
 		SkipInitializeWithVersion: false,
 	}), &gorm.Config{
-		SkipDefaultTransaction: true,
-		DisableAutomaticPing:   false,
-		Logger:                 logger.GetGORMLogger(c.Log),
+		DisableForeignKeyConstraintWhenMigrating: true,
+		SkipDefaultTransaction:                   true,
+		DisableAutomaticPing:                     false,
+		Logger:                                   logger.GetGORMLogger(c.Log),
 	})
 
 	if err != nil {
