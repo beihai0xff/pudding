@@ -4,7 +4,7 @@ import (
 	"time"
 )
 
-type CrontriggerTemplate struct {
+type CronTriggerTemplate struct {
 	ID uint
 	// CronExpr is the cron expression.
 	CronExpr string `json:"cron_expr" validate:"required"`
@@ -24,6 +24,6 @@ type CrontriggerTemplate struct {
 	// LoopedTimes already loop times
 	LoopedTimes uint64 `json:"looped_times" validate:"required"`
 
-	// Status the CrontriggerTemplate status: enable offline
+	// Status the CronTriggerTemplate status: enable offline
 	Status int `json:"status" validate:"required"`
 }

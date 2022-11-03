@@ -38,7 +38,7 @@ func NewTrigger(db *mysql.Client, s scheduler.Scheduler) *Trigger {
 	}
 }
 
-func (t *Trigger) Register(ctx context.Context, temp *entity.CrontriggerTemplate) error {
+func (t *Trigger) Register(ctx context.Context, temp *entity.CronTriggerTemplate) error {
 	// 1. check params
 	if err := t.checkParams(temp); err != nil {
 		log.Errorf("failed to check params, caused by %w", err)
@@ -54,7 +54,7 @@ func (t *Trigger) Register(ctx context.Context, temp *entity.CrontriggerTemplate
 	return nil
 }
 
-func (t *Trigger) checkParams(temp *entity.CrontriggerTemplate) error {
+func (t *Trigger) checkParams(temp *entity.CronTriggerTemplate) error {
 	// 1. check cron expression
 	if _, err := cronexpr.Parse(temp.CronExpr); err != nil {
 		log.Errorf("Invalid cron expression: %w", err)
@@ -86,7 +86,7 @@ func (t *Trigger) checkParams(temp *entity.CrontriggerTemplate) error {
 	return nil
 }
 
-func (t *Trigger) Enable(ctx context.Context, temp *entity.CrontriggerTemplate) error {
+func (t *Trigger) Enable(ctx context.Context, temp *entity.CronTriggerTemplate) error {
 	// 1. set status to enable
 	if temp.Status == types.TemplateStatusEnable {
 		return errCronTemplateAlreadyEnabled
@@ -108,7 +108,7 @@ func (t *Trigger) Enable(ctx context.Context, temp *entity.CrontriggerTemplate) 
 	return nil
 }
 
-func (t *Trigger) Disable(ctx context.Context, temp *entity.CrontriggerTemplate) error {
+func (t *Trigger) Disable(ctx context.Context, temp *entity.CronTriggerTemplate) error {
 	// 1. set status to disable
 	if temp.Status == types.TemplateStatusDisable {
 		return errCronTemplateAlreadyDisabled
@@ -124,7 +124,7 @@ func (t *Trigger) Disable(ctx context.Context, temp *entity.CrontriggerTemplate)
 	return nil
 }
 
-func (t *Trigger) Tracking(temp *entity.CrontriggerTemplate) error {
+func (t *Trigger) Tracking(temp *entity.CronTriggerTemplate) error {
 	if temp.LoopedTimes > defaultMaximumLoopTimes {
 		log.Warnf("cron template [%d] has reached the maximum loop times, but it has been tracked", temp.ID)
 
