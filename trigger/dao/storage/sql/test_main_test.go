@@ -56,7 +56,7 @@ func newMySQLServer() {
 
 func newMySQLClient() *mysql.Client {
 	c := &configs.MySQLConfig{
-		DSN: "root:my-secret-pw@tcp(localhost:3306)/test?charset=utf8mb4&parseTime=True&loc=Local",
+		DSN: "root:my-secret-pw@tcp(localhost:3306)/test?charset=utf8mb4&parseTime=True&loc=UTC",
 		Log: &configs.LogConfig{
 			Writers:    []string{"console"},
 			Format:     "console",
