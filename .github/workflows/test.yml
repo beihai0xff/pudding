@@ -10,9 +10,17 @@ jobs:
         os: [ubuntu-latest]
     runs-on: ${{ matrix.os }}
 
+
     steps:
+      - uses: actions/checkout@v3
       - name: Set up Apache Pulsar
         uses: reugn/github-action-pulsar@v1
+
+      - uses: shogo82148/actions-setup-mysql@v1
+        with:
+          mysql-version: '8.0.31'
+          root-password: 'my-secret-pw'
+      - run: mysql -uroot -h127.0.0.1 -e 'create database test;'
       - name: Install Go
         uses: actions/setup-go@v3
         with:
