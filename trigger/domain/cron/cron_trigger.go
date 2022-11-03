@@ -3,6 +3,7 @@ package cron
 import (
 	"context"
 	"errors"
+	"fmt"
 	"time"
 
 	"github.com/beihai0xff/pudding/pkg/cronexpr"
@@ -14,11 +15,18 @@ import (
 	"github.com/beihai0xff/pudding/types"
 )
 
+const (
+	// messageKeyFormat is the format of cron trigger message key
+	messageKeyFormat = "pudding_cron_%d_%d"
+)
+
 var (
-	errCronTemplateTopicNotFound   = errors.New("cron template topic not found")
+	// errCronTemplateTopicNotFound is the error of cron template topic is empty
+	errCronTemplateTopicNotFound = errors.New("cron template topic not found")
+	// errCronTemplatePayloadNotFound is the error of cron template payload is empty
 	errCronTemplatePayloadNotFound = errors.New("cron template topic payload not found")
-	errCronTemplateAlreadyEnabled  = errors.New("cron template already enabled")
-	errCronTemplateAlreadyDisabled = errors.New("cron template already disabled")
+	// errCronTemplateAlreadyEnabled  = errors.New("cron template already enabled")
+	// errCronTemplateAlreadyDisabled = errors.New("cron template already disabled")
 )
 
 const (
@@ -38,9 +46,34 @@ func NewTrigger(db *mysql.Client, s scheduler.Scheduler) *Trigger {
 	}
 }
 
+// Run run cron trigger loop to produce delay message
+func (t *Trigger) Run() {
+	log.Infof("start produce token")
+
+	now := time.Now()
+	timer := time.NewTimer(time.Until(now) + time.Second)
+
+	// wait for the next second
+	<-timer.C
+
+	tick := time.NewTicker(1 * time.Second)
+	for {
+
+		now := <-tick.C
+		ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+
+		if err := t.dao.FindEnableRecords(ctx, now, 100, t.Tracking); err != nil {
+			log.Errorf("failed to find enable cron template, caused by %w", err)
+		}
+
+		cancel()
+	}
+}
+
+// Register register a cron template
 func (t *Trigger) Register(ctx context.Context, temp *entity.CronTriggerTemplate) error {
 	// 1. check params
-	if err := t.checkParams(temp); err != nil {
+	if err := t.checkRegisterParams(temp); err != nil {
 		log.Errorf("failed to check params, caused by %w", err)
 		return err
 	}
@@ -54,7 +87,8 @@ func (t *Trigger) Register(ctx context.Context, temp *entity.CronTriggerTemplate
 	return nil
 }
 
-func (t *Trigger) checkParams(temp *entity.CronTriggerTemplate) error {
+// checkRegisterParams check the params of register cron template
+func (t *Trigger) checkRegisterParams(temp *entity.CronTriggerTemplate) error {
 	// 1. check cron expression
 	if _, err := cronexpr.Parse(temp.CronExpr); err != nil {
 		log.Errorf("Invalid cron expression: %w", err)
@@ -86,12 +120,13 @@ func (t *Trigger) checkParams(temp *entity.CronTriggerTemplate) error {
 	return nil
 }
 
-func (t *Trigger) Enable(ctx context.Context, temp *entity.CronTriggerTemplate) error {
-	// 1. set status to enable
-	if temp.Status == types.TemplateStatusEnable {
-		return errCronTemplateAlreadyEnabled
+// UpdateStatus update cron template status
+func (t *Trigger) UpdateStatus(ctx context.Context, id uint, status int) error {
+	// 1. set template status
+	temp := &entity.CronTriggerTemplate{
+		ID:     id,
+		Status: status,
 	}
-	temp.Status = types.TemplateStatusEnable
 
 	// 2. update the template status to db
 	if err := t.dao.Update(ctx, temp); err != nil {
@@ -108,46 +143,22 @@ func (t *Trigger) Enable(ctx context.Context, temp *entity.CronTriggerTemplate) 
 	return nil
 }
 
-func (t *Trigger) Disable(ctx context.Context, temp *entity.CronTriggerTemplate) error {
-	// 1. set status to disable
-	if temp.Status == types.TemplateStatusDisable {
-		return errCronTemplateAlreadyDisabled
-	}
-	temp.Status = types.TemplateStatusDisable
-
-	// 2. update the template status to db
-	if err := t.dao.Update(ctx, temp); err != nil {
-		log.Errorf("failed to update cron template, caused by %w", err)
-		return err
-	}
-
-	return nil
-}
-
+// Tracking try to produce Cron Trigger Message
 func (t *Trigger) Tracking(temp *entity.CronTriggerTemplate) error {
-	if temp.LoopedTimes > defaultMaximumLoopTimes {
-		log.Warnf("cron template [%d] has reached the maximum loop times, but it has been tracked", temp.ID)
-
-		temp.Status = types.TemplateStatusMaxTimes
-		return nil
-	}
-
 	nextTime, err := t.getNextTime(temp.CronExpr)
 	if err != nil {
 		log.Errorf("failed to get next time, caused by %v", err)
 		return err
 	}
 
-	// 到达取消执行时间
-	if nextTime == temp.LastExecutionTime {
-		log.Infof("cron template [%d] has reached the maximum age, set it to StatusMaxAge", temp.ID)
-
-		temp.Status = types.TemplateStatusMaxAge
+	if !t.checkTempShouldRun(temp, nextTime) {
 		return nil
 	}
 
+	// produce the message
 	msg := &types.Message{
 		Topic:     temp.Topic,
+		Key:       t.formatMessageKey(temp),
 		Payload:   temp.Payload,
 		ReadyTime: nextTime.Unix(),
 	}
@@ -158,22 +169,43 @@ func (t *Trigger) Tracking(temp *entity.CronTriggerTemplate) error {
 	}
 
 	temp.LastExecutionTime = nextTime
-	temp.LoopedTimes++
-	log.Debugf("cron template [%d] looped times: %d", temp.ID, temp.LoopedTimes)
-
-	if temp.LoopedTimes > defaultMaximumLoopTimes {
-		log.Infof("cron template [%d] has reached the maximum loop times", temp.ID)
-		temp.Status = types.TemplateStatusMaxTimes
-
-	}
+	log.Infof("cron template [%d] looped times: %d", temp.ID, temp.LoopedTimes)
 
 	return nil
 }
 
+// checkTempShouldRun check whether the template should run
+func (t *Trigger) checkTempShouldRun(temp *entity.CronTriggerTemplate, nextTime time.Time) bool {
+	temp.LoopedTimes++
+	if temp.LoopedTimes > defaultMaximumLoopTimes || temp.LoopedTimes > temp.ExceptedLoopTimes {
+		log.Warnf("cron template [%d] has reached the maximum loop times, but it has been tracked", temp.ID)
+
+		temp.Status = types.TemplateStatusMaxTimes
+		return false
+	}
+
+	// 到达取消执行时间
+	if nextTime == temp.LastExecutionTime {
+		log.Warnf("cron template [%d] has reached the maximum age, set it to StatusMaxAge", temp.ID)
+
+		temp.Status = types.TemplateStatusMaxAge
+		return false
+	}
+
+	return true
+}
+
+// getNextTime get the next time of cron expression
 func (t *Trigger) getNextTime(expr string) (time.Time, error) {
 	expression, err := cronexpr.Parse(expr)
 	if err != nil {
 		return time.Time{}, err
 	}
 	return expression.Next(time.Now()), nil
+}
+
+// formatMessageKey get cron trigger the message key
+func (t *Trigger) formatMessageKey(temp *entity.CronTriggerTemplate) string {
+
+	return fmt.Sprintf(messageKeyFormat, temp.ID, temp.LoopedTimes)
 }
