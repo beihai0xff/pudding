@@ -17,7 +17,7 @@ import (
 
 const (
 	// messageKeyFormat is the format of cron trigger message key
-	messageKeyFormat = "pudding_cron_%d_%d"
+	messageKeyFormat = "pudding_cron_trigger_template_%d_%d"
 )
 
 var (
@@ -206,6 +206,5 @@ func (t *Trigger) getNextTime(expr string) (time.Time, error) {
 
 // formatMessageKey get cron trigger the message key
 func (t *Trigger) formatMessageKey(temp *entity.CronTriggerTemplate) string {
-
 	return fmt.Sprintf(messageKeyFormat, temp.ID, temp.LoopedTimes)
 }
