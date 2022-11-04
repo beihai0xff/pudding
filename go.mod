@@ -26,6 +26,7 @@ require (
 
 replace github.com/go-redis/redis_rate/v10 => github.com/beihai0xff/redis_rate/v10 v10.0.0-rc.1
 
+
 require (
 	github.com/99designs/go-keychain v0.0.0-20191008050251-8e49817e8af4 // indirect
 	github.com/99designs/keyring v1.2.1 // indirect

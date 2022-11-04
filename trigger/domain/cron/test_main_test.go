@@ -3,20 +3,26 @@ package cron
 import (
 	"os"
 	"testing"
+	"time"
 
 	"github.com/beihai0xff/pudding/configs"
+	"github.com/beihai0xff/pudding/pkg/clock"
 	"github.com/beihai0xff/pudding/pkg/db/mysql"
 	"github.com/beihai0xff/pudding/pkg/log"
 	"github.com/beihai0xff/pudding/trigger/dao/storage/po"
 )
 
-var test_trigger *Trigger
+var testTrigger *Trigger
 
 func TestMain(m *testing.M) {
 
 	// newMySQLServer()
 	db := newMySQLClient()
-	test_trigger = &Trigger{}
+	testTrigger = &Trigger{
+		s:     nil,
+		dao:   nil,
+		clock: clock.NewFakeClock(time.Date(2022, 1, 1, 0, 0, 0, 0, time.UTC)),
+	}
 	createTable(db)
 
 	code := m.Run()
