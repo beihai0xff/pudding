@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/beihai0xff/pudding/pkg/clock"
 	"github.com/beihai0xff/pudding/pkg/cronexpr"
 	"github.com/beihai0xff/pudding/pkg/db/mysql"
 	"github.com/beihai0xff/pudding/pkg/log"
@@ -35,14 +36,16 @@ const (
 )
 
 type Trigger struct {
-	s   scheduler.Scheduler
-	dao dao.CronTemplateDAO
+	s     scheduler.Scheduler
+	dao   dao.CronTemplateDAO
+	clock clock.Clock
 }
 
 func NewTrigger(db *mysql.Client, s scheduler.Scheduler) *Trigger {
 	return &Trigger{
-		s:   s,
-		dao: dao.NewCronTemplateDAO(db),
+		s:     s,
+		dao:   dao.NewCronTemplateDAO(db),
+		clock: clock.New(),
 	}
 }
 
@@ -50,7 +53,7 @@ func NewTrigger(db *mysql.Client, s scheduler.Scheduler) *Trigger {
 func (t *Trigger) Run() {
 	log.Infof("start produce token")
 
-	now := time.Now()
+	now := t.clock.Now()
 	timer := time.NewTimer(time.Until(now) + time.Second)
 
 	// wait for the next second
@@ -201,7 +204,7 @@ func (t *Trigger) getNextTime(expr string) (time.Time, error) {
 	if err != nil {
 		return time.Time{}, err
 	}
-	return expression.Next(time.Now()), nil
+	return expression.Next(t.clock.Now()), nil
 }
 
 // formatMessageKey get cron trigger the message key
