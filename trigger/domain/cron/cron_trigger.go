@@ -95,24 +95,24 @@ func (t *Trigger) checkRegisterParams(temp *entity.CronTriggerTemplate) error {
 	// 1. check cron expression
 	if _, err := cronexpr.Parse(temp.CronExpr); err != nil {
 		log.Errorf("Invalid cron expression: %w", err)
-		return err
+		return fmt.Errorf("invalid cron expression: %w", err)
 	}
 
 	// 2. check topic
 	if temp.Topic == "" {
-		log.Error("Cron Template Topic can not be empty")
+		log.Error(errCronTemplateTopicNotFound.Error())
 		return errCronTemplateTopicNotFound
 	}
 
 	// 3. check payload
 	if len(temp.Payload) == 0 {
-		log.Error("Cron Template Payload can not be empty")
+		log.Error(errCronTemplatePayloadNotFound.Error())
 		return errCronTemplatePayloadNotFound
 	}
 
 	// 4. set default value if necessary
 	if temp.ExceptedEndTime.IsZero() {
-		temp.ExceptedEndTime = time.Now().AddDate(1, 0, 0)
+		temp.ExceptedEndTime = t.clock.Now().AddDate(0, 1, 0)
 	}
 	if temp.ExceptedLoopTimes == 0 {
 		temp.ExceptedLoopTimes = defaultMaximumLoopTimes
