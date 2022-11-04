@@ -8,7 +8,91 @@ import (
 	"github.com/stretchr/testify/assert"
 
 	"github.com/beihai0xff/pudding/trigger/entity"
+	"github.com/beihai0xff/pudding/types"
 )
+
+func TestTrigger_checkRegisterParams(t1 *testing.T) {
+	type args struct {
+		temp *entity.CronTriggerTemplate
+	}
+	tests := []struct {
+		name    string
+		args    args
+		want    *entity.CronTriggerTemplate
+		wantErr assert.ErrorAssertionFunc
+	}{
+		{
+			name: "normal",
+			args: args{
+				&entity.CronTriggerTemplate{
+					CronExpr: "*/1 * * * * * *",
+					Topic:    "test",
+					Payload:  []byte("hello"),
+				},
+			},
+			want: &entity.CronTriggerTemplate{
+				CronExpr:          "*/1 * * * * * *",
+				Topic:             "test",
+				Payload:           []byte("hello"),
+				ExceptedEndTime:   testTrigger.clock.Now().AddDate(0, 1, 0),
+				ExceptedLoopTimes: defaultMaximumLoopTimes,
+				Status:            types.TemplateStatusDisable,
+			},
+			wantErr: assert.NoError,
+		},
+		{
+			name: "Invalid cron expression",
+			args: args{
+				&entity.CronTriggerTemplate{
+					CronExpr: "*/70 * * * * * *",
+					Topic:    "test",
+					Payload:  []byte("hello"),
+				},
+			},
+			want: &entity.CronTriggerTemplate{
+				CronExpr: "*/70 * * * * * *",
+				Topic:    "test",
+				Payload:  []byte("hello"),
+			},
+			wantErr: assert.Error,
+		},
+		{
+			name: "topic not found",
+			args: args{
+				&entity.CronTriggerTemplate{
+					CronExpr: "*/20 * * * * * *",
+					Payload:  []byte("hello"),
+				},
+			},
+			want: &entity.CronTriggerTemplate{
+				CronExpr: "*/20 * * * * * *",
+				Payload:  []byte("hello"),
+			},
+			wantErr: assert.Error,
+		},
+		{
+			name: "payload not found",
+			args: args{
+				&entity.CronTriggerTemplate{
+					CronExpr: "*/20 * * * * * *",
+					Topic:    "test",
+				},
+			},
+			want: &entity.CronTriggerTemplate{
+				CronExpr: "*/20 * * * * * *",
+				Topic:    "test",
+			},
+			wantErr: assert.Error,
+		},
+	}
+	for _, tt := range tests {
+		t1.Run(tt.name, func(t1 *testing.T) {
+			err := testTrigger.checkRegisterParams(tt.args.temp)
+			tt.wantErr(t1, err, fmt.Errorf("checkRegisterParams got error (%w)", err))
+			assert.Equalf(t1, tt.want, tt.args.temp, fmt.Sprintf("checkRegisterParams(%v)", tt.args.temp))
+		})
+	}
+}
 
 func TestTrigger_formatMessageKey(t *testing.T) {
 	type args struct {
