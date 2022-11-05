@@ -1,6 +1,7 @@
 package cron
 
 import (
+	"context"
 	"fmt"
 	"testing"
 	"time"
@@ -10,6 +11,43 @@ import (
 	"github.com/beihai0xff/pudding/trigger/entity"
 	"github.com/beihai0xff/pudding/types"
 )
+
+func TestTrigger_Register(t1 *testing.T) {
+	type args struct {
+		ctx  context.Context
+		temp *entity.CronTriggerTemplate
+	}
+	tests := []struct {
+		name    string
+		args    args
+		wantErr assert.ErrorAssertionFunc
+	}{
+		{
+			name: "normal",
+			args: args{
+				ctx: context.Background(),
+				temp: &entity.CronTriggerTemplate{
+					ID:                0,
+					CronExpr:          "*/1 * * * * * *",
+					Topic:             "test",
+					Payload:           []byte("hello"),
+					LoopedTimes:       0,
+					ExceptedEndTime:   testTrigger.clock.Now().AddDate(1, 1, 0),
+					ExceptedLoopTimes: 10,
+				},
+			},
+			wantErr: assert.NoError,
+		},
+	}
+	for _, tt := range tests {
+		t1.Run(tt.name, func(t1 *testing.T) {
+			tt.wantErr(t1, testTrigger.Register(tt.args.ctx, tt.args.temp), fmt.Sprintf("Register(%+v, %+v)", tt.args.ctx, tt.args.temp))
+			e, err := testTrigger.dao.FindByID(tt.args.ctx, tt.args.temp.ID)
+			assert.NoError(t1, err)
+			assert.Equal(t1, tt.args.temp, e)
+		})
+	}
+}
 
 func TestTrigger_checkRegisterParams(t1 *testing.T) {
 	type args struct {
@@ -34,7 +72,8 @@ func TestTrigger_checkRegisterParams(t1 *testing.T) {
 				CronExpr:          "*/1 * * * * * *",
 				Topic:             "test",
 				Payload:           []byte("hello"),
-				ExceptedEndTime:   testTrigger.clock.Now().AddDate(0, 1, 0),
+				LastExecutionTime: defaultLastExecutionTime,
+				ExceptedEndTime:   testTrigger.clock.Now().Add(defaultTemplateActiveDuration),
 				ExceptedLoopTimes: defaultMaximumLoopTimes,
 				Status:            types.TemplateStatusDisable,
 			},
@@ -89,7 +128,67 @@ func TestTrigger_checkRegisterParams(t1 *testing.T) {
 		t1.Run(tt.name, func(t1 *testing.T) {
 			err := testTrigger.checkRegisterParams(tt.args.temp)
 			tt.wantErr(t1, err, fmt.Errorf("checkRegisterParams got error (%w)", err))
-			assert.Equalf(t1, tt.want, tt.args.temp, fmt.Sprintf("checkRegisterParams(%v)", tt.args.temp))
+			assert.Equalf(t1, tt.want, tt.args.temp, fmt.Sprintf("checkRegisterParams(%+v)", tt.args.temp))
+		})
+	}
+}
+
+func TestTrigger_checkTempShouldRun(t1 *testing.T) {
+	type args struct {
+		temp     *entity.CronTriggerTemplate
+		nextTime time.Time
+	}
+	tests := []struct {
+		name string
+		args args
+		want bool
+	}{
+		{
+			name: "normal",
+			args: args{
+				temp: &entity.CronTriggerTemplate{
+					ID:                1,
+					LoopedTimes:       9,
+					LastExecutionTime: testTrigger.clock.Now(),
+					ExceptedEndTime:   testTrigger.clock.Now().AddDate(1, 1, 0),
+					ExceptedLoopTimes: 10,
+					Status:            types.TemplateStatusEnable,
+				},
+				nextTime: testTrigger.clock.Now().AddDate(0, 2, 0)},
+			want: true,
+		},
+		{
+			name: "reached the maximum loop times",
+			args: args{
+				temp: &entity.CronTriggerTemplate{
+					ID:                2,
+					LoopedTimes:       10,
+					LastExecutionTime: testTrigger.clock.Now(),
+					ExceptedEndTime:   testTrigger.clock.Now().AddDate(1, 1, 0),
+					ExceptedLoopTimes: 10,
+					Status:            types.TemplateStatusEnable,
+				},
+				nextTime: testTrigger.clock.Now().AddDate(0, 2, 0)},
+			want: false,
+		},
+		{
+			name: "normal",
+			args: args{
+				temp: &entity.CronTriggerTemplate{
+					ID:                3,
+					LoopedTimes:       8,
+					LastExecutionTime: testTrigger.clock.Now().AddDate(0, 1, 0),
+					ExceptedEndTime:   testTrigger.clock.Now().AddDate(0, 1, 0),
+					ExceptedLoopTimes: 10,
+					Status:            types.TemplateStatusEnable,
+				},
+				nextTime: testTrigger.clock.Now().AddDate(0, 2, 0)},
+			want: false,
+		},
+	}
+	for _, tt := range tests {
+		t1.Run(tt.name, func(t1 *testing.T) {
+			assert.Equalf(t1, tt.want, testTrigger.checkTempShouldRun(tt.args.temp, tt.args.nextTime), "checkTempShouldRun(%+v, %+v)", tt.args.temp, tt.args.nextTime)
 		})
 	}
 }
@@ -138,66 +237,6 @@ func TestTrigger_getNextTime(t1 *testing.T) {
 				return
 			}
 			assert.Equalf(t1, tt.want, got, "getNextTime(%v)", tt.args.expr)
-		})
-	}
-}
-
-func TestTrigger_checkTempShouldRun(t1 *testing.T) {
-	type args struct {
-		temp     *entity.CronTriggerTemplate
-		nextTime time.Time
-	}
-	tests := []struct {
-		name string
-		args args
-		want bool
-	}{
-		{
-			name: "normal",
-			args: args{
-				temp: &entity.CronTriggerTemplate{
-					ID:                1,
-					LoopedTimes:       9,
-					LastExecutionTime: testTrigger.clock.Now().AddDate(0, 1, 0),
-					ExceptedEndTime:   testTrigger.clock.Now().AddDate(1, 1, 0),
-					ExceptedLoopTimes: 10,
-					Status:            types.TemplateStatusEnable,
-				},
-				nextTime: testTrigger.clock.Now().AddDate(0, 2, 0)},
-			want: true,
-		},
-		{
-			name: "reached the maximum loop times",
-			args: args{
-				temp: &entity.CronTriggerTemplate{
-					ID:                2,
-					LoopedTimes:       10,
-					LastExecutionTime: testTrigger.clock.Now().AddDate(0, 1, 0),
-					ExceptedEndTime:   testTrigger.clock.Now().AddDate(1, 1, 0),
-					ExceptedLoopTimes: 10,
-					Status:            types.TemplateStatusEnable,
-				},
-				nextTime: testTrigger.clock.Now().AddDate(0, 2, 0)},
-			want: false,
-		},
-		{
-			name: "normal",
-			args: args{
-				temp: &entity.CronTriggerTemplate{
-					ID:                3,
-					LoopedTimes:       8,
-					LastExecutionTime: testTrigger.clock.Now().AddDate(0, 1, 0),
-					ExceptedEndTime:   testTrigger.clock.Now().AddDate(0, 1, 0),
-					ExceptedLoopTimes: 10,
-					Status:            types.TemplateStatusEnable,
-				},
-				nextTime: testTrigger.clock.Now().AddDate(0, 2, 0)},
-			want: false,
-		},
-	}
-	for _, tt := range tests {
-		t1.Run(tt.name, func(t1 *testing.T) {
-			assert.Equalf(t1, tt.want, testTrigger.checkTempShouldRun(tt.args.temp, tt.args.nextTime), "checkTempShouldRun(%+v, %+v)", tt.args.temp, tt.args.nextTime)
 		})
 	}
 }

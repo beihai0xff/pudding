@@ -11,11 +11,12 @@ import (
 )
 
 type CronTemplateDAO interface {
+	FindByID(ctx context.Context, id uint) (*entity.CronTriggerTemplate, error)
 	Insert(ctx context.Context, e *entity.CronTriggerTemplate) error
 	Update(ctx context.Context, e *entity.CronTriggerTemplate) error
-	FindEnableRecords(ctx context.Context, t time.Time, batchSize int, f types.CronTempHandler) error
+	BatchEnabledRecords(ctx context.Context, t time.Time, batchSize int, f types.CronTempHandler) error
 }
 
-func NewCronTemplateDAO(db *mysql.Client) CronTemplateDAO {
+func NewCronTemplate(db *mysql.Client) CronTemplateDAO {
 	return sql.NewCronTemplate(db)
 }

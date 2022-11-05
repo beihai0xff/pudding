@@ -19,6 +19,11 @@ import (
 const (
 	// messageKeyFormat is the format of cron trigger message key
 	messageKeyFormat = "pudding_cron_trigger_template_%d_%d"
+
+	// defaultMaximumLoopTimes  Maximum Loop Times of Cron Trigger: 1024
+	defaultMaximumLoopTimes = 1 << 10
+	// defaultTemplateActiveDuration is the default active duration of cron template: 30 days
+	defaultTemplateActiveDuration = 30 * 24 * time.Hour
 )
 
 var (
@@ -28,11 +33,9 @@ var (
 	errCronTemplatePayloadNotFound = errors.New("cron template topic payload not found")
 	// errCronTemplateAlreadyEnabled  = errors.New("cron template already enabled")
 	// errCronTemplateAlreadyDisabled = errors.New("cron template already disabled")
-)
 
-const (
-	// defaultMaximumLoopTimes  Maximum Loop Times of Cron Trigger: 1024
-	defaultMaximumLoopTimes = 1 << 10
+	// defaultLastExecutionTime is the default last execution time for New Registered cron
+	defaultLastExecutionTime = time.Unix(1, 0).UTC()
 )
 
 type Trigger struct {
@@ -44,7 +47,7 @@ type Trigger struct {
 func NewTrigger(db *mysql.Client, s scheduler.Scheduler) *Trigger {
 	return &Trigger{
 		s:     s,
-		dao:   dao.NewCronTemplateDAO(db),
+		dao:   dao.NewCronTemplate(db),
 		clock: clock.New(),
 	}
 }
@@ -65,7 +68,7 @@ func (t *Trigger) Run() {
 		now := <-tick.C
 		ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 
-		if err := t.dao.FindEnableRecords(ctx, now, 100, t.Tracking); err != nil {
+		if err := t.dao.BatchEnabledRecords(ctx, now, 100, t.Tracking); err != nil {
 			log.Errorf("failed to find enable cron template, caused by %w", err)
 		}
 
@@ -112,11 +115,13 @@ func (t *Trigger) checkRegisterParams(temp *entity.CronTriggerTemplate) error {
 
 	// 4. set default value if necessary
 	if temp.ExceptedEndTime.IsZero() {
-		temp.ExceptedEndTime = t.clock.Now().AddDate(0, 1, 0)
+		temp.ExceptedEndTime = t.clock.Now().Add(defaultTemplateActiveDuration)
 	}
 	if temp.ExceptedLoopTimes == 0 {
 		temp.ExceptedLoopTimes = defaultMaximumLoopTimes
 	}
+
+	temp.LastExecutionTime = defaultLastExecutionTime
 	// default status is Disable
 	temp.Status = types.TemplateStatusDisable
 
@@ -134,12 +139,6 @@ func (t *Trigger) UpdateStatus(ctx context.Context, id uint, status int) error {
 	// 2. update the template status to db
 	if err := t.dao.Update(ctx, temp); err != nil {
 		log.Errorf("failed to update cron template, caused by %w", err)
-		return err
-	}
-
-	// 3. tracking the template for first time
-	if err := t.Tracking(temp); err != nil {
-		log.Errorf("failed to tracking cron template first time, caused by %w", err)
 		return err
 	}
 
