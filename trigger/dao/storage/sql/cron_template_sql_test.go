@@ -123,7 +123,7 @@ func TestCronTemplate_FindEnableRecords(t *testing.T) {
 		Payload:           []byte("hello"),
 		LastExecutionTime: time.Date(2022, 1, 1, 0, 0, 0, 0, time.UTC),
 		ExceptedEndTime:   time.Date(2025, 1, 1, 0, 0, 0, 0, time.UTC),
-		ExceptedLoopTimes: 1,
+		ExceptedLoopTimes: 10,
 		LoopedTimes:       1,
 		Status:            types.TemplateStatusEnable,
 	}
@@ -134,8 +134,14 @@ func TestCronTemplate_FindEnableRecords(t *testing.T) {
 	fc := types.CronTempHandler(
 		func(e2 *entity.CronTriggerTemplate) error {
 			assert.Equal(t, e, e2)
+			e2.LoopedTimes = 2
 			return nil
 		})
 	// test find enable records
-	cronTemplateSQL.FindEnableRecords(ctx, time.Date(2022, 1, 1, 0, 0, 0, 0, time.Local), 10, fc)
+	err := cronTemplateSQL.FindEnableRecords(ctx, time.Date(2023, 1, 1, 0, 0, 0, 0, time.Local), 10, fc)
+	assert.NoError(t, err)
+
+	e3, err := cronTemplateSQL.FindByID(ctx, e.ID)
+	assert.NoError(t, err)
+	assert.Equal(t, uint64(2), e3.LoopedTimes)
 }

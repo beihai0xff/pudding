@@ -6,10 +6,12 @@ import (
 	"time"
 
 	"github.com/go-playground/validator/v10"
+	"github.com/jinzhu/copier"
 	"gorm.io/gorm"
 	"gorm.io/gorm/clause"
 
 	"github.com/beihai0xff/pudding/pkg/db/mysql"
+	"github.com/beihai0xff/pudding/pkg/log"
 	"github.com/beihai0xff/pudding/trigger/dao/convertor"
 	"github.com/beihai0xff/pudding/trigger/dao/storage/po"
 	"github.com/beihai0xff/pudding/trigger/entity"
@@ -58,15 +60,21 @@ func (dao *CronTemplate) FindEnableRecords(ctx context.Context, t time.Time, bat
 
 	// handle function
 	fc := func(tx *gorm.DB, batch int) error {
-		for _, res := range results {
-			e, err := convertor.CronTemplatePoTOEntity(&res)
+		for i := 0; i < len(results); i++ {
+			e, err := convertor.CronTemplatePoTOEntity(&results[i])
 			if err != nil {
 				return err
 			}
 			if err := f(e); err != nil {
 				return err
 			}
+
+			if err := copier.Copy(&results[i], e); err != nil {
+				return err
+			}
 		}
+
+		log.Infof("update %+v records", results)
 
 		tx.Save(&results)
 
