@@ -9,6 +9,7 @@ import (
 	"github.com/beihai0xff/pudding/pkg/clock"
 	"github.com/beihai0xff/pudding/pkg/db/mysql"
 	"github.com/beihai0xff/pudding/pkg/log"
+	"github.com/beihai0xff/pudding/trigger/dao"
 	"github.com/beihai0xff/pudding/trigger/dao/storage/po"
 )
 
@@ -18,12 +19,13 @@ func TestMain(m *testing.M) {
 
 	// newMySQLServer()
 	db := newMySQLClient()
+	createTable(db)
+
 	testTrigger = &Trigger{
 		s:     nil,
-		dao:   nil,
+		dao:   dao.NewCronTemplate(db),
 		clock: clock.NewFakeClock(time.Date(2022, 1, 1, 0, 0, 0, 0, time.UTC)),
 	}
-	createTable(db)
 
 	code := m.Run()
 

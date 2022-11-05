@@ -3,13 +3,6 @@ package sql
 import (
 	"os"
 	"testing"
-	"time"
-
-	sqle "github.com/dolthub/go-mysql-server"
-	"github.com/dolthub/go-mysql-server/memory"
-	"github.com/dolthub/go-mysql-server/server"
-	"github.com/dolthub/go-mysql-server/sql"
-	"github.com/dolthub/go-mysql-server/sql/information_schema"
 
 	"github.com/beihai0xff/pudding/configs"
 	"github.com/beihai0xff/pudding/pkg/db/mysql"
@@ -17,40 +10,20 @@ import (
 	"github.com/beihai0xff/pudding/trigger/dao/storage/po"
 )
 
-var cronTemplateSQL *CronTemplate
+var testCronTemplate *CronTemplate
 
 func TestMain(m *testing.M) {
 
 	// newMySQLServer()
 	db := newMySQLClient()
 	createTable(db)
+
 	createDao(db)
 
 	code := m.Run()
 
 	dropTable(db)
 	os.Exit(code)
-
-}
-
-func newMySQLServer() {
-	engine := sqle.NewDefault(
-		sql.NewDatabaseProvider(
-			memory.NewDatabase("test"),
-			information_schema.NewInformationSchemaDatabase(),
-		))
-	engine.Analyzer.Catalog.MySQLDb.AddRootAccount()
-	config := server.Config{
-		Protocol: "tcp",
-		Address:  "localhost:3306",
-		Version:  "8.0.23",
-	}
-	s, err := server.NewDefaultServer(config, engine)
-	if err != nil {
-		panic(err)
-	}
-	go s.Start()
-	time.Sleep(time.Second)
 
 }
 
@@ -83,5 +56,5 @@ func dropTable(db *mysql.Client) {
 }
 
 func createDao(db *mysql.Client) {
-	cronTemplateSQL = NewCronTemplate(db)
+	testCronTemplate = NewCronTemplate(db)
 }

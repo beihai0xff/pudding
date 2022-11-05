@@ -54,7 +54,7 @@ func (dao *CronTemplate) Update(ctx context.Context, e *entity.CronTriggerTempla
 	return dao.db.WithContext(ctx).Updates(p).Error
 }
 
-func (dao *CronTemplate) FindEnableRecords(ctx context.Context, t time.Time, batchSize int,
+func (dao *CronTemplate) BatchEnabledRecords(ctx context.Context, t time.Time, batchSize int,
 	f types.CronTempHandler) error {
 	var results []po.CronTriggerTemplate
 

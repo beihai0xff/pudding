@@ -60,10 +60,10 @@ func TestCronTemplate_Insert(t *testing.T) {
 		},
 	}
 	for _, tt := range tests {
-		err := cronTemplateSQL.Insert(tt.args.ctx, tt.args.e)
+		err := testCronTemplate.Insert(tt.args.ctx, tt.args.e)
 		tt.wantErr(t, err)
 
-		res, _ := cronTemplateSQL.FindByID(tt.args.ctx, tt.args.e.ID)
+		res, _ := testCronTemplate.FindByID(tt.args.ctx, tt.args.e.ID)
 		tt.assertion(t, tt.args.e, res)
 	}
 }
@@ -80,7 +80,7 @@ func TestCronTemplate_Update(t *testing.T) {
 		LoopedTimes:       1,
 		Status:            types.TemplateStatusDisable,
 	}
-	_ = cronTemplateSQL.Insert(ctx, e)
+	_ = testCronTemplate.Insert(ctx, e)
 
 	// test set status to enable
 
@@ -88,9 +88,9 @@ func TestCronTemplate_Update(t *testing.T) {
 		ID:     e.ID,
 		Status: types.TemplateStatusEnable,
 	}
-	err := cronTemplateSQL.Update(ctx, update)
+	err := testCronTemplate.Update(ctx, update)
 	if assert.NoError(t, err) {
-		res, _ := cronTemplateSQL.FindByID(ctx, e.ID)
+		res, _ := testCronTemplate.FindByID(ctx, e.ID)
 		assert.Equal(t, res.Status, types.TemplateStatusEnable)
 		e.Status = types.TemplateStatusEnable
 		assert.Equal(t, res.Status, types.TemplateStatusEnable)
@@ -98,9 +98,9 @@ func TestCronTemplate_Update(t *testing.T) {
 
 	// test set status to disable
 	e.Status, update.Status = types.TemplateStatusDisable, types.TemplateStatusDisable
-	err = cronTemplateSQL.Update(ctx, update)
+	err = testCronTemplate.Update(ctx, update)
 	if assert.NoError(t, err) {
-		res, _ := cronTemplateSQL.FindByID(ctx, e.ID)
+		res, _ := testCronTemplate.FindByID(ctx, e.ID)
 		assert.Equal(t, res.Status, types.TemplateStatusDisable)
 		assert.Equal(t, res.Status, types.TemplateStatusDisable)
 	}
@@ -110,7 +110,7 @@ func TestCronTemplate_Update(t *testing.T) {
 		ID:     e.ID * 100,
 		Status: types.TemplateStatusDisable,
 	}
-	err = cronTemplateSQL.Update(ctx, update)
+	err = testCronTemplate.Update(ctx, update)
 	assert.NoError(t, err)
 
 }
@@ -127,7 +127,7 @@ func TestCronTemplate_FindEnableRecords(t *testing.T) {
 		LoopedTimes:       1,
 		Status:            types.TemplateStatusEnable,
 	}
-	if err := cronTemplateSQL.Insert(ctx, e); err != nil {
+	if err := testCronTemplate.Insert(ctx, e); err != nil {
 		t.Fatal(err)
 	}
 
@@ -138,10 +138,10 @@ func TestCronTemplate_FindEnableRecords(t *testing.T) {
 			return nil
 		})
 	// test find enable records
-	err := cronTemplateSQL.FindEnableRecords(ctx, time.Date(2023, 1, 1, 0, 0, 0, 0, time.Local), 10, fc)
+	err := testCronTemplate.BatchEnabledRecords(ctx, time.Date(2023, 1, 1, 0, 0, 0, 0, time.Local), 10, fc)
 	assert.NoError(t, err)
 
-	e3, err := cronTemplateSQL.FindByID(ctx, e.ID)
+	e3, err := testCronTemplate.FindByID(ctx, e.ID)
 	assert.NoError(t, err)
 	assert.Equal(t, uint64(2), e3.LoopedTimes)
 }

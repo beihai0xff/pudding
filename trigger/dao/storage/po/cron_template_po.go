@@ -18,7 +18,7 @@ type CronTriggerTemplate struct {
 	// Payload the message payload
 	Payload []byte `gorm:"column:payload;type:TEXT;not null;comment:'消息内容'" copier:"must,nopanic"`
 
-	// NextExecutionTime last time to schedule the message
+	// LastExecutionTime last time to schedule the message
 	LastExecutionTime time.Time `gorm:"column:last_execution_time;type:TIMESTAMP;not null;comment:'上次执行时间'" copier:"must,nopanic"`
 
 	// ExceptedEndTime Excepted Trigger end time, if it is 0, it means that it will not end.
