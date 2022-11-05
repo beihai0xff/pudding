@@ -85,7 +85,7 @@ func (dao *CronTemplate) BatchEnabledRecords(ctx context.Context, t time.Time, b
 	return dao.db.WithContext(ctx).Clauses(clause.Locking{
 		Strength: "UPDATE",
 		Options:  "SKIP LOCKED",
-	}).Where("status = ? AND last_execution_time <= ?", types.TemplateStatusEnable, &t).
+	}).Where("status = ? AND last_execution_time <= ?", types.TemplateStatusEnabled, &t).
 		FindInBatches(&results, batchSize, fc).Error
 
 }

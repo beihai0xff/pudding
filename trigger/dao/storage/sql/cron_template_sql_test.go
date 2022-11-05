@@ -34,7 +34,7 @@ func TestCronTemplate_Insert(t *testing.T) {
 					ExceptedEndTime:   time.Date(2025, 1, 1, 0, 0, 0, 0, time.UTC),
 					ExceptedLoopTimes: 1,
 					LoopedTimes:       1,
-					Status:            types.TemplateStatusDisable,
+					Status:            types.TemplateStatusDisabled,
 				},
 			},
 			wantErr:   assert.NoError,
@@ -52,7 +52,7 @@ func TestCronTemplate_Insert(t *testing.T) {
 					ExceptedEndTime:   time.Date(2025, 1, 1, 0, 0, 0, 0, time.UTC),
 					ExceptedLoopTimes: 1,
 					LoopedTimes:       1,
-					Status:            types.TemplateStatusDisable,
+					Status:            types.TemplateStatusDisabled,
 				},
 			},
 			wantErr:   assert.Error,
@@ -78,7 +78,7 @@ func TestCronTemplate_Update(t *testing.T) {
 		ExceptedEndTime:   time.Date(2025, 1, 1, 0, 0, 0, 0, time.UTC),
 		ExceptedLoopTimes: 1,
 		LoopedTimes:       1,
-		Status:            types.TemplateStatusDisable,
+		Status:            types.TemplateStatusDisabled,
 	}
 	_ = testCronTemplate.Insert(ctx, e)
 
@@ -86,29 +86,29 @@ func TestCronTemplate_Update(t *testing.T) {
 
 	update := &entity.CronTriggerTemplate{
 		ID:     e.ID,
-		Status: types.TemplateStatusEnable,
+		Status: types.TemplateStatusEnabled,
 	}
 	err := testCronTemplate.Update(ctx, update)
 	if assert.NoError(t, err) {
 		res, _ := testCronTemplate.FindByID(ctx, e.ID)
-		assert.Equal(t, res.Status, types.TemplateStatusEnable)
-		e.Status = types.TemplateStatusEnable
-		assert.Equal(t, res.Status, types.TemplateStatusEnable)
+		assert.Equal(t, res.Status, types.TemplateStatusEnabled)
+		e.Status = types.TemplateStatusEnabled
+		assert.Equal(t, res.Status, types.TemplateStatusEnabled)
 	}
 
 	// test set status to disable
-	e.Status, update.Status = types.TemplateStatusDisable, types.TemplateStatusDisable
+	e.Status, update.Status = types.TemplateStatusDisabled, types.TemplateStatusDisabled
 	err = testCronTemplate.Update(ctx, update)
 	if assert.NoError(t, err) {
 		res, _ := testCronTemplate.FindByID(ctx, e.ID)
-		assert.Equal(t, res.Status, types.TemplateStatusDisable)
-		assert.Equal(t, res.Status, types.TemplateStatusDisable)
+		assert.Equal(t, res.Status, types.TemplateStatusDisabled)
+		assert.Equal(t, res.Status, types.TemplateStatusDisabled)
 	}
 
 	// test update not exist record
 	update = &entity.CronTriggerTemplate{
 		ID:     e.ID * 100,
-		Status: types.TemplateStatusDisable,
+		Status: types.TemplateStatusDisabled,
 	}
 	err = testCronTemplate.Update(ctx, update)
 	assert.NoError(t, err)
@@ -125,7 +125,7 @@ func TestCronTemplate_FindEnableRecords(t *testing.T) {
 		ExceptedEndTime:   time.Date(2025, 1, 1, 0, 0, 0, 0, time.UTC),
 		ExceptedLoopTimes: 10,
 		LoopedTimes:       1,
-		Status:            types.TemplateStatusEnable,
+		Status:            types.TemplateStatusEnabled,
 	}
 	if err := testCronTemplate.Insert(ctx, e); err != nil {
 		t.Fatal(err)
