@@ -9,7 +9,7 @@ import (
 	"github.com/stretchr/testify/assert"
 	"golang.org/x/net/context"
 
-	"github.com/beihai0xff/pudding/internal/scheduler/broker"
+	"github.com/beihai0xff/pudding/app/scheduler/broker"
 	rdb "github.com/beihai0xff/pudding/pkg/redis"
 	"github.com/beihai0xff/pudding/test/mock"
 	"github.com/beihai0xff/pudding/types"

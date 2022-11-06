@@ -3,16 +3,17 @@ package broker
 import (
 	"context"
 
-	"github.com/beihai0xff/pudding/internal/scheduler/broker/pulsar_broker"
-	"github.com/beihai0xff/pudding/internal/scheduler/broker/redis_broker"
+	"github.com/beihai0xff/pudding/app/scheduler/broker/pulsar_broker"
+	"github.com/beihai0xff/pudding/app/scheduler/broker/redis_broker"
 	"github.com/beihai0xff/pudding/pkg/mq/pulsar"
 	rdb "github.com/beihai0xff/pudding/pkg/redis"
 	"github.com/beihai0xff/pudding/types"
 )
 
 // nolint:lll
-//go:generate mockgen -destination=../../../test/mock/queue_mock.go --package=mock github.com/beihai0xff/pudding/internal/scheduler/broker DelayQueue,RealTimeQueue
+//go:generate mockgen -destination=../../../test/mock/queue_mock.go --package=mock github.com/beihai0xff/pudding/app/scheduler/broker DelayQueue,RealTimeQueue
 
+// DelayQueue is a queue to store messages with delay time
 type DelayQueue interface {
 	// Produce produce a Message to DelayQueue
 	Produce(ctx context.Context, timeSlice string, msg *types.Message) error
@@ -22,6 +23,7 @@ type DelayQueue interface {
 	Close() error
 }
 
+// RealTimeQueue is a queue to store messages in realtime
 type RealTimeQueue interface {
 	// Produce produce a Message to the queue in real time
 	Produce(ctx context.Context, msg *types.Message) error

@@ -6,9 +6,9 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/beihai0xff/pudding/internal/scheduler"
-	"github.com/beihai0xff/pudding/internal/trigger/entity"
-	"github.com/beihai0xff/pudding/internal/trigger/repo"
+	"github.com/beihai0xff/pudding/app/scheduler"
+	"github.com/beihai0xff/pudding/app/trigger/entity"
+	"github.com/beihai0xff/pudding/app/trigger/repo"
 	"github.com/beihai0xff/pudding/pkg/clock"
 	"github.com/beihai0xff/pudding/pkg/cronexpr"
 	"github.com/beihai0xff/pudding/pkg/db/mysql"

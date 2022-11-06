@@ -30,7 +30,6 @@ func TestRealTimeQueue_Produce(t *testing.T) {
 
 	msg := &types.Message{
 		Topic:     "test_Topic",
-		Partition: 0,
 		Payload:   []byte("12345678900987654321"),
 		Delay:     0,
 		ReadyTime: 10,
@@ -53,7 +52,6 @@ func TestDelayQueue_getFromZSetByScore(t *testing.T) {
 	bucket := "test_bucket_getFromZSetByScore"
 	msg := &types.Message{
 		Topic:     "test_Topic",
-		Partition: 0,
 		Payload:   []byte("12345678900987654321"),
 		Delay:     0,
 		ReadyTime: 10,

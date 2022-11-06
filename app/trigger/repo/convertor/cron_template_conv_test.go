@@ -6,8 +6,8 @@ import (
 
 	"github.com/stretchr/testify/assert"
 
-	"github.com/beihai0xff/pudding/internal/trigger/entity"
-	"github.com/beihai0xff/pudding/internal/trigger/repo/storage/po"
+	"github.com/beihai0xff/pudding/app/trigger/entity"
+	"github.com/beihai0xff/pudding/app/trigger/repo/storage/po"
 	"github.com/beihai0xff/pudding/types"
 )
 

@@ -4,8 +4,8 @@ import (
 	"os"
 	"testing"
 
+	"github.com/beihai0xff/pudding/app/trigger/repo/storage/po"
 	"github.com/beihai0xff/pudding/configs"
-	"github.com/beihai0xff/pudding/internal/trigger/repo/storage/po"
 	"github.com/beihai0xff/pudding/pkg/db/mysql"
 	"github.com/beihai0xff/pudding/pkg/log"
 )

@@ -10,7 +10,6 @@ type HandleMessage func(ctx context.Context, msg *Message) error
 // Message 消息
 type Message struct {
 	Topic     string // Message Topic
-	Partition int    // Message Partition
 	Key       string // Message Key
 	Payload   []byte // Message Payload
 	Delay     int64  // Message Delay Time (Seconds)

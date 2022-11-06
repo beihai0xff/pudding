@@ -3,8 +3,8 @@ package convertor
 import (
 	"github.com/jinzhu/copier"
 
-	"github.com/beihai0xff/pudding/internal/trigger/entity"
-	"github.com/beihai0xff/pudding/internal/trigger/repo/storage/po"
+	"github.com/beihai0xff/pudding/app/trigger/entity"
+	"github.com/beihai0xff/pudding/app/trigger/repo/storage/po"
 )
 
 func CronTemplateEntityTOPo(e *entity.CronTriggerTemplate) (*po.CronTriggerTemplate, error) {
