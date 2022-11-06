@@ -1,4 +1,5 @@
 name: pudding
+time: 2022
 broker: redis
 messageQueue: pulsar
 schedulerConfig:
@@ -24,4 +25,19 @@ pulsarConfig:
       batchingMaxPublishDelay: 10
       batchingMaxMessages: 100
       batchingMaxSize: 5
-
+  log:
+    level: info
+    writers:
+      - stdout
+    format: json
+    file_config:
+      # log file path
+      filepath: ./logs/pulsar.log
+      # file max_age
+      max_age: 7
+      # max backup files
+      max_backups: 7
+      # max file size, MB
+      max_size: 128
+      # log file is compress
+      compress: false
