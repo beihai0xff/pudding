@@ -31,7 +31,7 @@ func TestTrigger_Register(t1 *testing.T) {
 					Topic:             "test",
 					Payload:           []byte("hello"),
 					LoopedTimes:       0,
-					ExceptedEndTime:   testTrigger.clock.Now().AddDate(1, 1, 0),
+					ExceptedEndTime:   testTrigger.wallClock.Now().AddDate(1, 1, 0),
 					ExceptedLoopTimes: 10,
 				},
 			},
@@ -41,7 +41,7 @@ func TestTrigger_Register(t1 *testing.T) {
 	for _, tt := range tests {
 		t1.Run(tt.name, func(t1 *testing.T) {
 			tt.wantErr(t1, testTrigger.Register(tt.args.ctx, tt.args.temp), fmt.Sprintf("Register(%+v, %+v)", tt.args.ctx, tt.args.temp))
-			e, err := testTrigger.dao.FindByID(tt.args.ctx, tt.args.temp.ID)
+			e, err := testTrigger.repo.FindByID(tt.args.ctx, tt.args.temp.ID)
 			assert.NoError(t1, err)
 			assert.Equal(t1, tt.args.temp, e)
 		})
@@ -72,7 +72,7 @@ func TestTrigger_checkRegisterParams(t1 *testing.T) {
 				Topic:             "test",
 				Payload:           []byte("hello"),
 				LastExecutionTime: defaultLastExecutionTime,
-				ExceptedEndTime:   testTrigger.clock.Now().Add(defaultTemplateActiveDuration),
+				ExceptedEndTime:   testTrigger.wallClock.Now().Add(defaultTemplateActiveDuration),
 				ExceptedLoopTimes: defaultMaximumLoopTimes,
 				Status:            types.TemplateStatusDisabled,
 			},
@@ -139,7 +139,7 @@ func TestTrigger_UpdateStatus(t1 *testing.T) {
 		Topic:             "test",
 		Payload:           []byte("hello"),
 		LoopedTimes:       0,
-		ExceptedEndTime:   testTrigger.clock.Now().AddDate(1, 1, 0),
+		ExceptedEndTime:   testTrigger.wallClock.Now().AddDate(1, 1, 0),
 		ExceptedLoopTimes: 10,
 	}
 	ctx := context.Background()
@@ -177,7 +177,7 @@ func TestTrigger_UpdateStatus(t1 *testing.T) {
 	for _, tt := range tests {
 		t1.Run(tt.name, func(t1 *testing.T) {
 			tt.wantErr(t1, testTrigger.UpdateStatus(tt.args.ctx, tt.args.id, tt.args.status), fmt.Sprintf("UpdateStatus(%+v, %+v, %+v)", tt.args.ctx, tt.args.id, tt.args.status))
-			e, _ := testTrigger.dao.FindByID(ctx, tt.args.id)
+			e, _ := testTrigger.repo.FindByID(ctx, tt.args.id)
 			assert.Equalf(t1, tt.args.status, e.Status, fmt.Sprintf("get UpdateStatus(%+v)", e))
 		})
 	}

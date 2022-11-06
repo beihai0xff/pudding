@@ -22,9 +22,9 @@ func TestMain(m *testing.M) {
 	createTable(db)
 
 	testTrigger = &Trigger{
-		s:     nil,
-		dao:   repo.NewCronTemplate(db),
-		clock: clock.NewFakeClock(time.Date(2022, 1, 1, 0, 0, 0, 0, time.UTC)),
+		s:         nil,
+		repo:      repo.NewCronTemplate(db),
+		wallClock: clock.NewFakeClock(time.Date(2022, 1, 1, 0, 0, 0, 0, time.UTC)),
 	}
 
 	code := m.Run()
