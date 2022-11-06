@@ -1,3 +1,3 @@
 #!/bin/bash
 
-protoc --go_out=./ scheduler.proto
+protoc --go-grpc_out=. *.proto

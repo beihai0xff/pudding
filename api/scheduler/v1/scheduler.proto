@@ -6,8 +6,8 @@ option go_package = ".";
 service Pudding {
   // Sends a Ping
   rpc Ping (PingRequest) returns (PingReply) {}
-  // Sends a Ping
-  rpc SendMessage (PingRequest) returns (PingReply) {}
+  // Sends a Delay Message
+  rpc SendDelayMessage (SendMessageRequest) returns (SendMessageReply) {}
 }
 
 // The Ping request message.
@@ -32,4 +32,9 @@ message SendMessageRequest {
   int64 Delay = 4;
   // Message Ready Time（now + delay, Unix Timestamp, Seconds）
   int64 ReadyTime  = 5;
+}
+
+message SendMessageReply {
+  int32 code = 1;
+  string message = 2;
 }
