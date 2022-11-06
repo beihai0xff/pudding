@@ -1,19 +1,16 @@
-package cron
+package sql
 
 import (
 	"os"
 	"testing"
-	"time"
 
 	"github.com/beihai0xff/pudding/configs"
-	"github.com/beihai0xff/pudding/pkg/clock"
+	"github.com/beihai0xff/pudding/internal/trigger/repo/storage/po"
 	"github.com/beihai0xff/pudding/pkg/db/mysql"
 	"github.com/beihai0xff/pudding/pkg/log"
-	"github.com/beihai0xff/pudding/trigger/dao"
-	"github.com/beihai0xff/pudding/trigger/dao/storage/po"
 )
 
-var testTrigger *Trigger
+var testCronTemplate *CronTemplate
 
 func TestMain(m *testing.M) {
 
@@ -21,11 +18,7 @@ func TestMain(m *testing.M) {
 	db := newMySQLClient()
 	createTable(db)
 
-	testTrigger = &Trigger{
-		s:     nil,
-		dao:   dao.NewCronTemplate(db),
-		clock: clock.NewFakeClock(time.Date(2022, 1, 1, 0, 0, 0, 0, time.UTC)),
-	}
+	createDao(db)
 
 	code := m.Run()
 
@@ -60,4 +53,8 @@ func dropTable(db *mysql.Client) {
 	if err != nil {
 		log.Errorf("drop table failed: %v", err)
 	}
+}
+
+func createDao(db *mysql.Client) {
+	testCronTemplate = NewCronTemplate(db)
 }

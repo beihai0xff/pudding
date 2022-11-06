@@ -9,6 +9,7 @@ import (
 	"github.com/stretchr/testify/assert"
 	"golang.org/x/net/context"
 
+	"github.com/beihai0xff/pudding/internal/scheduler/broker"
 	rdb "github.com/beihai0xff/pudding/pkg/redis"
 	"github.com/beihai0xff/pudding/test/mock"
 	"github.com/beihai0xff/pudding/types"
@@ -19,7 +20,7 @@ var s *Schedule
 func TestMain(m *testing.M) {
 
 	s = &Schedule{
-		delay:    NewDelayQueue(rdb.NewMockRdb()),
+		delay:    broker.NewDelayQueue(rdb.NewMockRdb()),
 		interval: 60,
 	}
 

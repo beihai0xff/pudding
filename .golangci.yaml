@@ -4,12 +4,13 @@ run:
   concurrency: 4
   # Which dirs to skip: issues from them won't be reported.
   skip-dirs:
-    - .*~
+    - api
     - api/swagger/docs
   # Which files to skip: they will be analyzed, but issues from them won't be reported.
   skip-files:
     - _test.go
     - _mock.go
+    - ".*\\.pb\\.go"
 linters:
   disable-all: true
   enable: # please keep this alphabetized
@@ -49,6 +50,10 @@ linters-settings: # please keep this alphabetized
     check-type-assertions: true
     check-blank: true
     enable: all
+  goimports:
+    # put imports beginning with prefix after 3rd-party packages;
+    # it's a comma-separated list of prefixes
+    local-prefixes: github.com/beihai0xff/pudding
 
 issues:
   # List of regexps of issue texts to exclude.

@@ -1,0 +1,35 @@
+syntax = "proto3";
+
+option go_package = ".";
+
+// The Pudding service definition.
+service Pudding {
+  // Sends a Ping
+  rpc Ping (PingRequest) returns (PingReply) {}
+  // Sends a Ping
+  rpc SendMessage (PingRequest) returns (PingReply) {}
+}
+
+// The Ping request message.
+message PingRequest {
+  string message = 1;
+}
+
+// The Ping response message
+message PingReply {
+  string message = 1;
+}
+
+// The Ping request message.
+message SendMessageRequest {
+  // Message Topic
+  string Topic = 1;
+  // Message Key
+  string Key = 2;
+  // Message Payload
+  bytes Payload  = 3;
+  // Message Delay Time (Seconds)
+  int64 Delay = 4;
+  // Message Ready Time（now + delay, Unix Timestamp, Seconds）
+  int64 ReadyTime  = 5;
+}

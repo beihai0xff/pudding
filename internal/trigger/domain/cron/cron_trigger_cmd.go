@@ -4,9 +4,9 @@ import (
 	"context"
 	"fmt"
 
+	"github.com/beihai0xff/pudding/internal/trigger/entity"
 	"github.com/beihai0xff/pudding/pkg/cronexpr"
 	"github.com/beihai0xff/pudding/pkg/log"
-	"github.com/beihai0xff/pudding/trigger/entity"
 	"github.com/beihai0xff/pudding/types"
 )
 

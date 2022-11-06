@@ -10,6 +10,7 @@ import (
 	"github.com/google/uuid"
 
 	"github.com/beihai0xff/pudding/configs"
+	"github.com/beihai0xff/pudding/internal/scheduler/broker"
 	"github.com/beihai0xff/pudding/pkg/lock"
 	"github.com/beihai0xff/pudding/pkg/log"
 	"github.com/beihai0xff/pudding/pkg/mq/pulsar"
@@ -29,8 +30,10 @@ const (
 	prefixTimeSliceLocker = "pudding_locker_time:%d"
 )
 
-//nolint:lll
-//go:generate mockgen -destination=../test/mock/scheduler_mock.go --package=mock github.com/beihai0xff/pudding/scheduler Scheduler
+// nolint:lll
+//go:generate mockgen -destination=../../test/mock/scheduler_mock.go --package=mock github.com/beihai0xff/pudding/internal/scheduler Scheduler
+
+// Scheduler interface
 type Scheduler interface {
 	// Run start the scheduler
 	Run()
@@ -41,8 +44,8 @@ type Scheduler interface {
 }
 
 type Schedule struct {
-	delay    DelayQueue
-	realtime RealTimeQueue
+	delay    broker.DelayQueue
+	realtime broker.RealTimeQueue
 	config   *configs.SchedulerConfig
 	// timeSlice interval (Seconds)
 	interval int64
@@ -56,13 +59,13 @@ type Schedule struct {
 	quit chan int64
 }
 
-func New() *Schedule {
+func New(config *configs.SchedulerConfig) *Schedule {
 	redisClient := rdb.New(configs.GetRedisConfig())
 	pulsarClient := pulsar.New(configs.GetPulsarConfig())
 	q := &Schedule{
-		delay:    NewDelayQueue(redisClient),
-		realtime: NewRealTimeQueue(pulsarClient),
-		config:   configs.GetSchedulerConfig(),
+		delay:    broker.NewDelayQueue(redisClient),
+		realtime: broker.NewRealTimeQueue(pulsarClient),
+		config:   config,
 		token:    make(chan int64),
 		quit:     make(chan int64),
 	}
@@ -97,6 +100,7 @@ func (s *Schedule) Run() {
 	Produce or Consume Delay Schedule
 */
 
+// Produce produce a Message to the delay queue
 func (s *Schedule) Produce(ctx context.Context, msg *types.Message) error {
 	var err error
 
@@ -118,6 +122,7 @@ func (s *Schedule) Produce(ctx context.Context, msg *types.Message) error {
 	return err
 }
 
+// checkParams check the Produced message params
 func (s *Schedule) checkParams(msg *types.Message) error {
 	// if Message.ReadyTime is set, use ReadyTime
 	// otherwise use current time + Delay Seconds

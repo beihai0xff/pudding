@@ -1,17 +1,17 @@
-package scheduler
+package broker
 
 import (
 	"context"
 
+	"github.com/beihai0xff/pudding/internal/scheduler/broker/pulsar_broker"
+	"github.com/beihai0xff/pudding/internal/scheduler/broker/redis_broker"
 	"github.com/beihai0xff/pudding/pkg/mq/pulsar"
 	rdb "github.com/beihai0xff/pudding/pkg/redis"
-	"github.com/beihai0xff/pudding/scheduler/broker/pulsar_broker"
-	"github.com/beihai0xff/pudding/scheduler/broker/redis_broker"
 	"github.com/beihai0xff/pudding/types"
 )
 
-// nolint
-//go:generate mockgen -destination=../test/mock/queue_mock.go --package=mock github.com/beihai0xff/pudding/scheduler DelayQueue,RealTimeQueue
+// nolint:lll
+//go:generate mockgen -destination=../../../test/mock/queue_mock.go --package=mock github.com/beihai0xff/pudding/internal/scheduler/broker DelayQueue,RealTimeQueue
 
 type DelayQueue interface {
 	// Produce produce a Message to DelayQueue
