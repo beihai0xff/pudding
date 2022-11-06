@@ -27,12 +27,12 @@ func TestTrigger_checkTempShouldRun(t1 *testing.T) {
 				temp: &entity.CronTriggerTemplate{
 					ID:                1,
 					LoopedTimes:       9,
-					LastExecutionTime: testTrigger.clock.Now(),
-					ExceptedEndTime:   testTrigger.clock.Now().AddDate(1, 1, 0),
+					LastExecutionTime: testTrigger.wallClock.Now(),
+					ExceptedEndTime:   testTrigger.wallClock.Now().AddDate(1, 1, 0),
 					ExceptedLoopTimes: 10,
 					Status:            types.TemplateStatusEnabled,
 				},
-				nextTime: testTrigger.clock.Now().AddDate(0, 2, 0)},
+				nextTime: testTrigger.wallClock.Now().AddDate(0, 2, 0)},
 			want: true,
 		},
 		{
@@ -41,12 +41,12 @@ func TestTrigger_checkTempShouldRun(t1 *testing.T) {
 				temp: &entity.CronTriggerTemplate{
 					ID:                2,
 					LoopedTimes:       10,
-					LastExecutionTime: testTrigger.clock.Now(),
-					ExceptedEndTime:   testTrigger.clock.Now().AddDate(1, 1, 0),
+					LastExecutionTime: testTrigger.wallClock.Now(),
+					ExceptedEndTime:   testTrigger.wallClock.Now().AddDate(1, 1, 0),
 					ExceptedLoopTimes: 10,
 					Status:            types.TemplateStatusEnabled,
 				},
-				nextTime: testTrigger.clock.Now().AddDate(0, 2, 0)},
+				nextTime: testTrigger.wallClock.Now().AddDate(0, 2, 0)},
 			want: false,
 		},
 		{
@@ -55,12 +55,12 @@ func TestTrigger_checkTempShouldRun(t1 *testing.T) {
 				temp: &entity.CronTriggerTemplate{
 					ID:                3,
 					LoopedTimes:       8,
-					LastExecutionTime: testTrigger.clock.Now().AddDate(0, 1, 0),
-					ExceptedEndTime:   testTrigger.clock.Now().AddDate(0, 1, 0),
+					LastExecutionTime: testTrigger.wallClock.Now().AddDate(0, 1, 0),
+					ExceptedEndTime:   testTrigger.wallClock.Now().AddDate(0, 1, 0),
 					ExceptedLoopTimes: 10,
 					Status:            types.TemplateStatusEnabled,
 				},
-				nextTime: testTrigger.clock.Now().AddDate(0, 2, 0)},
+				nextTime: testTrigger.wallClock.Now().AddDate(0, 2, 0)},
 			want: false,
 		},
 	}
@@ -99,14 +99,14 @@ func TestTrigger_getNextTime(t1 *testing.T) {
 		want    time.Time
 		wantErr assert.ErrorAssertionFunc
 	}{
-		{"every 1 Second", args{"*/1 * * * * * *"}, testTrigger.clock.Now().Add(time.Second), assert.NoError},
-		{"every 1 Minute", args{"* */1 * * * *"}, testTrigger.clock.Now().Add(time.Minute), assert.NoError},
-		{"every 1 Hour", args{"0 0 * * * * *"}, testTrigger.clock.Now().Add(time.Hour), assert.NoError},
-		{"every 1 Day", args{"0 0 */1 * *"}, testTrigger.clock.Now().AddDate(0, 0, 1), assert.NoError},
-		{"every 1 Month", args{"0 0 1 * *"}, testTrigger.clock.Now().AddDate(0, 1, 0), assert.NoError},
-		{"every 1 Year", args{"0 0 1 1 *"}, testTrigger.clock.Now().AddDate(1, 0, 0), assert.NoError},
+		{"every 1 Second", args{"*/1 * * * * * *"}, testTrigger.wallClock.Now().Add(time.Second), assert.NoError},
+		{"every 1 Minute", args{"* */1 * * * *"}, testTrigger.wallClock.Now().Add(time.Minute), assert.NoError},
+		{"every 1 Hour", args{"0 0 * * * * *"}, testTrigger.wallClock.Now().Add(time.Hour), assert.NoError},
+		{"every 1 Day", args{"0 0 */1 * *"}, testTrigger.wallClock.Now().AddDate(0, 0, 1), assert.NoError},
+		{"every 1 Month", args{"0 0 1 * *"}, testTrigger.wallClock.Now().AddDate(0, 1, 0), assert.NoError},
+		{"every 1 Year", args{"0 0 1 1 *"}, testTrigger.wallClock.Now().AddDate(1, 0, 0), assert.NoError},
 		{"error expr", args{"0 0 0 31 */1"}, time.Date(1, 1, 1, 0, 0, 0, 0, time.UTC), assert.Error},
-		{"every five Second", args{"*/5 * * * * * *"}, testTrigger.clock.Now().Add(5 * time.Second), assert.NoError},
+		{"every five Second", args{"*/5 * * * * * *"}, testTrigger.wallClock.Now().Add(5 * time.Second), assert.NoError},
 	}
 	for _, tt := range tests {
 		t1.Run(tt.name, func(t1 *testing.T) {

@@ -4,12 +4,14 @@ import (
 	"errors"
 	"os"
 	"testing"
+	"time"
 
 	"github.com/golang/mock/gomock"
 	"github.com/stretchr/testify/assert"
 	"golang.org/x/net/context"
 
 	"github.com/beihai0xff/pudding/app/scheduler/broker"
+	"github.com/beihai0xff/pudding/pkg/clock"
 	rdb "github.com/beihai0xff/pudding/pkg/redis"
 	"github.com/beihai0xff/pudding/test/mock"
 	"github.com/beihai0xff/pudding/types"
@@ -20,8 +22,9 @@ var s *Schedule
 func TestMain(m *testing.M) {
 
 	s = &Schedule{
-		delay:    broker.NewDelayQueue(rdb.NewMockRdb()),
-		interval: 60,
+		delay:     broker.NewDelayQueue(rdb.NewMockRdb()),
+		interval:  60,
+		wallClock: clock.NewFakeClock(time.Date(2022, 1, 1, 0, 0, 0, 0, time.UTC)),
 	}
 
 	exitCode := m.Run()

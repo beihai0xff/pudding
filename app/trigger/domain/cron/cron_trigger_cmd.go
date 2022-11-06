@@ -19,7 +19,7 @@ func (t *Trigger) Register(ctx context.Context, temp *entity.CronTriggerTemplate
 	}
 
 	// 2. save the template to db
-	if err := t.dao.Insert(ctx, temp); err != nil {
+	if err := t.repo.Insert(ctx, temp); err != nil {
 		log.Errorf("failed to insert cron template, caused by %w", err)
 		return err
 	}
@@ -49,7 +49,7 @@ func (t *Trigger) checkRegisterParams(temp *entity.CronTriggerTemplate) error {
 
 	// 4. set default value if necessary
 	if temp.ExceptedEndTime.IsZero() {
-		temp.ExceptedEndTime = t.clock.Now().Add(defaultTemplateActiveDuration)
+		temp.ExceptedEndTime = t.wallClock.Now().Add(defaultTemplateActiveDuration)
 	}
 	if temp.ExceptedLoopTimes == 0 {
 		temp.ExceptedLoopTimes = defaultMaximumLoopTimes
@@ -71,7 +71,7 @@ func (t *Trigger) UpdateStatus(ctx context.Context, id uint, status int) error {
 	}
 
 	// 2. update the template status to db
-	if err := t.dao.Update(ctx, temp); err != nil {
+	if err := t.repo.Update(ctx, temp); err != nil {
 		log.Errorf("failed to update cron template, caused by %w", err)
 		return err
 	}

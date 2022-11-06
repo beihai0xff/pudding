@@ -1,15 +1,26 @@
 package clock
 
-import "time"
+import (
+	"sync"
+	"time"
+)
 
 type Clock interface {
 	Now() time.Time
 }
 
+var (
+	realClockOnce sync.Once
+	realClock     *RealClock
+)
+
 type RealClock struct{}
 
 func New() Clock {
-	return &RealClock{}
+	realClockOnce.Do(func() {
+		realClock = &RealClock{}
+	})
+	return realClock
 }
 
 func (c *RealClock) Now() time.Time {

@@ -39,16 +39,17 @@ var (
 )
 
 type Trigger struct {
-	s     scheduler.Scheduler
-	dao   repo.CronTemplateDAO
-	clock clock.Clock
+	s    scheduler.Scheduler
+	repo repo.CronTemplateDAO
+	// wallClock is the clock used to get current time
+	wallClock clock.Clock
 }
 
 func NewTrigger(db *mysql.Client, s scheduler.Scheduler) *Trigger {
 	return &Trigger{
-		s:     s,
-		dao:   repo.NewCronTemplate(db),
-		clock: clock.New(),
+		s:         s,
+		repo:      repo.NewCronTemplate(db),
+		wallClock: clock.New(),
 	}
 }
 
@@ -56,7 +57,7 @@ func NewTrigger(db *mysql.Client, s scheduler.Scheduler) *Trigger {
 func (t *Trigger) Run() {
 	log.Infof("start produce token")
 
-	now := t.clock.Now()
+	now := t.wallClock.Now()
 	timer := time.NewTimer(time.Until(now) + time.Second)
 
 	// wait for the next second
@@ -68,7 +69,7 @@ func (t *Trigger) Run() {
 		now := <-tick.C
 		ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 
-		if err := t.dao.BatchEnabledRecords(ctx, now, 100, t.Tracking); err != nil {
+		if err := t.repo.BatchEnabledRecords(ctx, now, 100, t.Tracking); err != nil {
 			log.Errorf("failed to find enable cron template, caused by %w", err)
 		}
 
@@ -141,7 +142,7 @@ func (t *Trigger) getNextTime(expr string) (time.Time, error) {
 	if err != nil {
 		return time.Time{}, err
 	}
-	return expression.Next(t.clock.Now()), nil
+	return expression.Next(t.wallClock.Now()), nil
 }
 
 // formatMessageKey get cron trigger the message key
