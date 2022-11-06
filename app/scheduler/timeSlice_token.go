@@ -29,7 +29,7 @@ const (
 func (s *Schedule) tryProduceToken() {
 	log.Infof("start produce token")
 
-	now := time.Now()
+	now := s.wallClock.Now()
 	timer := time.NewTimer(time.Until(now) + time.Second)
 
 	// wait for the next second

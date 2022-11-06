@@ -11,6 +11,7 @@ import (
 
 	"github.com/beihai0xff/pudding/app/scheduler/broker"
 	"github.com/beihai0xff/pudding/configs"
+	"github.com/beihai0xff/pudding/pkg/clock"
 	"github.com/beihai0xff/pudding/pkg/lock"
 	"github.com/beihai0xff/pudding/pkg/log"
 	"github.com/beihai0xff/pudding/pkg/mq/pulsar"
@@ -46,14 +47,15 @@ type Scheduler interface {
 type Schedule struct {
 	delay    broker.DelayQueue
 	realtime broker.RealTimeQueue
-	config   *configs.SchedulerConfig
-	// timeSlice interval (Seconds)
+	// wallClock wall wallClock time
+	wallClock clock.Clock
+	// interval timeSlice interval (Seconds)
 	interval int64
 
-	// rate limiter
+	// limiter rate limiter
 	limiter *redis_rate.Limiter
 
-	// timeSlice token channel
+	// token timeSlice token channel
 	token chan int64
 	// quit signal channel
 	quit chan int64
@@ -63,17 +65,17 @@ func New(config *configs.SchedulerConfig) *Schedule {
 	redisClient := rdb.New(configs.GetRedisConfig())
 	pulsarClient := pulsar.New(configs.GetPulsarConfig())
 	q := &Schedule{
-		delay:    broker.NewDelayQueue(redisClient),
-		realtime: broker.NewRealTimeQueue(pulsarClient),
-		config:   config,
-		token:    make(chan int64),
-		quit:     make(chan int64),
+		delay:     broker.NewDelayQueue(redisClient),
+		realtime:  broker.NewRealTimeQueue(pulsarClient),
+		wallClock: clock.New(),
+		token:     make(chan int64),
+		quit:      make(chan int64),
 	}
 
 	// parse Polling delay queue interval
-	t, err := time.ParseDuration(q.config.TimeSliceInterval)
+	t, err := time.ParseDuration(config.TimeSliceInterval)
 	if err != nil {
-		panic(fmt.Errorf("failed to parse '%s' to time.Duration: %w", q.config.TimeSliceInterval, err))
+		panic(fmt.Errorf("failed to parse '%s' to time.Duration: %w", config.TimeSliceInterval, err))
 	}
 	q.interval = int64(t.Seconds())
 	log.Debugf("timeSlice interval is: %d seconds", q.interval)
@@ -130,9 +132,9 @@ func (s *Schedule) checkParams(msg *types.Message) error {
 		if msg.Delay <= 0 {
 			return errInvalidMessageDelay
 		}
-		msg.ReadyTime = time.Now().Unix() + msg.Delay
+		msg.ReadyTime = s.wallClock.Now().Unix() + msg.Delay
 	} else {
-		if time.Unix(msg.ReadyTime, 0).Before(time.Now()) {
+		if time.Unix(msg.ReadyTime, 0).Before(s.wallClock.Now()) {
 			return errInvalidMessageReady
 		}
 	}
