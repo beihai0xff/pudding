@@ -4,8 +4,8 @@ import (
 	"context"
 	"time"
 
-	"github.com/beihai0xff/pudding/internal/trigger/entity"
-	"github.com/beihai0xff/pudding/internal/trigger/repo/storage/sql"
+	"github.com/beihai0xff/pudding/app/trigger/entity"
+	"github.com/beihai0xff/pudding/app/trigger/repo/storage/sql"
 	"github.com/beihai0xff/pudding/pkg/db/mysql"
 	"github.com/beihai0xff/pudding/types"
 )

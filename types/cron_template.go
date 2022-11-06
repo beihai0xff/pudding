@@ -1,7 +1,7 @@
 package types
 
 import (
-	"github.com/beihai0xff/pudding/internal/trigger/entity"
+	"github.com/beihai0xff/pudding/app/trigger/entity"
 )
 
 const (

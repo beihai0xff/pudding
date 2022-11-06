@@ -9,8 +9,8 @@ import (
 	"github.com/go-redis/redis_rate/v10"
 	"github.com/google/uuid"
 
+	"github.com/beihai0xff/pudding/app/scheduler/broker"
 	"github.com/beihai0xff/pudding/configs"
-	"github.com/beihai0xff/pudding/internal/scheduler/broker"
 	"github.com/beihai0xff/pudding/pkg/lock"
 	"github.com/beihai0xff/pudding/pkg/log"
 	"github.com/beihai0xff/pudding/pkg/mq/pulsar"
@@ -31,7 +31,7 @@ const (
 )
 
 // nolint:lll
-//go:generate mockgen -destination=../../test/mock/scheduler_mock.go --package=mock github.com/beihai0xff/pudding/internal/scheduler Scheduler
+//go:generate mockgen -destination=../../test/mock/scheduler_mock.go --package=mock github.com/beihai0xff/pudding/app/scheduler Scheduler
 
 // Scheduler interface
 type Scheduler interface {
