@@ -5,12 +5,13 @@ import (
 	"testing"
 	"time"
 
+	"github.com/beihai0xff/pudding/internal/trigger/repo/storage/po"
+
 	"github.com/beihai0xff/pudding/configs"
+	"github.com/beihai0xff/pudding/internal/trigger/repo"
 	"github.com/beihai0xff/pudding/pkg/clock"
 	"github.com/beihai0xff/pudding/pkg/db/mysql"
 	"github.com/beihai0xff/pudding/pkg/log"
-	"github.com/beihai0xff/pudding/trigger/dao"
-	"github.com/beihai0xff/pudding/trigger/dao/storage/po"
 )
 
 var testTrigger *Trigger
@@ -23,7 +24,7 @@ func TestMain(m *testing.M) {
 
 	testTrigger = &Trigger{
 		s:     nil,
-		dao:   dao.NewCronTemplate(db),
+		dao:   repo.NewCronTemplate(db),
 		clock: clock.NewFakeClock(time.Date(2022, 1, 1, 0, 0, 0, 0, time.UTC)),
 	}
 

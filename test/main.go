@@ -8,7 +8,7 @@ import (
 
 	"github.com/beihai0xff/pudding/configs"
 	"github.com/beihai0xff/pudding/pkg/lock"
-	"github.com/beihai0xff/pudding/scheduler"
+	"github.com/beihai0xff/pudding/service/scheduler"
 	"github.com/beihai0xff/pudding/types"
 )
 
@@ -17,7 +17,7 @@ var s *scheduler.Schedule
 func main() {
 	configs.Init("./config.test.yaml")
 
-	s = scheduler.New()
+	s = scheduler.New(configs.GetSchedulerConfig())
 	lock.Init()
 	go s.Run()
 

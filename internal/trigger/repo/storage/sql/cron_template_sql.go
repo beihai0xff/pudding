@@ -10,11 +10,11 @@ import (
 	"gorm.io/gorm"
 	"gorm.io/gorm/clause"
 
+	"github.com/beihai0xff/pudding/internal/trigger/entity"
+	"github.com/beihai0xff/pudding/internal/trigger/repo/convertor"
+	"github.com/beihai0xff/pudding/internal/trigger/repo/storage/po"
 	"github.com/beihai0xff/pudding/pkg/db/mysql"
 	"github.com/beihai0xff/pudding/pkg/log"
-	"github.com/beihai0xff/pudding/trigger/dao/convertor"
-	"github.com/beihai0xff/pudding/trigger/dao/storage/po"
-	"github.com/beihai0xff/pudding/trigger/entity"
 	"github.com/beihai0xff/pudding/types"
 )
 

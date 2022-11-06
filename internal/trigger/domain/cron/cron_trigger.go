@@ -6,13 +6,13 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/beihai0xff/pudding/internal/scheduler"
+	"github.com/beihai0xff/pudding/internal/trigger/entity"
+	"github.com/beihai0xff/pudding/internal/trigger/repo"
 	"github.com/beihai0xff/pudding/pkg/clock"
 	"github.com/beihai0xff/pudding/pkg/cronexpr"
 	"github.com/beihai0xff/pudding/pkg/db/mysql"
 	"github.com/beihai0xff/pudding/pkg/log"
-	"github.com/beihai0xff/pudding/scheduler"
-	"github.com/beihai0xff/pudding/trigger/dao"
-	"github.com/beihai0xff/pudding/trigger/entity"
 	"github.com/beihai0xff/pudding/types"
 )
 
@@ -40,14 +40,14 @@ var (
 
 type Trigger struct {
 	s     scheduler.Scheduler
-	dao   dao.CronTemplateDAO
+	dao   repo.CronTemplateDAO
 	clock clock.Clock
 }
 
 func NewTrigger(db *mysql.Client, s scheduler.Scheduler) *Trigger {
 	return &Trigger{
 		s:     s,
-		dao:   dao.NewCronTemplate(db),
+		dao:   repo.NewCronTemplate(db),
 		clock: clock.New(),
 	}
 }
