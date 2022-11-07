@@ -6,7 +6,6 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/go-redis/redis_rate/v10"
 	"github.com/google/uuid"
 
 	"github.com/beihai0xff/pudding/app/scheduler/broker"
@@ -14,9 +13,6 @@ import (
 	"github.com/beihai0xff/pudding/pkg/clock"
 	"github.com/beihai0xff/pudding/pkg/lock"
 	"github.com/beihai0xff/pudding/pkg/log"
-	"github.com/beihai0xff/pudding/pkg/mq/pulsar"
-	"github.com/beihai0xff/pudding/pkg/random"
-	rdb "github.com/beihai0xff/pudding/pkg/redis"
 	"github.com/beihai0xff/pudding/types"
 )
 
@@ -53,7 +49,7 @@ type Schedule struct {
 	interval int64
 
 	// limiter rate limiter
-	limiter *redis_rate.Limiter
+	// limiter *redis_rate.Limiter
 
 	// token timeSlice token channel
 	token chan int64
@@ -61,12 +57,10 @@ type Schedule struct {
 	quit chan int64
 }
 
-func New(config *configs.SchedulerConfig) *Schedule {
-	redisClient := rdb.New(configs.GetRedisConfig())
-	pulsarClient := pulsar.New(configs.GetPulsarConfig())
+func New(config *configs.SchedulerConfig, delay broker.DelayQueue, realtime broker.RealTimeQueue) *Schedule {
 	q := &Schedule{
-		delay:     broker.NewDelayQueue(redisClient),
-		realtime:  broker.NewRealTimeQueue(pulsarClient),
+		delay:     delay,
+		realtime:  realtime,
 		wallClock: clock.New(),
 		token:     make(chan int64),
 		quit:      make(chan int64),
@@ -81,10 +75,10 @@ func New(config *configs.SchedulerConfig) *Schedule {
 	log.Debugf("timeSlice interval is: %d seconds", q.interval)
 
 	// init rate limiter
-	q.limiter = redisClient.GetLimiter()
-	if err != nil {
-		panic(err)
-	}
+	// q.limiter = redisClient.GetLimiter()
+	// if err != nil {
+	// 	panic(err)
+	// }
 
 	return q
 }
@@ -229,17 +223,17 @@ func (s *Schedule) NewConsumer(topic, group string, batchSize int, fn types.Hand
 /*
 	rate limit
 */
-
-func (s *Schedule) startLimiter(token chan int) {
-
-	for {
-		res, err := s.limiter.Allow(context.Background(), "pudding:rate_every_second", redis_rate.PerSecond(1))
-		if err != nil {
-			log.Errorf("failed to allow limiter: %v", err)
-		}
-		if res.Allowed == 1 {
-			token <- 1
-		}
-		time.Sleep(time.Duration(random.GetRand(500, 1000)) * time.Millisecond)
-	}
-}
+//
+// func (s *Schedule) startLimiter(token chan int) {
+//
+// 	for {
+// 		res, err := s.limiter.Allow(context.Background(), "pudding:rate_every_second", redis_rate.PerSecond(1))
+// 		if err != nil {
+// 			log.Errorf("failed to allow limiter: %v", err)
+// 		}
+// 		if res.Allowed == 1 {
+// 			token <- 1
+// 		}
+// 		time.Sleep(time.Duration(random.GetRand(500, 1000)) * time.Millisecond)
+// 	}
+// }
