@@ -12,6 +12,7 @@ import (
 	"github.com/beihai0xff/pudding/app/scheduler"
 	"github.com/beihai0xff/pudding/app/scheduler/broker"
 	"github.com/beihai0xff/pudding/app/scheduler/pkg/configs"
+	"github.com/beihai0xff/pudding/pkg/lock"
 	"github.com/beihai0xff/pudding/pkg/log"
 	pulsar2 "github.com/beihai0xff/pudding/pkg/mq/pulsar"
 	"github.com/beihai0xff/pudding/pkg/redis"
@@ -47,6 +48,8 @@ func newQueue() (broker.DelayQueue, broker.RealTimeQueue) {
 	rdb := redis.New(configs.GetRedisConfig())
 
 	pulsar := pulsar2.New(configs.GetPulsarConfig())
+
+	lock.Init(rdb)
 
 	return broker.NewDelayQueue(rdb), broker.NewRealTimeQueue(pulsar)
 }
