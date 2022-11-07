@@ -8,15 +8,14 @@ import (
 
 	"github.com/bsm/redislock"
 
-	"github.com/beihai0xff/pudding/configs"
 	rdb "github.com/beihai0xff/pudding/pkg/redis"
 )
 
 var r *rdb.Client
 
 // Init init the lock module
-func Init() {
-	r = rdb.New(configs.GetRedisConfig())
+func Init(rdb *rdb.Client) {
+	r = rdb
 }
 
 type RedLock struct {

@@ -28,3 +28,13 @@ type logger struct {
 func (l *logger) WithFields(fields ...interface{}) Logger {
 	return &logger{l.WithOptions(zap.AddStacktrace(zapcore.WarnLevel)).With(fields...)}
 }
+
+var loggers = map[string]Logger{}
+
+func RegisterLogger(logName string) {
+	loggers[logName] = newLog(defaultConfig)
+}
+
+func GerLoggerByName(logName string) {
+	loggers[logName] = newLog(defaultConfig)
+}
