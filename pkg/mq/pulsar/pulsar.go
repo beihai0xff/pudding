@@ -23,6 +23,7 @@ type Client struct {
 }
 
 func New(config *configs.PulsarConfig) *Client {
+	log.Infof("create pulsar client: %+v", config)
 	// create pulsar client
 	c, err := pulsar.NewClient(pulsar.ClientOptions{
 		URL:    config.URL,
@@ -50,7 +51,7 @@ func New(config *configs.PulsarConfig) *Client {
 			CompressionType:         pulsar.ZSTD,
 			BatchingMaxPublishDelay: time.Duration(pc.BatchingMaxPublishDelay) * time.Millisecond,
 			BatchingMaxMessages:     pc.BatchingMaxMessages,
-			BatchingMaxSize:         pc.BatchingMaxSize * 1024,
+			BatchingMaxSize:         pc.BatchingMaxSize * 1024, // KB
 		}
 		producer, err := c.CreateProducer(po)
 		if err != nil {

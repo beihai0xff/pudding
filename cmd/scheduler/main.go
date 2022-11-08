@@ -14,7 +14,7 @@ import (
 	"github.com/beihai0xff/pudding/app/scheduler/pkg/configs"
 	"github.com/beihai0xff/pudding/pkg/lock"
 	"github.com/beihai0xff/pudding/pkg/log"
-	pulsar2 "github.com/beihai0xff/pudding/pkg/mq/pulsar"
+	"github.com/beihai0xff/pudding/pkg/mq/pulsar"
 	"github.com/beihai0xff/pudding/pkg/redis"
 )
 
@@ -27,7 +27,9 @@ func main() {
 	flag.Parse()
 	configs.Init(*confPath)
 
+	log.RegisterLogger("default", log.WithCallerSkip(1))
 	log.RegisterLogger("pulsar_log", log.WithCallerSkip(1))
+
 	// log.RegisterLogger("gorm_log", log.WithCallerSkip(3))
 
 	lis, err := net.Listen("tcp", fmt.Sprintf(":%d", *port))
@@ -50,9 +52,9 @@ func main() {
 func newQueue() (broker.DelayQueue, broker.RealTimeQueue) {
 	rdb := redis.New(configs.GetRedisConfig())
 
-	pulsar := pulsar2.New(configs.GetPulsarConfig())
+	pulsarClient := pulsar.New(configs.GetPulsarConfig())
 
 	lock.Init(rdb)
 
-	return broker.NewDelayQueue(rdb), broker.NewRealTimeQueue(pulsar)
+	return broker.NewDelayQueue(rdb), broker.NewRealTimeQueue(pulsarClient)
 }
