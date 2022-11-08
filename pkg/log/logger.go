@@ -10,13 +10,8 @@ import (
 	"github.com/beihai0xff/pudding/configs"
 )
 
-// NewLogger new a zap logger, default callerSkip is 1
-func NewLogger(c *configs.LogConfig) Logger {
-	return &logger{newZapLogWithCallerSkip(c).Sugar()}
-}
-
-// newLog new a zap log, default callerSkip is 1
-func newLog(c *configs.LogConfig) *logger {
+// newLogger new a zap log, default callerSkip is 1
+func newLogger(c *configs.LogConfig) *logger {
 	return &logger{newZapLogWithCallerSkip(c).Sugar()}
 }
 

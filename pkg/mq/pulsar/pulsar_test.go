@@ -9,12 +9,25 @@ import (
 
 	"github.com/apache/pulsar-client-go/pulsar"
 	"github.com/stretchr/testify/assert"
+
+	"github.com/beihai0xff/pudding/configs"
+	"github.com/beihai0xff/pudding/types"
 )
 
-var c *Client
+var testPulsar *Client
 
 func TestMain(m *testing.M) {
-	c = newMockPulsar()
+
+	testPulsar = New(&configs.PulsarConfig{
+		URL:               "pulsar://localhost:6650",
+		ConnectionTimeout: 10,
+		ProducersConfig: []configs.ProducerConfig{
+			{types.DefaultTopic, 20, 100, 1024},
+			{types.TokenTopic, 20, 100, 1024},
+			{"test_topic_1", 20, 100, 1024},
+			{"test_topic_2", 20, 100, 1024},
+		},
+	})
 
 	exitCode := m.Run()
 	// 退出
@@ -41,7 +54,7 @@ func TestClient_getConsumerName(t *testing.T) {
 		{"test-topic-and-group-empty", args{"", ""}, "--" + hostname},
 	}
 	for _, tt := range tests {
-		assert.Equal(t, tt.want, c.getConsumerName(tt.args.topic, tt.args.group))
+		assert.Equal(t, tt.want, testPulsar.getConsumerName(tt.args.topic, tt.args.group))
 	}
 }
 
@@ -61,7 +74,7 @@ func TestClient_Produce(t *testing.T) {
 		{"test_topic_not_exist", args{context.Background(), "test_not_exist", &pulsar.ProducerMessage{Payload: []byte("hello"), Key: "key"}}, assert.Error},
 	}
 	for _, tt := range tests {
-		tt.wantErr(t, c.Produce(tt.args.ctx, tt.args.topic, tt.args.msg), fmt.Sprintf("ProducerMessage(%v)", tt.args.topic))
+		tt.wantErr(t, testPulsar.Produce(tt.args.ctx, tt.args.topic, tt.args.msg), fmt.Sprintf("ProducerMessage(%v)", tt.args.topic))
 
 	}
 }
@@ -93,7 +106,7 @@ func TestClient_NewConsumer(t *testing.T) {
 		{"test_topic_not_exist", args{"test_not_exist", "test_group2", handle}, assert.NoError},
 	}
 	for _, tt := range tests {
-		tt.wantErr(t, c.NewConsumer(tt.args.topic, tt.args.group, tt.args.fn), fmt.Sprintf("NewConsumer(%v, %v)", tt.args.topic, tt.args.group))
+		tt.wantErr(t, testPulsar.NewConsumer(tt.args.topic, tt.args.group, tt.args.fn), fmt.Sprintf("NewConsumer(%v, %v)", tt.args.topic, tt.args.group))
 		time.Sleep(500 * time.Millisecond)
 	}
 }

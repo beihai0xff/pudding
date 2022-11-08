@@ -7,18 +7,23 @@ import (
 	"github.com/beihai0xff/pudding/configs"
 )
 
-var defaultLogger *logger
+var (
+	defaultLogger *logger
+	defaultConfig = &configs.LogConfig{
+		Writers:    []string{configs.OutputConsole},
+		Format:     configs.EncoderTypeConsole,
+		Level:      "debug",
+		CallerSkip: 1,
+	}
 
-var defaultConfig = &configs.LogConfig{
-	Writers:    []string{configs.OutputConsole},
-	Format:     configs.EncoderTypeConsole,
-	Level:      "debug",
-	CallerSkip: 1,
-}
+	loggers = map[string]Logger{}
+)
+
+const defaultLoggerName = "default"
 
 func init() {
-	defaultLogger = newLog(defaultConfig)
-	loggers["default"] = defaultLogger
+	defaultLogger = newLogger(defaultConfig)
+	loggers[defaultLoggerName] = defaultLogger
 }
 
 type logger struct {
@@ -30,35 +35,34 @@ func (l *logger) WithFields(fields ...interface{}) Logger {
 	return &logger{l.WithOptions(zap.AddStacktrace(zapcore.WarnLevel)).With(fields...)}
 }
 
-var loggers = map[string]Logger{}
-
-func RegisterLogger(logName string, opts ...OptionFunc) {
-	c := configs.GetLogConfig(logName)
+func RegisterLogger(loggerName string, opts ...OptionFunc) {
+	c := configs.GetLogConfig(loggerName)
 
 	for _, opt := range opts {
 		opt(c)
 	}
-	loggers[logName] = newLog(c)
+
+	log := newLogger(c)
+	if loggerName == defaultLoggerName {
+		defaultLogger = log
+	}
+	loggers[loggerName] = log
 }
 
-func GerLoggerByName(logName string) Logger {
-	if logger, ok := loggers[logName]; ok {
+func GerLoggerByName(loggerName string) Logger {
+	if logger, ok := loggers[loggerName]; ok {
 		return logger
 	}
-	Warnf("logger %s not found, use default logger", logName)
+	Warnf("logger %s not found, use default logger", loggerName)
 	return defaultLogger
 }
 
-/*
-	Functional Options Pattern
-*/
-
+// OptionFunc is the option function for LogConfig
 type OptionFunc func(config *configs.LogConfig)
 
+// WithCallerSkip set caller skip
 func WithCallerSkip(callerSkip int) OptionFunc {
 	return func(c *configs.LogConfig) {
 		c.CallerSkip = callerSkip
 	}
 }
-
-type Option func(*configs.LogConfig)
