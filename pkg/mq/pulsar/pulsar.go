@@ -25,7 +25,7 @@ type Client struct {
 func New(config *configs.PulsarConfig) *Client {
 	// create pulsar client
 	c, err := pulsar.NewClient(pulsar.ClientOptions{
-		URL:    config.PulsarURL,
+		URL:    config.URL,
 		Logger: logger.GetPulsarLogger(),
 	})
 

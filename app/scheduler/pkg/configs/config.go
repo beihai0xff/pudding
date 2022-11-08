@@ -9,11 +9,11 @@ var c = &Config{
 		TimeSliceInterval: "",
 	},
 	Redis: &conf.RedisConfig{
-		RedisURL:    "",
+		URL:         "",
 		DialTimeout: 10,
 	},
 	Pulsar: &conf.PulsarConfig{
-		PulsarURL:         "",
+		URL:               "",
 		ConnectionTimeout: 10,
 		ProducersConfig:   nil,
 	},
@@ -24,12 +24,12 @@ type Config struct {
 	// Broker is the broker type, e.g. redis
 	Broker string `json:"broker" yaml:"broker" mapstructure:"broker"`
 	// MessageQueue is the message queue type, e.g. pulsar, kakfa, etc.
-	MessageQueue string `json:"messageQueue" yaml:"messageQueue" mapstructure:"messageQueue"`
+	MessageQueue string `json:"message_queue" yaml:"message_queue" mapstructure:"message_queue"`
 	// Scheduler config
-	Scheduler *conf.SchedulerConfig `json:"schedulerConfig" yaml:"schedulerConfig" mapstructure:"schedulerConfig"`
+	Scheduler *conf.SchedulerConfig `json:"scheduler_config" yaml:"scheduler_config" mapstructure:"scheduler_config"`
 
-	Redis  *conf.RedisConfig  `json:"redisConfig" yaml:"redisConfig" mapstructure:"redisConfig"`
-	Pulsar *conf.PulsarConfig `json:"pulsarConfig" yaml:"pulsarConfig" mapstructure:"pulsarConfig"`
+	Redis  *conf.RedisConfig  `json:"redis_config" yaml:"redis_config" mapstructure:"redis_config"`
+	Pulsar *conf.PulsarConfig `json:"pulsar_config" yaml:"pulsar_config" mapstructure:"pulsar_config"`
 
 	// Logger log config for output config message, do not use it
 	Logger map[string]*conf.LogConfig `json:"log_config" yaml:"log_config" mapstructure:"log_config"`

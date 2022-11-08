@@ -3,9 +3,9 @@ package configs
 
 // PulsarConfig pulsar config
 type PulsarConfig struct {
-	PulsarURL         string           `json:"pulsarURL" yaml:"pulsarURL" mapstructure:"pulsarURL"`
-	ConnectionTimeout int              `json:"connectionTimeout" yaml:"connectionTimeout" mapstructure:"connectionTimeout"`
-	ProducersConfig   []ProducerConfig `json:"producersConfig" yaml:"producersConfig" mapstructure:"producersConfig"`
+	URL               string           `json:"url" yaml:"url" mapstructure:"url"`
+	ConnectionTimeout int              `json:"connection_timeout" yaml:"connection_timeout" mapstructure:"connection_timeout"`
+	ProducersConfig   []ProducerConfig `json:"producers_config" yaml:"producers_config" mapstructure:"producers_config"`
 }
 
 type ProducerConfig struct {
@@ -15,15 +15,15 @@ type ProducerConfig struct {
 	// BatchingMaxPublishDelay specifies the time period within which the messages sent will be batched (default: 10ms)
 	// if batch messages are enabled. If set to a non-zero value, messages will be queued until this time
 	// interval or until
-	BatchingMaxPublishDelay uint `json:"batchingMaxPublishDelay" yaml:"batchingMaxPublishDelay" mapstructure:"batchingMaxPublishDelay"`
+	BatchingMaxPublishDelay uint `json:"batching_max_publish_delay" yaml:"batching_max_publish_delay" mapstructure:"batching_max_publish_delay"`
 
 	// BatchingMaxMessages specifies the maximum number of messages permitted in a batch. (default: 1000)
 	// If set to a value greater than 1, messages will be queued until this threshold is reached or
 	// BatchingMaxSize (see below) has been reached or the batch interval has elapsed.
-	BatchingMaxMessages uint `json:"batchingMaxMessages" yaml:"batchingMaxMessages" mapstructure:"batchingMaxMessages"`
+	BatchingMaxMessages uint `json:"batching_max_messages" yaml:"batching_max_messages" mapstructure:"batching_max_messages"`
 
 	// BatchingMaxSize specifies the maximum number of bytes permitted in a batch. (default 128 KB)
 	// If set to a value greater than 1, messages will be queued until this threshold is reached or
 	// BatchingMaxMessages (see above) has been reached or the batch interval has elapsed.
-	BatchingMaxSize uint `json:"batchingMaxSize" yaml:"batchingMaxSize" mapstructure:"batchingMaxSize"`
+	BatchingMaxSize uint `json:"batching_max_size" yaml:"batching_max_size" mapstructure:"batching_max_size"`
 }

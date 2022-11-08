@@ -35,7 +35,7 @@ type Client struct {
 func New(c *configs.RedisConfig) *Client {
 	clientOnce.Do(
 		func() {
-			opt, err := redis.ParseURL(c.RedisURL)
+			opt, err := redis.ParseURL(c.URL)
 			if err != nil {
 				panic(err)
 			}
