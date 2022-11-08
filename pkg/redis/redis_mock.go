@@ -23,7 +23,7 @@ func NewMockRdb() *Client {
 	s.HSet(table, key, value)
 
 	c := &configs.RedisConfig{
-		RedisURL:    "redis://" + s.Addr(),
+		URL:         "redis://" + s.Addr(),
 		DialTimeout: 5,
 	}
 
