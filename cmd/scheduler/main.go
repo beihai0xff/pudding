@@ -19,13 +19,16 @@ import (
 )
 
 var (
-	port = flag.Int("port", 50051, "The server port")
-	conf = flag.String("config", ".././config.yaml", "The server config file path")
+	port     = flag.Int("port", 50051, "The server port")
+	confPath = flag.String("config", "./config.yaml", "The server config file path")
 )
 
 func main() {
 	flag.Parse()
-	configs.Init(*conf)
+	configs.Init(*confPath)
+
+	log.RegisterLogger("pulsar_log", log.WithCallerSkip(1))
+	// log.RegisterLogger("gorm_log", log.WithCallerSkip(3))
 
 	lis, err := net.Listen("tcp", fmt.Sprintf(":%d", *port))
 	if err != nil {

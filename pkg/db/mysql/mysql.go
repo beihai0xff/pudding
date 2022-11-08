@@ -26,7 +26,7 @@ func New(c *configs.MySQLConfig) *Client {
 		DisableForeignKeyConstraintWhenMigrating: true,
 		SkipDefaultTransaction:                   true,
 		DisableAutomaticPing:                     false,
-		Logger:                                   logger.GetGORMLogger(c.Log),
+		Logger:                                   logger.GetGORMLogger(),
 	})
 
 	if err != nil {

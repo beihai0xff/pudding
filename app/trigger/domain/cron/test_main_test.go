@@ -37,12 +37,6 @@ func TestMain(m *testing.M) {
 func newMySQLClient() *mysql.Client {
 	c := &configs.MySQLConfig{
 		DSN: "root:my-secret-pw@tcp(localhost:3306)/test?charset=utf8mb4&parseTime=True&loc=UTC",
-		Log: &configs.LogConfig{
-			Writers:    []string{"console"},
-			Format:     "console",
-			Level:      "info",
-			CallerSkip: 3,
-		},
 	}
 
 	return mysql.New(c)

@@ -6,7 +6,6 @@ type PulsarConfig struct {
 	PulsarURL         string           `json:"pulsarURL" yaml:"pulsarURL" mapstructure:"pulsarURL"`
 	ConnectionTimeout int              `json:"connectionTimeout" yaml:"connectionTimeout" mapstructure:"connectionTimeout"`
 	ProducersConfig   []ProducerConfig `json:"producersConfig" yaml:"producersConfig" mapstructure:"producersConfig"`
-	Log               *LogConfig       `json:"log" yaml:"log"`
 }
 
 type ProducerConfig struct {

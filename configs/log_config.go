@@ -1,6 +1,11 @@
 package configs
 
-import "go.uber.org/zap/zapcore"
+import (
+	"fmt"
+
+	"github.com/spf13/viper"
+	"go.uber.org/zap/zapcore"
+)
 
 // Levels zapcore level
 var Levels = map[string]zapcore.Level{
@@ -26,6 +31,7 @@ const (
 
 // LogConfig log output: console file remote
 type LogConfig struct {
+	LogName string `json:"log_name" yaml:"log_name" mapstructure:"log_name"`
 	// Writers log output(console, file)
 	Writers []string `yaml:"writers" mapstructure:"writers"`
 	// FileConfig 日志文件配置，如果 Writers 为 file 则该配置不能为空
@@ -53,4 +59,19 @@ type FileConfig struct {
 	Compress bool `yaml:"compress" mapstructure:"compress"`
 	// MaxSize max file size, MB
 	MaxSize int `yaml:"max_size" mapstructure:"max_size"`
+}
+
+func GetLogConfig(logName string) *LogConfig {
+	logName = fmt.Sprintf("log_config.%s", logName)
+	v := viper.Sub(logName)
+	if v == nil { // Sub returns nil if the key cannot be found
+		panic(fmt.Sprintf(" %s not found\n", logName))
+	}
+
+	c := LogConfig{}
+	if err := v.Unmarshal(&c); err != nil {
+		panic(fmt.Errorf("unmarshal log config failed: %w", err))
+	}
+
+	return &c
 }
