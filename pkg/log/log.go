@@ -18,6 +18,7 @@ var defaultConfig = &configs.LogConfig{
 
 func init() {
 	defaultLogger = newLog(defaultConfig)
+	loggers["default"] = defaultLogger
 }
 
 type logger struct {
@@ -31,10 +32,33 @@ func (l *logger) WithFields(fields ...interface{}) Logger {
 
 var loggers = map[string]Logger{}
 
-func RegisterLogger(logName string) {
-	loggers[logName] = newLog(defaultConfig)
+func RegisterLogger(logName string, opts ...OptionFunc) {
+	c := configs.GetLogConfig(logName)
+
+	for _, opt := range opts {
+		opt(c)
+	}
+	loggers[logName] = newLog(c)
 }
 
-func GerLoggerByName(logName string) {
-	loggers[logName] = newLog(defaultConfig)
+func GerLoggerByName(logName string) Logger {
+	if logger, ok := loggers[logName]; ok {
+		return logger
+	}
+	Warnf("logger %s not found, use default logger", logName)
+	return defaultLogger
 }
+
+/*
+	Functional Options Pattern
+*/
+
+type OptionFunc func(config *configs.LogConfig)
+
+func WithCallerSkip(callerSkip int) OptionFunc {
+	return func(c *configs.LogConfig) {
+		c.CallerSkip = callerSkip
+	}
+}
+
+type Option func(*configs.LogConfig)

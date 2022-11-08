@@ -3,7 +3,6 @@ package logger
 import (
 	plog "github.com/apache/pulsar-client-go/pulsar/log"
 
-	"github.com/beihai0xff/pudding/configs"
 	"github.com/beihai0xff/pudding/pkg/log"
 )
 
@@ -39,7 +38,7 @@ func (p *PulsarLogger) WithError(err error) plog.Entry {
 	return &PulsarLogger{Logger: p.with("error", err), with: p.with}
 }
 
-func GetPulsarLogger(c *configs.LogConfig) *PulsarLogger {
-	l := log.NewLogger(c).WithFields("module", "pulsar")
+func GetPulsarLogger() *PulsarLogger {
+	l := log.GerLoggerByName("pulsar_log").WithFields("module", "pulsar")
 	return &PulsarLogger{Logger: l, with: l.WithFields}
 }

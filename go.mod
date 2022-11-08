@@ -10,6 +10,7 @@ require (
 	github.com/go-redis/redis/v9 v9.0.0-rc.1
 	github.com/go-redis/redis_rate/v10 v10.0.0-00010101000000-000000000000
 	github.com/golang/mock v1.6.0
+	github.com/google/martian v2.1.0+incompatible
 	github.com/google/uuid v1.3.0
 	github.com/jinzhu/copier v0.3.6-0.20221021060712-6a4be2a76157
 	github.com/klauspost/compress v1.15.12
