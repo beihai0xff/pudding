@@ -69,7 +69,7 @@ func (t *Trigger) Run() {
 		now := <-tick.C
 		ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 
-		if err := t.repo.BatchEnabledRecords(ctx, now, 100, t.Tracking); err != nil {
+		if err := t.repo.BatchHandleRecords(ctx, now, 100, t.Tracking); err != nil {
 			log.Errorf("failed to find enable cron template, caused by %w", err)
 		}
 
@@ -103,6 +103,13 @@ func (t *Trigger) Tracking(temp *entity.CronTriggerTemplate) error {
 	}
 
 	temp.LastExecutionTime = nextTime
+	temp.LoopedTimes++
+	if temp.LoopedTimes == temp.ExceptedLoopTimes {
+		log.Infof("cron template [%d] has reached the maximum loop times, "+
+			"update status to TemplateStatusMaxTimes", temp.ID)
+
+		temp.Status = types.TemplateStatusMaxTimes
+	}
 	log.Infof("cron template [%d] looped times: %d", temp.ID, temp.LoopedTimes)
 
 	return nil
@@ -110,8 +117,7 @@ func (t *Trigger) Tracking(temp *entity.CronTriggerTemplate) error {
 
 // checkTempShouldRun check whether the template should run
 func (t *Trigger) checkTempShouldRun(temp *entity.CronTriggerTemplate, nextTime time.Time) bool {
-	temp.LoopedTimes++
-	if temp.LoopedTimes > temp.ExceptedLoopTimes {
+	if temp.LoopedTimes >= temp.ExceptedLoopTimes {
 		log.Warnf("cron template [%d] has reached the maximum loop times, but it has been tracked", temp.ID)
 
 		temp.Status = types.TemplateStatusMaxTimes
@@ -124,13 +130,6 @@ func (t *Trigger) checkTempShouldRun(temp *entity.CronTriggerTemplate, nextTime 
 
 		temp.Status = types.TemplateStatusMaxAge
 		return false
-	}
-
-	if temp.LoopedTimes == temp.ExceptedLoopTimes {
-		log.Infof("cron template [%d] has reached the maximum loop times, "+
-			"update status to TemplateStatusMaxTimes", temp.ID)
-
-		temp.Status = types.TemplateStatusMaxTimes
 	}
 
 	return true

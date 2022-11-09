@@ -1,4 +1,4 @@
-package sql
+package repo
 
 import (
 	"context"
@@ -88,7 +88,7 @@ func TestCronTemplate_Update(t *testing.T) {
 		ID:     e.ID,
 		Status: types.TemplateStatusEnabled,
 	}
-	err := testCronTemplate.Update(ctx, update)
+	err := testCronTemplate.UpdateStatus(ctx, update.ID, update.Status)
 	if assert.NoError(t, err) {
 		res, _ := testCronTemplate.FindByID(ctx, e.ID)
 		assert.Equal(t, res.Status, types.TemplateStatusEnabled)
@@ -98,7 +98,7 @@ func TestCronTemplate_Update(t *testing.T) {
 
 	// test set status to disable
 	e.Status, update.Status = types.TemplateStatusDisabled, types.TemplateStatusDisabled
-	err = testCronTemplate.Update(ctx, update)
+	err = testCronTemplate.UpdateStatus(ctx, update.ID, update.Status)
 	if assert.NoError(t, err) {
 		res, _ := testCronTemplate.FindByID(ctx, e.ID)
 		assert.Equal(t, res.Status, types.TemplateStatusDisabled)
@@ -110,7 +110,7 @@ func TestCronTemplate_Update(t *testing.T) {
 		ID:     e.ID * 100,
 		Status: types.TemplateStatusDisabled,
 	}
-	err = testCronTemplate.Update(ctx, update)
+	err = testCronTemplate.UpdateStatus(ctx, update.ID, update.Status)
 	assert.NoError(t, err)
 
 }
@@ -138,7 +138,7 @@ func TestCronTemplate_FindEnableRecords(t *testing.T) {
 			return nil
 		})
 	// test find enable records
-	err := testCronTemplate.BatchEnabledRecords(ctx, time.Date(2023, 1, 1, 0, 0, 0, 0, time.Local), 10, fc)
+	err := testCronTemplate.BatchHandleRecords(ctx, time.Date(2023, 1, 1, 0, 0, 0, 0, time.Local), 10, fc)
 	assert.NoError(t, err)
 
 	e3, err := testCronTemplate.FindByID(ctx, e.ID)

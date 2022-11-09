@@ -11,6 +11,7 @@ run:
     - _test.go
     - _mock.go
     - ".*\\.pb\\.go"
+    - ".*\\.gen\\.go"
 linters:
   disable-all: true
   enable: # please keep this alphabetized

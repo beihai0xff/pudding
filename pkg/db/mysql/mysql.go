@@ -53,5 +53,8 @@ func setConnPool(db *gorm.DB) {
 	sqlDB.SetConnMaxIdleTime(10 * time.Minute)
 	// SetConnMaxLifetime sets the maximum amount of time a connection may be reused.
 	sqlDB.SetConnMaxLifetime(time.Hour)
+}
 
+func (c *Client) GetDB() *gorm.DB {
+	return c.DB
 }
