@@ -52,7 +52,7 @@ func getConsoleWriter() zapcore.WriteSyncer {
 }
 
 // getFileWriter write log to file
-func getFileWriter(c *configs.FileConfig) zapcore.WriteSyncer {
+func getFileWriter(c *configs.LogFileConfig) zapcore.WriteSyncer {
 	lumberJackLogger := &lumberjack.Logger{
 		Filename:   c.Filepath,   // 日志文件路径
 		MaxSize:    c.MaxSize,    // 每个日志文件保存的大小 单位:M
