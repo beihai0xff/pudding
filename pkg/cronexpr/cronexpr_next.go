@@ -18,7 +18,7 @@ var dowNormalizedOffsets = [][]int{
 /******************************************************************************/
 
 func (expr *Expression) nextYear(t time.Time) time.Time {
-	// BatchEnabledRecords index at which item in list is greater or equal to
+	// BatchHandleRecords index at which item in list is greater or equal to
 	// candidate year
 	i := sort.SearchInts(expr.yearList, t.Year()+1)
 	if i == len(expr.yearList) {
@@ -51,7 +51,7 @@ func (expr *Expression) nextYear(t time.Time) time.Time {
 /******************************************************************************/
 
 func (expr *Expression) nextMonth(t time.Time) time.Time {
-	// BatchEnabledRecords index at which item in list is greater or equal to
+	// BatchHandleRecords index at which item in list is greater or equal to
 	// candidate month
 	i := sort.SearchInts(expr.monthList, int(t.Month())+1)
 	if i == len(expr.monthList) {
@@ -83,7 +83,7 @@ func (expr *Expression) nextMonth(t time.Time) time.Time {
 }
 
 func (expr *Expression) nextDayOfMonth(t time.Time) time.Time {
-	// BatchEnabledRecords index at which item in list is greater or equal to
+	// BatchHandleRecords index at which item in list is greater or equal to
 	// candidate day of month
 	i := sort.SearchInts(expr.actualDaysOfMonthList, t.Day()+1)
 	if i == len(expr.actualDaysOfMonthList) {
@@ -102,7 +102,7 @@ func (expr *Expression) nextDayOfMonth(t time.Time) time.Time {
 }
 
 func (expr *Expression) nextHour(t time.Time) time.Time {
-	// BatchEnabledRecords index at which item in list is greater or equal to
+	// BatchHandleRecords index at which item in list is greater or equal to
 	// candidate hour
 	i := sort.SearchInts(expr.hourList, t.Hour()+1)
 	if i == len(expr.hourList) {
@@ -121,7 +121,7 @@ func (expr *Expression) nextHour(t time.Time) time.Time {
 }
 
 func (expr *Expression) nextMinute(t time.Time) time.Time {
-	// BatchEnabledRecords index at which item in list is greater or equal to
+	// BatchHandleRecords index at which item in list is greater or equal to
 	// candidate minute
 	i := sort.SearchInts(expr.minuteList, t.Minute()+1)
 	if i == len(expr.minuteList) {
@@ -143,7 +143,7 @@ func (expr *Expression) nextSecond(t time.Time) time.Time {
 	// nextSecond() assumes all other fields are exactly matched
 	// to the cron expression
 
-	// BatchEnabledRecords index at which item in list is greater or equal to
+	// BatchHandleRecords index at which item in list is greater or equal to
 	// candidate second
 	i := sort.SearchInts(expr.secondList, t.Second()+1)
 	if i == len(expr.secondList) {

@@ -1,4 +1,4 @@
-package sql
+package repo
 
 import (
 	"os"
@@ -10,7 +10,7 @@ import (
 	"github.com/beihai0xff/pudding/pkg/log"
 )
 
-var testCronTemplate *CronTemplate
+var testCronTemplate CronTemplateDAO
 
 func TestMain(m *testing.M) {
 

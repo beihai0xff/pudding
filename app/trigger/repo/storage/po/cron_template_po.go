@@ -33,5 +33,5 @@ type CronTriggerTemplate struct {
 }
 
 func (CronTriggerTemplate) TableName() string {
-	return "pudding_cron_trigger_template"
+	return "cron_trigger_template"
 }
