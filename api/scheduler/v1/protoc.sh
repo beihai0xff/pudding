@@ -1,3 +1,3 @@
-#!/bin/bash
+#!/bin/sh
 
-protoc --go-grpc_out=. *.proto
+protoc *.proto --go_out=. --go-grpc_out=.

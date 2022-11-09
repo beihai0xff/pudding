@@ -39,11 +39,11 @@ func beforeEach(t *testing.T) {
 	realtime := mock.NewMockRealTimeQueue(mockCtrl)
 	realtime.EXPECT().Produce(gomock.Any(), gomock.Any()).Return(nil).Times(1)
 	realtime.EXPECT().Produce(gomock.Any(), &types.Message{
-		Topic:     "test_topic",
-		Key:       "produce failed three times",
-		Payload:   []byte("test_payload"),
-		Delay:     10,
-		ReadyTime: 0,
+		Topic:        "test_topic",
+		Key:          "produce failed three times",
+		Payload:      []byte("test_payload"),
+		DeliverAfter: 10,
+		DeliverAt:    0,
 	}).Return(errors.New("broken connection")).Times(3)
 
 	s.realtime = realtime
@@ -79,31 +79,31 @@ func TestSchedule_checkParams(t *testing.T) {
 		assert.EqualError(t, err, errInvalidMessageDelay.Error())
 	}
 
-	// test ReadyTime less than now
+	// test DeliverAt less than now
 	err = nil
-	err = s.checkParams(&types.Message{Key: "12345", Delay: 50, ReadyTime: 60})
+	err = s.checkParams(&types.Message{Key: "12345", DeliverAfter: 50, DeliverAt: 60})
 	assert.Error(t, err)
 	if err != nil {
 		assert.EqualError(t, err, errInvalidMessageReady.Error())
 	}
 
-	// test ReadyTime greater than now
+	// test DeliverAt greater than now
 	err = nil
-	msg := &types.Message{Delay: 50, ReadyTime: 60000000000}
+	msg := &types.Message{DeliverAfter: 50, DeliverAt: 60000000000}
 	err = s.checkParams(msg)
 	assert.NoError(t, err)
-	// test ReadyTime
-	assert.Equal(t, int64(60000000000), msg.ReadyTime)
+	// test DeliverAt
+	assert.Equal(t, int64(60000000000), msg.DeliverAt)
 	// test no topic set
 	assert.Equalf(t, types.DefaultTopic, msg.Topic, "msg.topic: %s", msg.Topic)
 	// test no uuid set
 	assert.NotEqualf(t, "", msg.Key, "msg.key: %s", msg.Key)
 
-	msg = &types.Message{Topic: "test_topic", Key: "test_key", Delay: 50, ReadyTime: 60000000000}
+	msg = &types.Message{Topic: "test_topic", Key: "test_key", DeliverAfter: 50, DeliverAt: 60000000000}
 	err = s.checkParams(msg)
 	assert.NoError(t, err)
-	// test ReadyTime
-	assert.Equal(t, int64(60000000000), msg.ReadyTime)
+	// test DeliverAt
+	assert.Equal(t, int64(60000000000), msg.DeliverAt)
 	// test no topic set
 	assert.Equalf(t, "test_topic", msg.Topic, "msg.topic: %s", msg.Topic)
 	// test no uuid set
@@ -122,31 +122,31 @@ func TestSchedule_Produce(t *testing.T) {
 		assert.EqualError(t, err, "check message params failed: "+errInvalidMessageDelay.Error())
 	}
 
-	// test ReadyTime less than now
+	// test DeliverAt less than now
 	err = nil
-	err = s.Produce(ctx, &types.Message{Key: "12345", Delay: 50, ReadyTime: 60})
+	err = s.Produce(ctx, &types.Message{Key: "12345", DeliverAfter: 50, DeliverAt: 60})
 	assert.Error(t, err)
 	if err != nil {
 		assert.EqualError(t, err, "check message params failed: "+errInvalidMessageReady.Error())
 	}
 
-	// test ReadyTime greater than now
+	// test DeliverAt greater than now
 	err = nil
-	msg := &types.Message{Delay: 50, ReadyTime: 60000000000}
+	msg := &types.Message{DeliverAfter: 50, DeliverAt: 60000000000}
 	err = s.Produce(ctx, msg)
 	assert.NoError(t, err)
-	// test ReadyTime
-	assert.Equal(t, int64(60000000000), msg.ReadyTime)
+	// test DeliverAt
+	assert.Equal(t, int64(60000000000), msg.DeliverAt)
 	// test no topic set
 	assert.Equalf(t, types.DefaultTopic, msg.Topic, "msg.topic: %s", msg.Topic)
 	// test no uuid set
 	assert.NotEqualf(t, "", msg.Key, "msg.key: %s", msg.Key)
 
-	msg = &types.Message{Topic: "test_topic", Key: "test_key", Delay: 50, ReadyTime: 60000000000}
+	msg = &types.Message{Topic: "test_topic", Key: "test_key", DeliverAfter: 50, DeliverAt: 60000000000}
 	err = s.Produce(ctx, msg)
 	assert.NoError(t, err)
-	// test ReadyTime
-	assert.Equal(t, int64(60000000000), msg.ReadyTime)
+	// test DeliverAt
+	assert.Equal(t, int64(60000000000), msg.DeliverAt)
 	// test no topic set
 	assert.Equalf(t, "test_topic", msg.Topic, "msg.topic: %s", msg.Topic)
 	// test no uuid set

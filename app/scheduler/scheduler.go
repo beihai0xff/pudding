@@ -20,7 +20,7 @@ var (
 	// error when the message delay is invalid
 	errInvalidMessageDelay = errors.New("message delay must be greater than 0")
 	// error when the message ready time is invalid
-	errInvalidMessageReady = errors.New("ReadyTime must be greater than the current time")
+	errInvalidMessageReady = errors.New("DeliverAt must be greater than the current time")
 )
 
 const (
@@ -93,7 +93,7 @@ func (s *Schedule) Run() {
 }
 
 /*
-	Produce or Consume Delay Schedule
+	Produce or Consume DeliverAfter Schedule
 */
 
 // Produce produce a Message to the delay queue
@@ -105,7 +105,7 @@ func (s *Schedule) Produce(ctx context.Context, msg *types.Message) error {
 		return fmt.Errorf("check message params failed: %w", err)
 	}
 
-	timeSlice := s.getTimeSlice(msg.ReadyTime)
+	timeSlice := s.getTimeSlice(msg.DeliverAt)
 	for i := 0; i < 3; i++ {
 		err = s.delay.Produce(ctx, timeSlice, msg)
 		if err == nil {
@@ -120,15 +120,15 @@ func (s *Schedule) Produce(ctx context.Context, msg *types.Message) error {
 
 // checkParams check the Produced message params
 func (s *Schedule) checkParams(msg *types.Message) error {
-	// if Message.ReadyTime is set, use ReadyTime
-	// otherwise use current time + Delay Seconds
-	if msg.ReadyTime <= 0 {
-		if msg.Delay <= 0 {
+	// if Message.DeliverAt is set, use DeliverAt
+	// otherwise use current time + DeliverAfter Seconds
+	if msg.DeliverAt <= 0 {
+		if msg.DeliverAfter <= 0 {
 			return errInvalidMessageDelay
 		}
-		msg.ReadyTime = s.wallClock.Now().Unix() + msg.Delay
+		msg.DeliverAt = s.wallClock.Now().Unix() + msg.DeliverAfter
 	} else {
-		if time.Unix(msg.ReadyTime, 0).Before(s.wallClock.Now()) {
+		if time.Unix(msg.DeliverAt, 0).Before(s.wallClock.Now()) {
 			return errInvalidMessageReady
 		}
 	}

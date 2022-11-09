@@ -29,9 +29,9 @@ message SendMessageRequest {
   // Message Payload
   bytes Payload  = 3;
   // Message Delay Time (Seconds)
-  int64 Delay = 4;
+  int64 DeliverAfter = 4;
   // Message Ready Time（now + delay, Unix Timestamp, Seconds）
-  int64 ReadyTime  = 5;
+  int64 DeliverAt  = 5;
 }
 
 message SendMessageReply {
