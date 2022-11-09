@@ -9,11 +9,11 @@ type HandleMessage func(ctx context.Context, msg *Message) error
 
 // Message 消息
 type Message struct {
-	Topic     string // Message Topic
-	Key       string // Message Key
-	Payload   []byte // Message Payload
-	Delay     int64  // Message Delay Time (Seconds)
-	ReadyTime int64  // Message Ready Time（now + delay, Unix Timestamp, Seconds）
+	Topic        string // Message Topic
+	Key          string // Message Key
+	Payload      []byte // Message Payload
+	DeliverAfter int64  // Message DeliverAfter time (Seconds)
+	DeliverAt    int64  // Message Deliver timestamp（now + DeliverAfter, Unix Timestamp, Seconds）
 }
 
 func GetMessageFromJSON(j []byte) (*Message, error) {

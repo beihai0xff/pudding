@@ -29,15 +29,15 @@ func TestMain(m *testing.M) {
 func TestRealTimeQueue_Produce(t *testing.T) {
 
 	msg := &types.Message{
-		Topic:     "test_Topic",
-		Payload:   []byte("12345678900987654321"),
-		Delay:     0,
-		ReadyTime: 10,
+		Topic:        "test_Topic",
+		Payload:      []byte("12345678900987654321"),
+		DeliverAfter: 0,
+		DeliverAt:    10,
 	}
 
 	for i := 1; i <= 100; i++ {
 		msg.Key = uuid.New().String()
-		msg.ReadyTime = int64(i)
+		msg.DeliverAt = int64(i)
 		assert.Equal(t, nil, q.Produce(context.Background(), "test_bucket_Produce", msg))
 	}
 
@@ -51,21 +51,21 @@ func TestRealTimeQueue_Produce(t *testing.T) {
 func TestDelayQueue_getFromZSetByScore(t *testing.T) {
 	bucket := "test_bucket_getFromZSetByScore"
 	msg := &types.Message{
-		Topic:     "test_Topic",
-		Payload:   []byte("12345678900987654321"),
-		Delay:     0,
-		ReadyTime: 10,
+		Topic:        "test_Topic",
+		Payload:      []byte("12345678900987654321"),
+		DeliverAfter: 0,
+		DeliverAt:    10,
 	}
 
 	for i := 1; i <= 100; i++ {
 		msg.Key = uuid.New().String()
-		msg.ReadyTime = int64(i)
+		msg.DeliverAt = int64(i)
 		assert.Equal(t, nil, q.Produce(context.Background(), bucket, msg))
 	}
 
 	for i := 1; i <= 5; i++ {
 		msg.Key = uuid.New().String()
-		msg.ReadyTime = 200
+		msg.DeliverAt = 200
 		assert.Equal(t, nil, q.Produce(context.Background(), bucket, msg))
 	}
 

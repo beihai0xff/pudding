@@ -33,10 +33,10 @@ func (s *Handler) SendDelayMessage(ctx context.Context, req *pb.SendMessageReque
 
 func (s *Handler) convPBToMessage(req *pb.SendMessageRequest) *types.Message {
 	return &types.Message{
-		Topic:     req.GetTopic(),
-		Key:       req.GetKey(),
-		Payload:   req.GetPayload(),
-		Delay:     req.GetDelay(),
-		ReadyTime: req.GetReadyTime(),
+		Topic:        req.GetTopic(),
+		Key:          req.GetKey(),
+		Payload:      req.GetPayload(),
+		DeliverAfter: req.GetDeliverAfter(),
+		DeliverAt:    req.GetDeliverAt(),
 	}
 }

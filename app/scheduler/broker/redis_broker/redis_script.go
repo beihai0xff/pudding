@@ -14,7 +14,7 @@ local getHashtableName = KEYS[2]
 local key = ARGV[1]
 local message = ARGV[2]
 local readyTime = tonumber(ARGV[3])
--- add Message Key and ReadyTime to zset
+-- add Message Key and DeliverAt to zset
 local count = redis.call("zadd", getTopicPartition, readyTime, key)
 -- Message already exists
 if count == 0 then

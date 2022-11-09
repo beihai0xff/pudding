@@ -94,7 +94,7 @@ func (t *Trigger) Tracking(temp *entity.CronTriggerTemplate) error {
 		Topic:     temp.Topic,
 		Key:       t.formatMessageKey(temp),
 		Payload:   temp.Payload,
-		ReadyTime: nextTime.Unix(),
+		DeliverAt: nextTime.Unix(),
 	}
 
 	if err = t.s.Produce(context.Background(), msg); err != nil {

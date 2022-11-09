@@ -32,7 +32,7 @@ func NewDelayQueue(rdb *rdb.Client) *DelayQueue {
 }
 
 func (q *DelayQueue) Produce(ctx context.Context, timeSlice string, msg *types.Message) error {
-	// member := &redis.Z{Score: float64(msg.ReadyTime.Unix()), Member: msg.Key}
+	// member := &redis.Z{Score: float64(msg.DeliverAt.Unix()), Member: msg.Key}
 	log.Debugf("produce message: %+v", msg)
 	return q.pushToZSet(ctx, timeSlice, msg)
 }
@@ -49,7 +49,7 @@ func (q *DelayQueue) pushToZSet(ctx context.Context, timeSlice string, msg *type
 	}
 
 	count, err := pushScript.Run(ctx, q.rdb.GetClient(), []string{q.getZSetName(timeSlice),
-		q.getHashtableName(timeSlice)}, msg.Key, c, msg.ReadyTime).Int()
+		q.getHashtableName(timeSlice)}, msg.Key, c, msg.DeliverAt).Int()
 	if err != nil {
 		return fmt.Errorf("pushToZSet: failed to push message:%w", err)
 	}
