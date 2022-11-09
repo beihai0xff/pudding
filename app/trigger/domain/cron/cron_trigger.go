@@ -117,7 +117,7 @@ func (t *Trigger) Tracking(temp *entity.CronTriggerTemplate) error {
 
 // checkTempShouldRun check whether the template should run
 func (t *Trigger) checkTempShouldRun(temp *entity.CronTriggerTemplate, nextTime time.Time) bool {
-	if temp.LoopedTimes > temp.ExceptedLoopTimes {
+	if temp.LoopedTimes >= temp.ExceptedLoopTimes {
 		log.Warnf("cron template [%d] has reached the maximum loop times, but it has been tracked", temp.ID)
 
 		temp.Status = types.TemplateStatusMaxTimes
