@@ -33,32 +33,32 @@ const (
 type LogConfig struct {
 	LogName string `json:"log_name" yaml:"log_name" mapstructure:"log_name"`
 	// Writers log output(console, file)
-	Writers []string `yaml:"writers" mapstructure:"writers"`
+	Writers []string `yaml:"writers" mapstructure:"writers" json:"writers"`
 	// FileConfig 日志文件配置，如果 Writers 为 file 则该配置不能为空
-	FileConfig *FileConfig `yaml:"file_config" mapstructure:"file_config"`
+	FileConfig *LogFileConfig `yaml:"file_config" mapstructure:"file_config" json:"file_config"`
 
 	// Format log format type (console, json)
-	Format string `yaml:"format" mapstructure:"format"`
+	Format string `yaml:"format" mapstructure:"format" json:"format"`
 
 	// Level log level debug info error...
-	Level string `yaml:"level" mapstructure:"level"`
+	Level string `yaml:"level" mapstructure:"level" json:"level"`
 
 	// CallerSkip 控制 log 函数嵌套深度
-	CallerSkip int `yaml:"caller_skip" mapstructure:"caller_skip"`
+	CallerSkip int `yaml:"caller_skip" mapstructure:"caller_skip" json:"caller_skip"`
 }
 
-// FileConfig 日志文件的配置
-type FileConfig struct {
+// LogFileConfig 日志文件的配置
+type LogFileConfig struct {
 	// Filepath log file path
-	Filepath string `yaml:"filepath" mapstructure:"filepath"`
+	Filepath string `yaml:"filepath" mapstructure:"filepath" json:"filepath"`
 	// MaxAge log file max age, days
-	MaxAge int `yaml:"max_age" mapstructure:"max_age"`
+	MaxAge int `yaml:"max_age" mapstructure:"max_age" json:"max_age"`
 	// MaxBackups max backup files
-	MaxBackups int `yaml:"max_backups" mapstructure:"max_backups"`
+	MaxBackups int `yaml:"max_backups" mapstructure:"max_backups" json:"max_backups"`
 	// Compress log file is compress
-	Compress bool `yaml:"compress" mapstructure:"compress"`
+	Compress bool `yaml:"compress" mapstructure:"compress" json:"compress"`
 	// MaxSize max file size, MB
-	MaxSize int `yaml:"max_size" mapstructure:"max_size"`
+	MaxSize int `yaml:"max_size" mapstructure:"max_size" json:"max_size"`
 }
 
 func GetLogConfig(logName string) *LogConfig {
