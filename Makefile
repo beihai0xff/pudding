@@ -24,8 +24,13 @@ GO_VERSION ?= 1.18
 GOLANG_IMAGE = golang:$(GO_VERSION)
 
 lint:
+	buf lint
 	golangci-lint run
 	go test ./...
+
+gen:
+	cd api/proto && buf update
+	buf generate
 
 container:
 	docker build -t ${IMAGE_NAME} --build-arg GOLANG_IMAGE="${GOLANG_IMAGE}" \

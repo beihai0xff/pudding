@@ -77,11 +77,11 @@ func (dao *CronTemplate) BatchHandleRecords(ctx context.Context, t time.Time, ba
 			if err := copier.Copy(results[i], e); err != nil {
 				return err
 			}
+			_ = tx.Save(results[i])
+			log.Infof("update %+v records", results)
 		}
 
-		log.Infof("update %+v records", results)
-
-		return tx.Save(&results)
+		return nil
 	}
 
 	// SELECT xxx FROM `xxxx` FOR UPDATE SKIP LOCKED LIMIT batchSize
