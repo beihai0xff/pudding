@@ -1,0 +1,22 @@
+syntax = "proto3";
+package trigger.v1;
+option go_package = "github.com/beihai0xff/pudding/trigger/v1";
+
+// The Pudding service definition.
+service CronTriggerService {
+  // UpdateStatus update cron trigger status
+  rpc UpdateStatus (UpdateStatusRequest) returns (UpdateStatusResponse) {}
+}
+
+// The UpdateStatus request message.
+message UpdateStatusRequest {
+  // Message Topic
+  uint64 id = 1;
+  // Message Key
+  int64 status = 2;
+}
+
+message UpdateStatusResponse {
+  int32 code = 1;
+  string message = 2;
+}

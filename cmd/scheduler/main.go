@@ -8,7 +8,7 @@ import (
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/reflection"
 
-	pb "github.com/beihai0xff/pudding/api/scheduler/v1"
+	pb "github.com/beihai0xff/pudding/api/gen/scheduler/v1"
 	"github.com/beihai0xff/pudding/app/scheduler"
 	"github.com/beihai0xff/pudding/app/scheduler/broker"
 	"github.com/beihai0xff/pudding/app/scheduler/pkg/configs"
@@ -39,12 +39,13 @@ func main() {
 
 	delay, realtime := newQueue()
 
-	s := grpc.NewServer()
-	pb.RegisterPuddingServer(s, scheduler.NewHandler(scheduler.New(configs.GetSchedulerConfig(), delay, realtime)))
+	server := grpc.NewServer()
+	handler := scheduler.NewHandler(scheduler.New(configs.GetSchedulerConfig(), delay, realtime))
+	pb.RegisterSchedulerServiceServer(server, handler)
 	// Register reflection service on gRPC server.
-	reflection.Register(s)
+	reflection.Register(server)
 	log.Infof("server listening at %v", lis.Addr())
-	if err := s.Serve(lis); err != nil {
+	if err := server.Serve(lis); err != nil {
 		log.Fatalf("failed to serve: %v", err)
 	}
 }
