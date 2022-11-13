@@ -11,6 +11,16 @@ type Logger interface {
 	Error(args ...interface{})
 	// Fatal logs to FATAL log
 	Fatal(args ...interface{})
+	// Debugln logs to DEBUG log
+	Debugln(args ...interface{})
+	// Infoln logs to INFO log
+	Infoln(args ...interface{})
+	// Warnln logs to WARN log
+	Warnln(args ...interface{})
+	// Errorln logs to ERROR log
+	Errorln(args ...interface{})
+	// Fatalln logs to FATAL log
+	Fatalln(args ...interface{})
 	// Debugf logs to DEBUG log, Arguments will be formatted with Sprint, Sprintf, or neither.
 	Debugf(format string, args ...interface{})
 	// Infof logs to INFO log, Arguments will be formatted with Sprint, Sprintf, or neither.

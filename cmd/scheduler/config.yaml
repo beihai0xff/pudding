@@ -29,7 +29,7 @@ log_config:
   default:
     level: debug
     writers:
-      - stdout
+      - console
       - file
     format: json
     file_config:
@@ -46,12 +46,28 @@ log_config:
   pulsar_log:
     level: debug
     writers:
-      - stdout
       - file
     format: json
     file_config:
       # log file path
       filepath: ./log/pulsar.log
+      # file max_age
+      max_age: 7
+      # max backup files
+      max_backups: 7
+      # max file size, MB
+      max_size: 128
+      # log file is compress
+      compress: false
+  grpc_log:
+    level: debug
+    writers:
+      - console
+      - file
+    format: json
+    file_config:
+      # log file path
+      filepath: ./log/grpc.log
       # file max_age
       max_age: 7
       # max backup files

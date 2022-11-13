@@ -16,6 +16,7 @@ import (
 	"github.com/beihai0xff/pudding/app/scheduler/pkg/configs"
 	"github.com/beihai0xff/pudding/pkg/lock"
 	"github.com/beihai0xff/pudding/pkg/log"
+	"github.com/beihai0xff/pudding/pkg/log/logger"
 	"github.com/beihai0xff/pudding/pkg/mq/pulsar"
 	"github.com/beihai0xff/pudding/pkg/redis"
 )
@@ -31,6 +32,8 @@ func main() {
 
 	log.RegisterLogger(log.DefaultLoggerName, log.WithCallerSkip(1))
 	log.RegisterLogger("pulsar_log", log.WithCallerSkip(1))
+	log.RegisterLogger("grpc_log", log.WithCallerSkip(1))
+	logger.GetGRPCLogger()
 
 	// log.RegisterLogger("gorm_log", log.WithCallerSkip(3))
 
