@@ -29,6 +29,7 @@ lint:
 	go test ./...
 
 gen:
+	cd api && rm -rf gen && rm -rf openapi
 	cd api/proto && buf update
 	buf generate
 

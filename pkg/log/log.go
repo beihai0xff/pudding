@@ -19,11 +19,11 @@ var (
 	loggers = map[string]Logger{}
 )
 
-const defaultLoggerName = "default"
+const DefaultLoggerName = "default"
 
 func init() {
 	defaultLogger = newLogger(defaultConfig)
-	loggers[defaultLoggerName] = defaultLogger
+	loggers[DefaultLoggerName] = defaultLogger
 }
 
 type logger struct {
@@ -43,7 +43,7 @@ func RegisterLogger(loggerName string, opts ...OptionFunc) {
 	}
 
 	log := newLogger(c)
-	if loggerName == defaultLoggerName {
+	if loggerName == DefaultLoggerName {
 		defaultLogger = log
 	}
 	loggers[loggerName] = log

@@ -30,6 +30,7 @@ log_config:
     level: debug
     writers:
       - stdout
+      - file
     format: json
     file_config:
       # log file path
@@ -46,5 +47,17 @@ log_config:
     level: debug
     writers:
       - stdout
+      - file
     format: json
+    file_config:
+      # log file path
+      filepath: ./log/pulsar.log
+      # file max_age
+      max_age: 7
+      # max backup files
+      max_backups: 7
+      # max file size, MB
+      max_size: 128
+      # log file is compress
+      compress: false
 

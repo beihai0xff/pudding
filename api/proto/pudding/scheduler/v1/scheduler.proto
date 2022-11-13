@@ -1,5 +1,5 @@
 syntax = "proto3";
-package scheduler.v1;
+package pudding.scheduler.v1;
 option go_package = "github.com/beihai0xff/pudding/scheduler/v1";
 
 import "google/api/annotations.proto";
