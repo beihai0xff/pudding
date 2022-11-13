@@ -39,6 +39,6 @@ func (p *PulsarLogger) WithError(err error) plog.Entry {
 }
 
 func GetPulsarLogger() *PulsarLogger {
-	l := log.GerLoggerByName("pulsar_log").WithFields("module", "pulsar")
+	l := log.GerLoggerByName(PulsarLoggerName).WithFields("module", "pulsar")
 	return &PulsarLogger{Logger: l, with: l.WithFields}
 }
