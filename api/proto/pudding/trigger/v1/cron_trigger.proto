@@ -1,5 +1,5 @@
 syntax = "proto3";
-package trigger.v1;
+package pudding.trigger.v1;
 option go_package = "github.com/beihai0xff/pudding/trigger/v1";
 
 // The Pudding service definition.

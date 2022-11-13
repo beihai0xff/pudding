@@ -34,7 +34,7 @@ func NewSchedulerServiceClient(cc grpc.ClientConnInterface) SchedulerServiceClie
 
 func (c *schedulerServiceClient) Ping(ctx context.Context, in *PingRequest, opts ...grpc.CallOption) (*PingResponse, error) {
 	out := new(PingResponse)
-	err := c.cc.Invoke(ctx, "/scheduler.v1.SchedulerService/Ping", in, out, opts...)
+	err := c.cc.Invoke(ctx, "/pudding.scheduler.v1.SchedulerService/Ping", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -43,7 +43,7 @@ func (c *schedulerServiceClient) Ping(ctx context.Context, in *PingRequest, opts
 
 func (c *schedulerServiceClient) SendDelayMessage(ctx context.Context, in *SendDelayMessageRequest, opts ...grpc.CallOption) (*SendDelayMessageResponse, error) {
 	out := new(SendDelayMessageResponse)
-	err := c.cc.Invoke(ctx, "/scheduler.v1.SchedulerService/SendDelayMessage", in, out, opts...)
+	err := c.cc.Invoke(ctx, "/pudding.scheduler.v1.SchedulerService/SendDelayMessage", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -94,7 +94,7 @@ func _SchedulerService_Ping_Handler(srv interface{}, ctx context.Context, dec fu
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/scheduler.v1.SchedulerService/Ping",
+		FullMethod: "/pudding.scheduler.v1.SchedulerService/Ping",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		return srv.(SchedulerServiceServer).Ping(ctx, req.(*PingRequest))
@@ -112,7 +112,7 @@ func _SchedulerService_SendDelayMessage_Handler(srv interface{}, ctx context.Con
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/scheduler.v1.SchedulerService/SendDelayMessage",
+		FullMethod: "/pudding.scheduler.v1.SchedulerService/SendDelayMessage",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		return srv.(SchedulerServiceServer).SendDelayMessage(ctx, req.(*SendDelayMessageRequest))
@@ -124,7 +124,7 @@ func _SchedulerService_SendDelayMessage_Handler(srv interface{}, ctx context.Con
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
 var SchedulerService_ServiceDesc = grpc.ServiceDesc{
-	ServiceName: "scheduler.v1.SchedulerService",
+	ServiceName: "pudding.scheduler.v1.SchedulerService",
 	HandlerType: (*SchedulerServiceServer)(nil),
 	Methods: []grpc.MethodDesc{
 		{
