@@ -26,7 +26,7 @@ require (
 	google.golang.org/protobuf v1.28.1
 	gopkg.in/natefinch/lumberjack.v2 v2.0.0
 	gopkg.in/yaml.v3 v3.0.1
-	gorm.io/driver/mysql v1.4.3
+	gorm.io/driver/mysql v1.4.4
 	gorm.io/gen v0.3.18
 	gorm.io/gorm v1.24.1
 	gorm.io/plugin/dbresolver v1.3.0
