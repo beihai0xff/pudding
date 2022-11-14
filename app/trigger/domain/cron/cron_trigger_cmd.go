@@ -10,6 +10,39 @@ import (
 	"github.com/beihai0xff/pudding/types"
 )
 
+// FindByID page query cron templates
+func (t *Trigger) FindByID(ctx context.Context, id uint) (*entity.CronTriggerTemplate, error) {
+	if id <= 0 {
+		err := fmt.Errorf("invalid id, id: %d", id)
+		log.Errorf("%w", err)
+		return nil, err
+	}
+
+	res, err := t.repo.FindByID(ctx, id)
+	if err != nil {
+		log.Errorf("failed to insert cron template, caused by %w", err)
+		return nil, err
+	}
+
+	return res, nil
+}
+
+// PageQuery page query cron templates
+func (t *Trigger) PageQuery(ctx context.Context, offset, limit int) ([]*entity.CronTriggerTemplate, int64, error) {
+	if offset < 0 || limit <= 0 {
+		err := fmt.Errorf("invalid offset or limit, offset: %d, limit: %d", offset, limit)
+		log.Errorf("%w", err)
+		return nil, 0, err
+	}
+	res, count, err := t.repo.PageQuery(ctx, offset, limit)
+	if err != nil {
+		log.Errorf("failed to PageQuery cron template, caused by %w", err)
+		return nil, 0, err
+	}
+
+	return res, count, nil
+}
+
 // Register register a cron template
 func (t *Trigger) Register(ctx context.Context, temp *entity.CronTriggerTemplate) error {
 	// 1. check params

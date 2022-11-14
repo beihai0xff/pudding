@@ -1,10 +1,12 @@
 package convertor
 
 import (
+	"fmt"
 	"testing"
 	"time"
 
 	"github.com/stretchr/testify/assert"
+	"gorm.io/gorm"
 
 	"github.com/beihai0xff/pudding/app/trigger/entity"
 	"github.com/beihai0xff/pudding/app/trigger/repo/storage/po"
@@ -165,5 +167,91 @@ func TestCronTemplatePoTOEntity(t *testing.T) {
 
 		tt.wantErr(t, err)
 		tt.assertion(t, tt.want, v)
+	}
+}
+
+func TestCronTemplateSlicePoTOEntity(t *testing.T) {
+	type args struct {
+		p []*po.CronTriggerTemplate
+	}
+	tests := []struct {
+		name    string
+		args    args
+		want    []*entity.CronTriggerTemplate
+		wantErr assert.ErrorAssertionFunc
+	}{
+		{
+			name: "normal",
+			args: args{
+				p: []*po.CronTriggerTemplate{
+					{
+						Model: gorm.Model{
+							ID:        1,
+							CreatedAt: time.Time{},
+							UpdatedAt: time.Time{},
+							DeletedAt: gorm.DeletedAt{},
+						},
+						CronExpr:          "0 0 0 * * *",
+						Topic:             "test",
+						Payload:           []byte("hello"),
+						LastExecutionTime: time.Date(2020, 1, 1, 0, 0, 0, 0, time.UTC),
+						ExceptedEndTime:   time.Date(2020, 1, 2, 0, 0, 0, 0, time.UTC),
+						ExceptedLoopTimes: 1,
+						LoopedTimes:       1,
+						Status:            1,
+					},
+					{
+						Model: gorm.Model{
+							ID:        2,
+							CreatedAt: time.Time{},
+							UpdatedAt: time.Time{},
+							DeletedAt: gorm.DeletedAt{},
+						},
+						CronExpr:          "0 0 0 * * *",
+						Topic:             "test",
+						Payload:           []byte("hello"),
+						LastExecutionTime: time.Date(2020, 1, 1, 0, 0, 0, 0, time.UTC),
+						ExceptedEndTime:   time.Date(2020, 1, 2, 0, 0, 0, 0, time.UTC),
+						ExceptedLoopTimes: 1,
+						LoopedTimes:       1,
+						Status:            1,
+					},
+				},
+			},
+			want: []*entity.CronTriggerTemplate{
+				{
+					ID:                1,
+					CronExpr:          "0 0 0 * * *",
+					Topic:             "test",
+					Payload:           []byte("hello"),
+					LastExecutionTime: time.Date(2020, 1, 1, 0, 0, 0, 0, time.UTC),
+					ExceptedEndTime:   time.Date(2020, 1, 2, 0, 0, 0, 0, time.UTC),
+					ExceptedLoopTimes: 1,
+					LoopedTimes:       1,
+					Status:            1,
+				},
+				{
+					ID:                2,
+					CronExpr:          "0 0 0 * * *",
+					Topic:             "test",
+					Payload:           []byte("hello"),
+					LastExecutionTime: time.Date(2020, 1, 1, 0, 0, 0, 0, time.UTC),
+					ExceptedEndTime:   time.Date(2020, 1, 2, 0, 0, 0, 0, time.UTC),
+					ExceptedLoopTimes: 1,
+					LoopedTimes:       1,
+					Status:            1,
+				},
+			},
+			wantErr: assert.NoError,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got, err := CronTemplateSlicePoTOEntity(tt.args.p)
+			if !tt.wantErr(t, err, fmt.Sprintf("CronTemplateSlicePoTOEntity(%v)", tt.args.p)) {
+				return
+			}
+			assert.Equalf(t, tt.want, got, "CronTemplateSlicePoTOEntity(%v)", tt.args.p)
+		})
 	}
 }

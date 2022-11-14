@@ -23,11 +23,15 @@ import (
 var validate = validator.New()
 
 type CronTemplateDAO interface {
+	// FindByID find a cron template by id
 	FindByID(ctx context.Context, id uint) (*entity.CronTriggerTemplate, error)
-
+	// PageQuery query cron templates by page
+	PageQuery(ctx context.Context, offset int, limit int) (res []*entity.CronTriggerTemplate, count int64, err error)
+	// Insert insert a cron template
 	Insert(ctx context.Context, e *entity.CronTriggerTemplate) error
+	// UpdateStatus update the status of a cron template
 	UpdateStatus(ctx context.Context, id uint, status int) error
-
+	// BatchHandleRecords batch handle the records which need to be executed
 	BatchHandleRecords(ctx context.Context, t time.Time, batchSize int, f types.CronTempHandler) error
 }
 
@@ -36,6 +40,37 @@ type CronTemplate struct{}
 func NewCronTemplate(db *mysql.Client) *CronTemplate {
 	sql.SetDefault(db.GetDB())
 	return &CronTemplate{}
+}
+
+func (dao *CronTemplate) FindByID(ctx context.Context, id uint) (*entity.CronTriggerTemplate, error) {
+	// SELECT * FROM pudding_cron_trigger_template WHERE id =
+	res, err := sql.CronTriggerTemplate.WithContext(ctx).FindByID(id)
+	if err != nil {
+		return nil, err
+	}
+
+	e, err := convertor.CronTemplatePoTOEntity(res)
+	if err != nil {
+		return nil, err
+	}
+	return e, nil
+
+}
+
+func (dao *CronTemplate) PageQuery(ctx context.Context, offset int, limit int) (
+	[]*entity.CronTriggerTemplate, int64, error) {
+
+	res, count, err := sql.CronTriggerTemplate.WithContext(ctx).FindByPage(offset, limit)
+	if err != nil {
+		return nil, 0, err
+	}
+
+	e, err := convertor.CronTemplateSlicePoTOEntity(res)
+	if err != nil {
+		return nil, 0, err
+	}
+	return e, count, nil
+
 }
 
 func (dao *CronTemplate) Insert(ctx context.Context, e *entity.CronTriggerTemplate) error {
@@ -91,20 +126,5 @@ func (dao *CronTemplate) BatchHandleRecords(ctx context.Context, t time.Time, ba
 	}).Where(sql.CronTriggerTemplate.LastExecutionTime.Lte(t)).
 		Where(sql.CronTriggerTemplate.Status.Eq(types.TemplateStatusEnabled)).
 		FindInBatches(&results, batchSize, fc)
-
-}
-
-func (dao *CronTemplate) FindByID(ctx context.Context, id uint) (*entity.CronTriggerTemplate, error) {
-	// SELECT * FROM pudding_cron_trigger_template WHERE id =
-	res, err := sql.CronTriggerTemplate.WithContext(ctx).FindByID(id)
-	if err != nil {
-		return nil, err
-	}
-
-	e, err := convertor.CronTemplatePoTOEntity(res)
-	if err != nil {
-		return nil, err
-	}
-	return e, nil
 
 }
