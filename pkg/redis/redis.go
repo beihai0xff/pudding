@@ -10,7 +10,6 @@ import (
 
 	"github.com/bsm/redislock"
 	"github.com/go-redis/redis/v9"
-	"github.com/go-redis/redis_rate/v10"
 
 	"github.com/beihai0xff/pudding/configs"
 )
@@ -170,14 +169,6 @@ func (c *Client) XAck(ctx context.Context, topic, group string, ids ...string) e
 func (c *Client) GetDistributeLock(ctx context.Context, name string,
 	expireTime time.Duration) (*redislock.Lock, error) {
 	return c.locker.Obtain(ctx, name, expireTime, nil)
-}
-
-/*
-	leaky bucket
-*/
-
-func (c *Client) GetLimiter() *redis_rate.Limiter {
-	return redis_rate.NewLimiter(client.client)
 }
 
 // Close redis client

@@ -90,8 +90,12 @@ func Fatalf(format string, args ...interface{}) {
 
 // Sync calls the zap defaultLogger's Sync method, flushing any buffered log entries.
 // Applications should take care to call Sync before exiting.
-func Sync() error {
-	return defaultLogger.Sync()
+func Sync() {
+	for loggerName, logger := range loggers {
+		if err := logger.Sync(); err != nil {
+			Errorf("sync logger [%s] error: %v", loggerName, err)
+		}
+	}
 }
 
 // WithFields 设置一些业务自定义数据到每条 log 中
