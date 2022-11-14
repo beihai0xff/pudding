@@ -22,6 +22,13 @@ func (c *Config) JSON() []byte {
 func Init(filePath string) {
 	conf.Parse(filePath, "yaml", c, conf.ReadFromFile)
 
+	if c.Scheduler.MessageTopic == "" {
+		c.Scheduler.MessageTopic = types.DefaultTopic
+	}
+	if c.Scheduler.TokenTopic == "" {
+		c.Scheduler.TokenTopic = types.TokenTopic
+	}
+
 	c.Pulsar.ProducersConfig = append(c.Pulsar.ProducersConfig, conf.ProducerConfig{
 		Topic:                   types.DefaultTopic,
 		BatchingMaxPublishDelay: 20,

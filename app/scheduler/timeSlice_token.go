@@ -56,7 +56,7 @@ func (s *Schedule) tryProduceToken() {
 		}
 
 		// if get token lock, send it to token topic
-		if err := s.produceRealTime(ctx, &types.Message{Topic: types.TokenTopic, Payload: []byte(tokenName)}); err != nil {
+		if err := s.produceRealTime(ctx, &types.Message{Topic: s.tokenTopic, Payload: []byte(tokenName)}); err != nil {
 			log.Errorf("failed to produce token: %s, caused by %v", tokenName, err)
 			continue
 		}

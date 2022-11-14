@@ -48,8 +48,10 @@ type Schedule struct {
 	// interval timeSlice interval (Seconds)
 	interval int64
 
-	// limiter rate limiter
-	// limiter *redis_rate.Limiter
+	// messageTopic default message topic
+	messageTopic string
+	// tokenTopic default token topic
+	tokenTopic string
 
 	// token timeSlice token channel
 	token chan int64
@@ -59,11 +61,13 @@ type Schedule struct {
 
 func New(config *configs.SchedulerConfig, delay broker.DelayQueue, realtime broker.RealTimeQueue) *Schedule {
 	q := &Schedule{
-		delay:     delay,
-		realtime:  realtime,
-		wallClock: clock.New(),
-		token:     make(chan int64),
-		quit:      make(chan int64),
+		delay:        delay,
+		realtime:     realtime,
+		wallClock:    clock.New(),
+		messageTopic: config.MessageTopic,
+		tokenTopic:   config.TokenTopic,
+		token:        make(chan int64),
+		quit:         make(chan int64),
 	}
 
 	// parse Polling delay queue interval
@@ -139,7 +143,7 @@ func (s *Schedule) checkParams(msg *types.Message) error {
 	}
 
 	if msg.Topic == "" {
-		msg.Topic = types.DefaultTopic
+		msg.Topic = s.messageTopic
 	}
 
 	return nil
