@@ -26,7 +26,8 @@ type CronTemplateDAO interface {
 	// FindByID find a cron template by id
 	FindByID(ctx context.Context, id uint) (*entity.CronTriggerTemplate, error)
 	// PageQuery query cron templates by page
-	PageQuery(ctx context.Context, offset int, limit int) (res []*entity.CronTriggerTemplate, count int64, err error)
+	PageQuery(ctx context.Context, offset, limit int) (res []*entity.CronTriggerTemplate, count int64, err error)
+
 	// Insert insert a cron template
 	Insert(ctx context.Context, e *entity.CronTriggerTemplate) error
 	// UpdateStatus update the status of a cron template
@@ -57,7 +58,7 @@ func (dao *CronTemplate) FindByID(ctx context.Context, id uint) (*entity.CronTri
 
 }
 
-func (dao *CronTemplate) PageQuery(ctx context.Context, offset int, limit int) (
+func (dao *CronTemplate) PageQuery(ctx context.Context, offset, limit int) (
 	[]*entity.CronTriggerTemplate, int64, error) {
 
 	res, count, err := sql.CronTriggerTemplate.WithContext(ctx).FindByPage(offset, limit)
