@@ -2,7 +2,9 @@ package scheduler
 
 import (
 	"context"
-	"errors"
+
+	codes "google.golang.org/grpc/codes"
+	"google.golang.org/grpc/status"
 
 	pb "github.com/beihai0xff/pudding/api/gen/scheduler/v1"
 	"github.com/beihai0xff/pudding/types"
@@ -19,15 +21,20 @@ func NewHandler(s Scheduler) *Handler {
 
 func (s *Handler) Ping(ctx context.Context, req *pb.PingRequest) (*pb.PingResponse, error) {
 	if req.Message != "ping" {
-		return nil, errors.New("invalid message")
+		return nil, status.Errorf(codes.InvalidArgument, "invalid message")
 	}
 	return &pb.PingResponse{Message: "pong"}, nil
 }
 
 func (s *Handler) SendDelayMessage(ctx context.Context, req *pb.SendDelayMessageRequest) (*pb.SendDelayMessageResponse,
 	error) {
-	if err := s.s.Produce(ctx, s.convPBToMessage(req)); err != nil {
-		return &pb.SendDelayMessageResponse{}, nil
+	msg := s.convPBToMessage(req)
+	if msg.DeliverAt == 0 && msg.DeliverAfter == 0 {
+		return nil, status.Errorf(codes.InvalidArgument, "DeliverAt and DeliverAfter can't be both zero")
+	}
+
+	if err := s.s.Produce(ctx, msg); err != nil {
+		return nil, status.Errorf(codes.Internal, err.Error())
 	}
 	return &pb.SendDelayMessageResponse{}, nil
 }
