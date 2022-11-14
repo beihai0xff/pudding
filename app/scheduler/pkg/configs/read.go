@@ -29,12 +29,28 @@ func Init(filePath string) {
 		c.Scheduler.TokenTopic = types.TokenTopic
 	}
 
-	c.Pulsar.ProducersConfig = append(c.Pulsar.ProducersConfig, conf.ProducerConfig{
-		Topic:                   types.DefaultTopic,
-		BatchingMaxPublishDelay: 20,
-		BatchingMaxMessages:     100,
-		BatchingMaxSize:         1024,
-	})
+	producers := make(map[string]struct{})
+	for _, v := range c.Pulsar.ProducersConfig {
+		producers[v.Topic] = struct{}{}
+	}
+
+	if _, ok := producers[c.Scheduler.MessageTopic]; !ok {
+		c.Pulsar.ProducersConfig = append(c.Pulsar.ProducersConfig, conf.ProducerConfig{
+			Topic:                   types.DefaultTopic,
+			BatchingMaxPublishDelay: 20,
+			BatchingMaxMessages:     100,
+			BatchingMaxSize:         1024,
+		})
+	}
+
+	if _, ok := producers[c.Scheduler.TokenTopic]; !ok {
+		c.Pulsar.ProducersConfig = append(c.Pulsar.ProducersConfig, conf.ProducerConfig{
+			Topic:                   types.TokenTopic,
+			BatchingMaxPublishDelay: 20,
+			BatchingMaxMessages:     100,
+			BatchingMaxSize:         1024,
+		})
+	}
 
 	var str bytes.Buffer
 	_ = json.Indent(&str, c.JSON(), "", "    ")

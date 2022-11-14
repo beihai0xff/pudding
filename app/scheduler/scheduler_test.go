@@ -22,9 +22,11 @@ var s *Schedule
 func TestMain(m *testing.M) {
 
 	s = &Schedule{
-		delay:     broker.NewDelayQueue(rdb.NewMockRdb()),
-		interval:  60,
-		wallClock: clock.NewFakeClock(time.Date(2022, 1, 1, 0, 0, 0, 0, time.UTC)),
+		delay:        broker.NewDelayQueue(rdb.NewMockRdb()),
+		interval:     60,
+		messageTopic: types.DefaultTopic,
+		tokenTopic:   types.TokenTopic,
+		wallClock:    clock.NewFakeClock(time.Date(2022, 1, 1, 0, 0, 0, 0, time.UTC)),
 	}
 
 	exitCode := m.Run()
