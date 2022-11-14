@@ -26,8 +26,9 @@ func New(config *configs.PulsarConfig) *Client {
 	log.Infof("create pulsar client: %+v", config)
 	// create pulsar client
 	c, err := pulsar.NewClient(pulsar.ClientOptions{
-		URL:    config.URL,
-		Logger: logger.GetPulsarLogger(),
+		URL:              config.URL,
+		OperationTimeout: 10 * time.Second,
+		Logger:           logger.GetPulsarLogger(),
 	})
 
 	if err != nil {
