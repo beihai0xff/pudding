@@ -1,5 +1,4 @@
 #!/bin/sh
-go install github.com/fatih/gomodifytags@latest
 
 # log config
 gomodifytags -file ../../configs/log_config.go -struct LogConfig -add-tags json,yaml,mapstructure -w

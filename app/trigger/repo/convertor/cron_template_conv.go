@@ -24,3 +24,12 @@ func CronTemplatePoTOEntity(p *po.CronTriggerTemplate) (*entity.CronTriggerTempl
 
 	return e, nil
 }
+
+func CronTemplateSlicePoTOEntity(p []*po.CronTriggerTemplate) ([]*entity.CronTriggerTemplate, error) {
+	var e []*entity.CronTriggerTemplate
+	if err := copier.Copy(&e, p); err != nil {
+		return nil, err
+	}
+
+	return e, nil
+}
