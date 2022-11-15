@@ -3,23 +3,27 @@ package pudding.scheduler.v1;
 option go_package = "github.com/beihai0xff/pudding/scheduler/v1";
 
 import "google/api/annotations.proto";
+import "google/protobuf/empty.proto";
 
 // The Pudding service definition.
 service SchedulerService {
   // Sends a Ping
-  rpc Ping (PingRequest) returns (PingResponse) {
+  rpc Ping (google.protobuf.Empty) returns (PingResponse) {
+    // option type is http
+
     option (google.api.http) = {
-      post: "/v1/example/echo"
+      get: "/pudding/scheduler/v1/ping"
+    };
+  }
+
+  // Sends a Delay Message
+  rpc SendDelayMessage (SendDelayMessageRequest) returns (SendDelayMessageResponse) {
+    option (google.api.http) = {
+      post: "/pudding/scheduler/v1/sendDelayMessage"
       body: "*"
     };
   }
-  // Sends a Delay Message
-  rpc SendDelayMessage (SendDelayMessageRequest) returns (SendDelayMessageResponse) {}
-}
 
-// The Ping request message.
-message PingRequest {
-  string message = 1;
 }
 
 // The Ping response message

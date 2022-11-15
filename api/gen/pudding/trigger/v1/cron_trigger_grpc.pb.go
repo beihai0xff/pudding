@@ -32,7 +32,7 @@ func NewCronTriggerServiceClient(cc grpc.ClientConnInterface) CronTriggerService
 
 func (c *cronTriggerServiceClient) UpdateStatus(ctx context.Context, in *UpdateStatusRequest, opts ...grpc.CallOption) (*UpdateStatusResponse, error) {
 	out := new(UpdateStatusResponse)
-	err := c.cc.Invoke(ctx, "/trigger.v1.CronTriggerService/UpdateStatus", in, out, opts...)
+	err := c.cc.Invoke(ctx, "/pudding.trigger.v1.CronTriggerService/UpdateStatus", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -78,7 +78,7 @@ func _CronTriggerService_UpdateStatus_Handler(srv interface{}, ctx context.Conte
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/trigger.v1.CronTriggerService/UpdateStatus",
+		FullMethod: "/pudding.trigger.v1.CronTriggerService/UpdateStatus",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		return srv.(CronTriggerServiceServer).UpdateStatus(ctx, req.(*UpdateStatusRequest))
@@ -90,7 +90,7 @@ func _CronTriggerService_UpdateStatus_Handler(srv interface{}, ctx context.Conte
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
 var CronTriggerService_ServiceDesc = grpc.ServiceDesc{
-	ServiceName: "trigger.v1.CronTriggerService",
+	ServiceName: "pudding.trigger.v1.CronTriggerService",
 	HandlerType: (*CronTriggerServiceServer)(nil),
 	Methods: []grpc.MethodDesc{
 		{
@@ -99,5 +99,5 @@ var CronTriggerService_ServiceDesc = grpc.ServiceDesc{
 		},
 	},
 	Streams:  []grpc.StreamDesc{},
-	Metadata: "trigger/v1/cron_trigger.proto",
+	Metadata: "pudding/trigger/v1/cron_trigger.proto",
 }

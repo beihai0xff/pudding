@@ -5,8 +5,9 @@ import (
 
 	codes "google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
+	"google.golang.org/protobuf/types/known/emptypb"
 
-	pb "github.com/beihai0xff/pudding/api/gen/scheduler/v1"
+	pb "github.com/beihai0xff/pudding/api/gen/pudding/scheduler/v1"
 	"github.com/beihai0xff/pudding/types"
 )
 
@@ -19,10 +20,7 @@ func NewHandler(s Scheduler) *Handler {
 	return &Handler{s: s}
 }
 
-func (s *Handler) Ping(ctx context.Context, req *pb.PingRequest) (*pb.PingResponse, error) {
-	if req.Message != "ping" {
-		return nil, status.Errorf(codes.InvalidArgument, "invalid message")
-	}
+func (s *Handler) Ping(ctx context.Context, req *emptypb.Empty) (*pb.PingResponse, error) {
 	return &pb.PingResponse{Message: "pong"}, nil
 }
 

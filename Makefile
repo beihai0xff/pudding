@@ -30,7 +30,7 @@ lint:
 
 gen:
 	cd api && rm -rf gen && rm -rf openapi
-	cd api/proto && buf update
+	cd api/proto && buf mod update
 	buf generate
 
 container:
