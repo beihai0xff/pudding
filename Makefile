@@ -11,7 +11,7 @@ lint:
 
 .PHONY: build
 build: clean
-	cd scripts && chmod 777 build.sh && ./build.sh
+	cd scripts && sh -x ./build.sh
 
 
 .PHONY: gen

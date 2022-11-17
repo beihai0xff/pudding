@@ -4,11 +4,12 @@ ENV CGO_ENABLED 0
 ENV GOOS linux
 ENV GOARCH=amd64
 ENV GOPROXY https://goproxy.cn,direct
-WORKDIR /build/app/
+WORKDIR /build/app/scheduler
 COPY . .
 RUN go mod download
 RUN make build
-COPY ./cmd/scheduler/config.yaml /build/bin/config.yaml
+RUN mkdir /build/bin && cp ./build/bin/scheduler /build/bin/
+RUN cp ./cmd/scheduler/config.yaml /build/bin/config.yaml
 
 
 FROM alpine
