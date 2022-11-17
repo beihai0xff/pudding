@@ -5,6 +5,9 @@ breaking:
 lint:
   use:
     - DEFAULT
+  ignore:
+    - third_party
+  rpc_allow_google_protobuf_empty_requests: true
 deps:
   - buf.build/googleapis/googleapis
   - buf.build/grpc-ecosystem/grpc-gateway
