@@ -1,4 +1,5 @@
 IMAGE_NAME = pudding-test:latest
+IMAGE_VERSION = alpha-1
 GO_VERSION ?= 1.18
 GOLANG_IMAGE = golang:$(GO_VERSION)
 
@@ -22,7 +23,7 @@ gen:
 
 .PHONY: docker-build
 docker-build:
-	DOCKER_BUILDKIT=0 docker build -t scheduler:alpha-1 -f ./build/scheduler.Dockerfile .
+	DOCKER_BUILDKIT=0 docker build -t scheduler:${IMAGE_VERSION} -f ./build/scheduler.Dockerfile .
 
 
 .PHONY: clean
