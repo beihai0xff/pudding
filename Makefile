@@ -9,7 +9,7 @@ lint:
 
 
 .PHONY: build
-build:
+build: lint clean
 	cd scripts && chmod 777 build.sh && ./build.sh
 
 
