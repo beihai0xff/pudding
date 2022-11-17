@@ -24,8 +24,6 @@ container:
 	docker build -t ${IMAGE_NAME} --build-arg GOLANG_IMAGE="${GOLANG_IMAGE}" \
 	    --build-arg PULSAR_IMAGE="${PULSAR_IMAGE}" .
 
-
+.PHONY: clean
 clean:
-	rm -f ./build/bin
-	docker rmi --force $(IMAGE_NAME) || true
-	rm bin/*
+	rm -rf ./build/bin
