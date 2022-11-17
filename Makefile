@@ -1,25 +1,4 @@
-#
-# Licensed to the Apache Software Foundation (ASF) under one
-# or more contributor license agreements.  See the NOTICE file
-# distributed with this work for additional information
-# regarding copyright ownership.  The ASF licenses this file
-# to you under the Apache License, Version 2.0 (the
-# "License"); you may not use this file except in compliance
-# with the License.  You may obtain a copy of the License at
-#
-#   http://www.apache.org/licenses/LICENSE-2.0
-#
-# Unless required by applicable law or agreed to in writing,
-# software distributed under the License is distributed on an
-# "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
-# KIND, either express or implied.  See the License for the
-# specific language governing permissions and limitations
-# under the License.
-#
-
 IMAGE_NAME = pudding-test:latest
-PULSAR_VERSION ?= 2.10.2
-PULSAR_IMAGE = apachepulsar/pulsar:$(PULSAR_VERSION)
 GO_VERSION ?= 1.18
 GOLANG_IMAGE = golang:$(GO_VERSION)
 
@@ -28,19 +7,25 @@ lint:
 	golangci-lint run
 	go test ./...
 
+
+.PHONY: build
+build:
+	cd scripts && chmod 777 build.sh && ./build.sh
+
+
+.PHONY: gen
 gen:
 	cd api && rm -rf gen && rm -rf openapi
 	cd api/proto && buf mod update
 	buf generate
 
+
 container:
 	docker build -t ${IMAGE_NAME} --build-arg GOLANG_IMAGE="${GOLANG_IMAGE}" \
 	    --build-arg PULSAR_IMAGE="${PULSAR_IMAGE}" .
 
-test: container
-	docker run -i -v ${PWD}:/pulsar-client-go ${IMAGE_NAME} \
-        bash -c "cd /pulsar-client-go && ./scripts/run-ci.sh"
 
 clean:
+	rm -f ./build/bin
 	docker rmi --force $(IMAGE_NAME) || true
 	rm bin/*
