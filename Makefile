@@ -9,7 +9,7 @@ lint:
 
 
 .PHONY: build
-build: lint clean
+build: clean
 	cd scripts && chmod 777 build.sh && ./build.sh
 
 
@@ -20,9 +20,9 @@ gen:
 	buf generate
 
 
-container:
-	docker build -t ${IMAGE_NAME} --build-arg GOLANG_IMAGE="${GOLANG_IMAGE}" \
-	    --build-arg PULSAR_IMAGE="${PULSAR_IMAGE}" .
+.PHONY: docker-build
+docker-build:
+	DOCKER_BUILDKIT=0 docker build -t scheduler:alpha-1 -f ./build/scheduler.Dockerfile .
 
 
 .PHONY: clean
