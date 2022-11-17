@@ -1,4 +1,5 @@
 IMAGE_NAME = pudding-test:latest
+IMAGE_VERSION = alpha-1
 GO_VERSION ?= 1.18
 GOLANG_IMAGE = golang:$(GO_VERSION)
 
@@ -9,7 +10,7 @@ lint:
 
 
 .PHONY: build
-build: lint clean
+build: clean
 	cd scripts && chmod 777 build.sh && ./build.sh
 
 
@@ -20,9 +21,9 @@ gen:
 	buf generate
 
 
-container:
-	docker build -t ${IMAGE_NAME} --build-arg GOLANG_IMAGE="${GOLANG_IMAGE}" \
-	    --build-arg PULSAR_IMAGE="${PULSAR_IMAGE}" .
+.PHONY: docker-build
+docker-build:
+	DOCKER_BUILDKIT=0 docker build -t scheduler:${IMAGE_VERSION} -f ./build/scheduler.Dockerfile .
 
 
 .PHONY: clean
