@@ -19,7 +19,7 @@ func (c *Config) JSON() []byte {
 	return b
 }
 
-func Init(filePath string) {
+func Init(filePath string, opts ...OptionFunc) {
 	conf.Parse(filePath, "yaml", c, conf.ReadFromFile)
 
 	if c.Scheduler.MessageTopic == "" {
@@ -27,6 +27,10 @@ func Init(filePath string) {
 	}
 	if c.Scheduler.TokenTopic == "" {
 		c.Scheduler.TokenTopic = types.TokenTopic
+	}
+
+	for _, opt := range opts {
+		opt(c)
 	}
 
 	producers := make(map[string]struct{})
@@ -55,4 +59,22 @@ func Init(filePath string) {
 	var str bytes.Buffer
 	_ = json.Indent(&str, c.JSON(), "", "    ")
 	log.Printf("pudding scheduler config:\n %s \n", str.String())
+}
+
+type OptionFunc func(config *Config)
+
+func WithRedisURL(url string) OptionFunc {
+	return func(config *Config) {
+		if url != "" {
+			config.Redis.URL = url
+		}
+	}
+}
+
+func WithPulsarURL(url string) OptionFunc {
+	return func(config *Config) {
+		if url != "" {
+			config.Pulsar.URL = url
+		}
+	}
 }

@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"fmt"
 	"net"
 	"net/http"
 	"time"
@@ -24,6 +25,7 @@ import (
 )
 
 func startGrpcService(lis net.Listener) (*grpc.Server, *health.Server) {
+	log.Info("start grpc server ...")
 	// register server
 	server := grpc.NewServer(
 		grpc.KeepaliveParams(keepalive.ServerParameters{
@@ -53,7 +55,7 @@ func startGrpcService(lis net.Listener) (*grpc.Server, *health.Server) {
 	go func() {
 		// asynchronously inspect dependencies and toggle serving status as needed
 		healthcheck.SetServingStatus(pb.SchedulerService_ServiceDesc.ServiceName, pbhealth.HealthCheckResponse_SERVING)
-		log.Infof("server listening at %v", lis.Addr())
+		log.Infof("grpc server listening at %v", lis.Addr())
 		if err := server.Serve(lis); err != nil {
 			log.Fatalf("failed to start grpc serve: %v", err)
 		}
@@ -63,9 +65,11 @@ func startGrpcService(lis net.Listener) (*grpc.Server, *health.Server) {
 }
 
 func startHTTPService(grpcLis, httpLis net.Listener) *http.Server {
+	log.Info("start http server ...")
+	log.Infof(grpcLis.Addr().String())
 	conn, err := grpc.DialContext(
 		context.Background(),
-		grpcLis.Addr().String(),
+		fmt.Sprintf("127.0.0.1:%d", grpcLis.Addr().(*net.TCPAddr).Port),
 		grpc.WithBlock(),
 		grpc.WithTransportCredentials(insecure.NewCredentials()),
 	)
@@ -82,14 +86,14 @@ func startHTTPService(grpcLis, httpLis net.Listener) *http.Server {
 
 	// 定义HTTP server配置
 	httpServer := &http.Server{
-		Addr:    httpLis.Addr().String(),
 		Handler: gwmux,
 	}
 
 	go func() {
-		log.Infof("Serving gRPC-Gateway on %s", httpLis.Addr().String())
-		if err = httpServer.ListenAndServe(); err != nil {
-			log.Fatalf("Failed to serve gRPC-Gateway: %w", err)
+		time.Sleep(3 * time.Second)
+		log.Infof("http server listening at %v", httpLis.Addr())
+		if err = httpServer.Serve(httpLis); err != nil {
+			log.Fatalf("Failed to serve gRPC-Gateway: %s", err.Error())
 		}
 	}()
 

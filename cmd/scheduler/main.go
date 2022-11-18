@@ -27,14 +27,17 @@ import (
 
 var (
 	grpcPort = flag.Int("grpcPort", 50051, "The grpc server grpcPort")
-	httpPort = flag.Int("httpPort", 80, "The http server grpcPort")
-	confPath = flag.String("config", "./config.yaml", "The server config file path")
+	httpPort = flag.Int("httpPort", 8081, "The http server grpcPort")
+
+	confPath  = flag.String("config", "./config.yaml", "The server config file path")
+	redisURL  = flag.String("redis", "", "The server redis url")
+	pulsarURL = flag.String("pulsar", "", "The server pulsar url")
 )
 
 func main() {
 	flag.Parse()
 
-	configs.Init(*confPath)
+	configs.Init(*confPath, configs.WithRedisURL(*redisURL), configs.WithPulsarURL(*pulsarURL))
 	registerLogger()
 
 	// log.RegisterLogger("gorm_log", log.WithCallerSkip(3))
