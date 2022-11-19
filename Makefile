@@ -10,7 +10,7 @@ lint:
 
 
 .PHONY: build
-build: clean
+build: gen
 	cd scripts && sh -x ./build.sh
 
 
@@ -23,7 +23,7 @@ gen:
 
 .PHONY: docker-build
 docker-build: clean
-	DOCKER_BUILDKIT=0 docker build -t scheduler:${IMAGE_VERSION} -f ./build/scheduler.Dockerfile .
+	DOCKER_BUILDKIT=0 docker build -t scheduler:${IMAGE_VERSION} -f ./build/scheduler/Dockerfile .
 
 
 .PHONY: clean
