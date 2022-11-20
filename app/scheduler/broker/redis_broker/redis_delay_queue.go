@@ -21,19 +21,23 @@ const (
 
 type DelayQueue struct {
 	rdb *rdb.Client // Redis Client
+	// interval timeSlice interval (Seconds)
+	interval int64
 	// key is timeSlice name, value is the bucket nums in the partition
 	bucket map[string]int8
 }
 
-func NewDelayQueue(rdb *rdb.Client) *DelayQueue {
+func NewDelayQueue(rdb *rdb.Client, interval int64) *DelayQueue {
 	return &DelayQueue{
-		rdb: rdb,
+		rdb:      rdb,
+		interval: interval,
 	}
 }
 
-func (q *DelayQueue) Produce(ctx context.Context, timeSlice string, msg *types.Message) error {
+func (q *DelayQueue) Produce(ctx context.Context, msg *types.Message) error {
 	// member := &redis.Z{Score: float64(msg.DeliverAt.Unix()), Member: msg.Key}
 	log.Debugf("produce message: %+v", msg)
+	timeSlice := q.getTimeSlice(msg.DeliverAt)
 	return q.pushToZSet(ctx, timeSlice, msg)
 }
 
@@ -59,9 +63,10 @@ func (q *DelayQueue) pushToZSet(ctx context.Context, timeSlice string, msg *type
 	return nil
 }
 
-func (q *DelayQueue) Consume(ctx context.Context, timeSlice string, now, batchSize int64,
+func (q *DelayQueue) Consume(ctx context.Context, now, batchSize int64,
 	fn types.HandleMessage) error {
 
+	timeSlice := q.getTimeSlice(now)
 	for {
 		// batch get messages which are ready to execute
 		messages, err := q.getFromZSetByScore(timeSlice, now, batchSize)
@@ -140,6 +145,18 @@ func (q *DelayQueue) getFromZSetByScore(timeSlice string, now, batchSize int64) 
 // Close the queue
 func (q *DelayQueue) Close() error {
 	return nil
+}
+
+// getTimeSlice get the time slice of the given time
+// Left closed right open interval
+// e.g. the given interval is 60, the range is [0, 60)、[60, 120)、[120, 180)...
+// 59 => 0~60
+// 60 => 60~120
+// 61 => 60~120
+func (q *DelayQueue) getTimeSlice(readyTime int64) string {
+	startAt := (readyTime / q.interval) * q.interval
+	endAt := startAt + q.interval
+	return fmt.Sprintf("%d~%d", startAt, endAt)
 }
 
 func (q *DelayQueue) getZSetName(timeSlice string) string {

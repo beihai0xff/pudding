@@ -1,7 +1,7 @@
 name: pudding
-broker: redis
-messageQueue: pulsar
 scheduler_config:
+  broker: redis
+  messageQueue: pulsar
   time_slice_interval: 60s
   message_topic: default
   token_topic: token
@@ -46,8 +46,9 @@ log_config:
       # log file is compress
       compress: false
   pulsar_log:
-    level: debug
+    level: info
     writers:
+      - console
       - file
     format: json
     file_config:

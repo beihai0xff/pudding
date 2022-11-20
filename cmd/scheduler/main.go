@@ -16,12 +16,10 @@ import (
 	pbhealth "google.golang.org/grpc/health/grpc_health_v1"
 
 	pb "github.com/beihai0xff/pudding/api/gen/pudding/scheduler/v1"
-	"github.com/beihai0xff/pudding/app/scheduler/broker"
 	"github.com/beihai0xff/pudding/app/scheduler/pkg/configs"
 	"github.com/beihai0xff/pudding/pkg/lock"
 	"github.com/beihai0xff/pudding/pkg/log"
 	"github.com/beihai0xff/pudding/pkg/log/logger"
-	"github.com/beihai0xff/pudding/pkg/mq/pulsar"
 	"github.com/beihai0xff/pudding/pkg/redis"
 )
 
@@ -69,16 +67,8 @@ func registerLogger() {
 	log.RegisterLogger(logger.PulsarLoggerName, log.WithCallerSkip(1))
 	log.RegisterLogger(logger.GRPCLoggerName, log.WithCallerSkip(1))
 	logger.GetGRPCLogger()
-}
-
-func newQueue() (broker.DelayQueue, broker.RealTimeQueue) {
 	rdb := redis.New(configs.GetRedisConfig())
-
-	pulsarClient := pulsar.New(configs.GetPulsarConfig())
-
 	lock.Init(rdb)
-
-	return broker.NewDelayQueue(rdb), broker.NewRealTimeQueue(pulsarClient)
 }
 
 func gracefulShutdown(s *grpc.Server, healthcheck *health.Server, httpServer *http.Server) {

@@ -24,7 +24,7 @@ var (
 )
 
 const (
-	prefixTimeSliceLocker = "pudding_locker_time:%d"
+	prefixTimeLocker = "pudding_locker_time:%d"
 )
 
 // nolint:lll
@@ -45,8 +45,6 @@ type Schedule struct {
 	realtime broker.RealTimeQueue
 	// wallClock wall wallClock time
 	wallClock clock.Clock
-	// interval timeSlice interval (Seconds)
-	interval int64
 
 	// messageTopic default message topic
 	messageTopic string
@@ -55,8 +53,12 @@ type Schedule struct {
 
 	// token timeSlice token channel
 	token chan int64
-	// quit signal channel
+	// quit signal quit channel
 	quit chan int64
+}
+
+func NewQueue(config *configs.SchedulerConfig) (broker.DelayQueue, broker.RealTimeQueue) {
+	return broker.NewDelayQueue(config.Broker), broker.NewRealTimeQueue(config.MessageQueue)
 }
 
 func New(config *configs.SchedulerConfig, delay broker.DelayQueue, realtime broker.RealTimeQueue) *Schedule {
@@ -70,27 +72,13 @@ func New(config *configs.SchedulerConfig, delay broker.DelayQueue, realtime brok
 		quit:         make(chan int64),
 	}
 
-	// parse Polling delay queue interval
-	t, err := time.ParseDuration(config.TimeSliceInterval)
-	if err != nil {
-		panic(fmt.Errorf("failed to parse '%s' to time.Duration: %w", config.TimeSliceInterval, err))
-	}
-	q.interval = int64(t.Seconds())
-	log.Debugf("timeSlice interval is: %d seconds", q.interval)
-
-	// init rate limiter
-	// q.limiter = redisClient.GetLimiter()
-	// if err != nil {
-	// 	panic(err)
-	// }
-
 	return q
 }
 
 func (s *Schedule) Run() {
 	go s.tryProduceToken()
-	s.getToken(s.token)
-	if err := s.startSchedule(s.quit, s.token); err != nil {
+	s.getToken()
+	if err := s.startSchedule(); err != nil {
 		log.Errorf("start Schedule failed: %v", err)
 		panic(err)
 	}
@@ -105,19 +93,17 @@ func (s *Schedule) Produce(ctx context.Context, msg *types.Message) error {
 	var err error
 
 	if err = s.checkParams(msg); err != nil {
-		log.Errorf("check message params failed: %v", err)
+		log.Errorf("check message params failed: %w", err)
 		return fmt.Errorf("check message params failed: %w", err)
 	}
 
-	timeSlice := s.getTimeSlice(msg.DeliverAt)
 	for i := 0; i < 3; i++ {
-		err = s.delay.Produce(ctx, timeSlice, msg)
+		err = s.delay.Produce(ctx, msg)
 		if err == nil {
 			break
 		}
 		// if produce failed, retry in three times
-		log.Warnf("DelayQueue: failed to produce message to timeSlice %s, err: %w, retry in %d times",
-			timeSlice, err, i)
+		log.Errorf("DelayQueue: failed to produce message: %w, retry in [%d] times", err, i)
 	}
 	return err
 }
@@ -149,28 +135,15 @@ func (s *Schedule) checkParams(msg *types.Message) error {
 	return nil
 }
 
-// getTimeSlice get the time slice of the given time
-// Left closed right open interval
-// e.g. the given interval is 60, the range is [0, 60)、[60, 120)、[120, 180)...
-// 59 => 0~60
-// 60 => 60~120
-// 61 => 60~120
-func (s *Schedule) getTimeSlice(readyTime int64) string {
-	startAt := (readyTime / s.interval) * s.interval
-	endAt := startAt + s.interval
-	return fmt.Sprintf("%d~%d", startAt, endAt)
-}
-
 // startSchedule start a scheduler to consume DelayQueue
 // and move delayed messages to RealTimeQueue
-func (s *Schedule) startSchedule(quit, token chan int64) error {
+func (s *Schedule) startSchedule() error {
 	log.Infof("start Scheduler")
 
 	for {
 		select {
-		case t := <-token:
+		case t := <-s.token:
 			ctx := context.Background()
-			timeSlice := s.getTimeSlice(t)
 
 			// lock the timeSlice
 			name := s.getLockerName(t)
@@ -182,16 +155,16 @@ func (s *Schedule) startSchedule(quit, token chan int64) error {
 				continue
 			}
 
-			if err := s.delay.Consume(ctx, timeSlice, t, 100, s.produceRealTime); err != nil {
-				log.Errorf("failed to consume timeSlice: %s, time is: %d, caused by %w", timeSlice, t, err)
+			if err := s.delay.Consume(ctx, t, 100, s.produceRealTime); err != nil {
+				log.Errorf("failed to consume time: %d, caused by %w", t, err)
 			}
 
 			// Release the lock
 			if err := locker.Release(ctx); err != nil {
-				log.Errorf("failed to release timeSlice locker: %s, caused by %w", name, err)
+				log.Errorf("failed to release time locker: %s, caused by %w", name, err)
 			}
 
-		case <-quit:
+		case <-s.quit:
 			break
 		}
 	}
@@ -199,7 +172,7 @@ func (s *Schedule) startSchedule(quit, token chan int64) error {
 }
 
 func (s *Schedule) getLockerName(t int64) string {
-	return fmt.Sprintf(prefixTimeSliceLocker, t)
+	return fmt.Sprintf(prefixTimeLocker, t)
 }
 
 /*
@@ -224,20 +197,7 @@ func (s *Schedule) NewConsumer(topic, group string, batchSize int, fn types.Hand
 	return s.realtime.NewConsumer(topic, group, batchSize, fn)
 }
 
-/*
-	rate limit
-*/
-//
-// func (s *Schedule) startLimiter(token chan int) {
-//
-// 	for {
-// 		res, err := s.limiter.Allow(context.Background(), "pudding:rate_every_second", redis_rate.PerSecond(1))
-// 		if err != nil {
-// 			log.Errorf("failed to allow limiter: %v", err)
-// 		}
-// 		if res.Allowed == 1 {
-// 			token <- 1
-// 		}
-// 		time.Sleep(time.Duration(random.GetRand(500, 1000)) * time.Millisecond)
-// 	}
-// }
+func (s *Schedule) Close() error {
+	close(s.quit)
+	return s.realtime.Close()
+}
