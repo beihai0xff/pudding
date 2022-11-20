@@ -15,6 +15,7 @@ import (
 )
 
 const (
+	timeSliceNameFormat = "%d~%d"
 	zsetNameFormat      = "zset_timeSlice_%s_bucket_%d"
 	hashtableNameFormat = "hashTable_timeSlice_%s_bucket_%d"
 )
@@ -156,7 +157,7 @@ func (q *DelayQueue) Close() error {
 func (q *DelayQueue) getTimeSlice(readyTime int64) string {
 	startAt := (readyTime / q.interval) * q.interval
 	endAt := startAt + q.interval
-	return fmt.Sprintf("%d~%d", startAt, endAt)
+	return fmt.Sprintf(timeSliceNameFormat, startAt, endAt)
 }
 
 func (q *DelayQueue) getZSetName(timeSlice string) string {

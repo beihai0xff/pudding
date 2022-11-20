@@ -50,31 +50,31 @@ func (mr *MockDelayQueueMockRecorder) Close() *gomock.Call {
 }
 
 // Consume mocks base method.
-func (m *MockDelayQueue) Consume(arg0 context.Context, arg1 string, arg2, arg3 int64, arg4 types.HandleMessage) error {
+func (m *MockDelayQueue) Consume(arg0 context.Context, arg1, arg2 int64, arg3 types.HandleMessage) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "Consume", arg0, arg1, arg2, arg3, arg4)
+	ret := m.ctrl.Call(m, "Consume", arg0, arg1, arg2, arg3)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
 // Consume indicates an expected call of Consume.
-func (mr *MockDelayQueueMockRecorder) Consume(arg0, arg1, arg2, arg3, arg4 interface{}) *gomock.Call {
+func (mr *MockDelayQueueMockRecorder) Consume(arg0, arg1, arg2, arg3 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Consume", reflect.TypeOf((*MockDelayQueue)(nil).Consume), arg0, arg1, arg2, arg3, arg4)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Consume", reflect.TypeOf((*MockDelayQueue)(nil).Consume), arg0, arg1, arg2, arg3)
 }
 
 // Produce mocks base method.
-func (m *MockDelayQueue) Produce(arg0 context.Context, arg1 string, arg2 *types.Message) error {
+func (m *MockDelayQueue) Produce(arg0 context.Context, arg1 *types.Message) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "Produce", arg0, arg1, arg2)
+	ret := m.ctrl.Call(m, "Produce", arg0, arg1)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
 // Produce indicates an expected call of Produce.
-func (mr *MockDelayQueueMockRecorder) Produce(arg0, arg1, arg2 interface{}) *gomock.Call {
+func (mr *MockDelayQueueMockRecorder) Produce(arg0, arg1 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Produce", reflect.TypeOf((*MockDelayQueue)(nil).Produce), arg0, arg1, arg2)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Produce", reflect.TypeOf((*MockDelayQueue)(nil).Produce), arg0, arg1)
 }
 
 // MockRealTimeQueue is a mock of RealTimeQueue interface.
