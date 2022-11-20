@@ -37,7 +37,7 @@ func beforeEach(t *testing.T) {
 	mockCtrl := gomock.NewController(t)
 	defer mockCtrl.Finish()
 
-	realtime := mock.NewMockRealTimeQueue(mockCtrl)
+	realtime := mock.NewMockRealTimeConnector(mockCtrl)
 	realtime.EXPECT().Produce(gomock.Any(), gomock.Any()).Return(nil).Times(1)
 	realtime.EXPECT().Produce(gomock.Any(), &types.Message{
 		Topic:        "test_topic",

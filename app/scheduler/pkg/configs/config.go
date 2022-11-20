@@ -3,8 +3,6 @@ package configs
 import conf "github.com/beihai0xff/pudding/configs"
 
 var c = &Config{
-	Broker:       "",
-	MessageQueue: "",
 	Scheduler: &conf.SchedulerConfig{
 		TimeSliceInterval: "",
 	},
@@ -21,10 +19,6 @@ var c = &Config{
 
 // Config is the config for scheduler module.
 type Config struct {
-	// Broker is the broker type, e.g. redis
-	Broker string `json:"broker" yaml:"broker" mapstructure:"broker"`
-	// MessageQueue is the message queue type, e.g. pulsar, kakfa, etc.
-	MessageQueue string `json:"message_queue" yaml:"message_queue" mapstructure:"message_queue"`
 	// Scheduler config
 	Scheduler *conf.SchedulerConfig `json:"scheduler_config" yaml:"scheduler_config" mapstructure:"scheduler_config"`
 

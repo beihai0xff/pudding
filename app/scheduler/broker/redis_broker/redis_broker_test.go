@@ -108,7 +108,7 @@ func TestDelayQueue_getFromZSetByScore(t *testing.T) {
 	assert.Equal(t, 5, len(msgs))
 }
 
-func TestRealTimeQueue_getZSetName(t *testing.T) {
+func TestDelayQueue_getZSetName(t *testing.T) {
 
 	assert.Equal(t, "zset_timeSlice_60~120_bucket_1", q.getZSetName("60~120"))
 	assert.Equal(t, "zset_timeSlice_120~180_bucket_1", q.getZSetName("120~180"))
@@ -116,7 +116,7 @@ func TestRealTimeQueue_getZSetName(t *testing.T) {
 	assert.Equal(t, "zset_timeSlice_13~15_bucket_1", q.getZSetName("13~15"))
 }
 
-func TestRealTimeQueue_getHashtableName(t *testing.T) {
+func TestDelayQueue_getHashtableName(t *testing.T) {
 
 	assert.Equal(t, "hashTable_timeSlice_10_bucket_1", q.getHashtableName("10"))
 	assert.Equal(t, "hashTable_timeSlice_11_bucket_1", q.getHashtableName("11"))
@@ -124,7 +124,7 @@ func TestRealTimeQueue_getHashtableName(t *testing.T) {
 	assert.Equal(t, "hashTable_timeSlice_13_bucket_1", q.getHashtableName("13"))
 }
 
-func TestRealTimeQueue_getBucket(t *testing.T) {
+func TestDelayQueue_getBucket(t *testing.T) {
 
 	assert.Equal(t, int8(1), q.getBucket("10"))
 	assert.Equal(t, int8(1), q.getBucket("10"))

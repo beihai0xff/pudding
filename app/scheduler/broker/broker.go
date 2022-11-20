@@ -4,8 +4,8 @@ import (
 	"context"
 	"time"
 
-	"github.com/beihai0xff/pudding/app/scheduler/broker/pulsar_broker"
 	"github.com/beihai0xff/pudding/app/scheduler/broker/redis_broker"
+	"github.com/beihai0xff/pudding/app/scheduler/connector/pulsar_connector"
 	"github.com/beihai0xff/pudding/app/scheduler/pkg/configs"
 	"github.com/beihai0xff/pudding/pkg/log"
 	"github.com/beihai0xff/pudding/pkg/mq/pulsar"
@@ -14,11 +14,12 @@ import (
 )
 
 // nolint:lll
-//go:generate mockgen -destination=../../../test/mock/queue_mock.go --package=mock github.com/beihai0xff/pudding/app/scheduler/broker DelayQueue,RealTimeQueue
+//go:generate mockgen -destination=../../../test/mock/broker_mock.go --package=mock github.com/beihai0xff/pudding/app/scheduler/broker DelayBroker,RealTimeConnector
 
-// DelayQueue is a queue to store messages with delay time
-type DelayQueue interface {
-	// Produce produce a Message to DelayQueue
+// DelayBroker is a queue to store messages with delay time
+// the message will be delivered to the realtime queue after the delay time
+type DelayBroker interface {
+	// Produce produce a Message to DelayBroker
 	Produce(ctx context.Context, msg *types.Message) error
 	// Consume consume Messages from the queue
 	Consume(ctx context.Context, now, batchSize int64, fn types.HandleMessage) error
@@ -26,8 +27,9 @@ type DelayQueue interface {
 	Close() error
 }
 
-// RealTimeQueue is a queue to store messages in realtime
-type RealTimeQueue interface {
+// RealTimeConnector is a connector which can send messages to the realtime queue
+// the realtime queue can store or consume messages in realtime
+type RealTimeConnector interface {
 	// Produce produce a Message to the queue in real time
 	Produce(ctx context.Context, msg *types.Message) error
 	// NewConsumer new a consumer to consume Messages from the realtime queue in background
@@ -36,8 +38,8 @@ type RealTimeQueue interface {
 	Close() error
 }
 
-// NewDelayQueue create a new DelayQueue
-func NewDelayQueue(broker string) DelayQueue {
+// NewDelayBroker create a new DelayBroker
+func NewDelayBroker(broker string) DelayBroker {
 	switch broker {
 	case "redis":
 		// parse Polling delay queue interval
@@ -54,11 +56,11 @@ func NewDelayQueue(broker string) DelayQueue {
 	return nil
 }
 
-// NewRealTimeQueue create a new RealTimeQueue
-func NewRealTimeQueue(connector string) RealTimeQueue {
+// NewConnector create a new RealTime Queue Connector
+func NewConnector(connector string) RealTimeConnector {
 	switch connector {
 	case "pulsar":
-		return pulsar_broker.NewRealTimeQueue(pulsar.New(configs.GetPulsarConfig()))
+		return pulsar_connector.NewRealTimeQueue(pulsar.New(configs.GetPulsarConfig()))
 	default:
 		log.Fatalf("unknown connector type: [%s]", connector)
 	}

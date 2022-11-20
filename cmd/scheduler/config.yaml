@@ -1,7 +1,7 @@
 name: pudding
 scheduler_config:
   broker: redis
-  message_queue: pulsar
+  connector: pulsar
   time_slice_interval: 60s
   message_topic: default
   token_topic: token
