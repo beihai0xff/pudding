@@ -13,9 +13,3 @@ build_darwin_arm64:
 	go env -w GOARCH=arm64
 	go env -w GOOS=darwin
 	go build -o ../build/$(SCHEDULER_BINARY_NAME)_linux_amd64 ../cmd/scheduler/
-
-gen_struct_tag:
-	cd gen/ && sh ./gen_configs_struct_tag.sh
-
-gen_mock:
-	cd gen/ && sh ./gen_configs_struct_tag.sh

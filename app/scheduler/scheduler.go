@@ -34,15 +34,15 @@ const (
 type Scheduler interface {
 	// Run start the scheduler
 	Run()
-	// Produce produce a Message to DelayQueue
+	// Produce produce a Message to DelayBroker
 	Produce(ctx context.Context, msg *types.Message) error
 	// NewConsumer consume Messages from the realtime queue
 	NewConsumer(topic, group string, batchSize int, fn types.HandleMessage) error
 }
 
 type Schedule struct {
-	delay    broker.DelayQueue
-	realtime broker.RealTimeQueue
+	delay    broker.DelayBroker
+	realtime broker.RealTimeConnector
 	// wallClock wall wallClock time
 	wallClock clock.Clock
 
@@ -57,11 +57,11 @@ type Schedule struct {
 	quit chan int64
 }
 
-func NewQueue(config *configs.SchedulerConfig) (broker.DelayQueue, broker.RealTimeQueue) {
-	return broker.NewDelayQueue(config.Broker), broker.NewRealTimeQueue(config.MessageQueue)
+func NewQueue(config *configs.SchedulerConfig) (broker.DelayBroker, broker.RealTimeConnector) {
+	return broker.NewDelayBroker(config.Broker), broker.NewConnector(config.Connector)
 }
 
-func New(config *configs.SchedulerConfig, delay broker.DelayQueue, realtime broker.RealTimeQueue) *Schedule {
+func New(config *configs.SchedulerConfig, delay broker.DelayBroker, realtime broker.RealTimeConnector) *Schedule {
 	q := &Schedule{
 		delay:        delay,
 		realtime:     realtime,
@@ -103,7 +103,7 @@ func (s *Schedule) Produce(ctx context.Context, msg *types.Message) error {
 			break
 		}
 		// if produce failed, retry in three times
-		log.Errorf("DelayQueue: failed to produce message: %w, retry in [%d] times", err, i)
+		log.Errorf("DelayBroker: failed to produce message: %w, retry in [%d] times", err, i)
 	}
 	return err
 }
@@ -135,8 +135,8 @@ func (s *Schedule) checkParams(msg *types.Message) error {
 	return nil
 }
 
-// startSchedule start a scheduler to consume DelayQueue
-// and move delayed messages to RealTimeQueue
+// startSchedule start a scheduler to consume DelayBroker
+// and move delayed messages to RealTimeConnector
 func (s *Schedule) startSchedule() error {
 	log.Infof("start Scheduler")
 
@@ -184,7 +184,7 @@ func (s *Schedule) produceRealTime(ctx context.Context, msg *types.Message) erro
 	var err error
 	for i := 0; i < 3; i++ {
 		if err = s.realtime.Produce(ctx, msg); err != nil {
-			log.Errorf("RealTimeQueue: failed to produce message to topic %s, err: %v, retry in %d times",
+			log.Errorf("RealTimeConnector: failed to produce message to topic %s, err: %v, retry in %d times",
 				msg.Topic, err, i)
 		} else {
 			break

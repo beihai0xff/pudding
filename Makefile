@@ -19,6 +19,7 @@ gen:
 	cd api && rm -rf gen && rm -rf openapi
 	cd api/proto && buf mod update
 	buf generate
+	cd scripts/gen && make gen_struct_tag && make gen_mock
 
 
 .PHONY: docker-build
