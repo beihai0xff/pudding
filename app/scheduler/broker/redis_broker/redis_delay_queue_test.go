@@ -17,8 +17,9 @@ var q *DelayQueue
 func TestMain(m *testing.M) {
 
 	q = &DelayQueue{
-		rdb:    rdb.NewMockRdb(),
-		bucket: map[string]int8{},
+		rdb:      rdb.NewMockRdb(),
+		interval: 60,
+		bucket:   map[string]int8{},
 	}
 
 	exitCode := m.Run()
@@ -29,61 +30,81 @@ func TestMain(m *testing.M) {
 func TestRealTimeQueue_Produce(t *testing.T) {
 
 	msg := &types.Message{
-		Topic:        "test_Topic",
+		Topic:        "test_Topic_Produce",
 		Payload:      []byte("12345678900987654321"),
 		DeliverAfter: 0,
-		DeliverAt:    10,
+		DeliverAt:    1,
 	}
 
 	for i := 1; i <= 100; i++ {
 		msg.Key = uuid.New().String()
 		msg.DeliverAt = int64(i)
-		assert.Equal(t, nil, q.Produce(context.Background(), "test_bucket_Produce", msg))
+		assert.Equal(t, nil, q.Produce(context.Background(), msg))
 	}
 
-	q.Consume(context.Background(), "test_bucket", 11, 10, func(ctx context.Context, msg *types.Message) error {
+	q.Consume(context.Background(), 2, 10, func(ctx context.Context, msg *types.Message) error {
 		assert.Equal(t, []byte("12345678900987654321"), msg.Payload)
 		return nil
 	})
 
 }
 
+func TestDelayQueue_getTimeSlice(t *testing.T) {
+	type args struct {
+		readyTime int64
+	}
+	tests := []struct {
+		name string
+		args args
+		want string
+	}{
+		{"test0", args{readyTime: 0}, "0~60"},
+		{"test1", args{readyTime: 1}, "0~60"},
+		{"test2", args{readyTime: 2}, "0~60"},
+		{"test59", args{readyTime: 59}, "0~60"},
+		{"test60", args{readyTime: 60}, "60~120"},
+		{"test61", args{readyTime: 61}, "60~120"},
+	}
+	for _, tt := range tests {
+		assert.Equal(t, tt.want, q.getTimeSlice(tt.args.readyTime))
+	}
+}
+
 func TestDelayQueue_getFromZSetByScore(t *testing.T) {
-	bucket := "test_bucket_getFromZSetByScore"
 	msg := &types.Message{
-		Topic:        "test_Topic",
-		Payload:      []byte("12345678900987654321"),
-		DeliverAfter: 0,
-		DeliverAt:    10,
+		Topic:   "test_Topic_getFromZSetByScore",
+		Payload: []byte("12345678900987654321"),
 	}
 
-	for i := 1; i <= 100; i++ {
-		msg.Key = uuid.New().String()
-		msg.DeliverAt = int64(i)
-		assert.Equal(t, nil, q.Produce(context.Background(), bucket, msg))
+	for i := 120; i <= 180; i++ {
+		testm := *msg
+		testm.Key = uuid.New().String()
+		testm.DeliverAt = int64(i)
+		assert.Equal(t, nil, q.Produce(context.Background(), &testm))
 	}
 
 	for i := 1; i <= 5; i++ {
-		msg.Key = uuid.New().String()
-		msg.DeliverAt = 200
-		assert.Equal(t, nil, q.Produce(context.Background(), bucket, msg))
+		testm := *msg
+		testm.Key = uuid.New().String()
+		testm.DeliverAt = 300
+		assert.Equal(t, nil, q.Produce(context.Background(), &testm))
 	}
 
-	if msgs, err := q.getFromZSetByScore(bucket, 10, 10); err != nil {
+	if msgs, err := q.getFromZSetByScore(q.getTimeSlice(10), 9, 10); err != nil {
 		t.Errorf("getFromZSetByScore error: %v", err)
 	} else if len(msgs) != 1 {
 		t.Errorf("getFromZSetByScore length is: %d", len(msgs))
 	}
 
-	msgs, _ := q.getFromZSetByScore(bucket, 10, 11)
+	msgs, _ := q.getFromZSetByScore(q.getTimeSlice(60), 60, 11)
 	assert.Equal(t, 1, len(msgs))
-	msgs, _ = q.getFromZSetByScore(bucket, 10, 12)
+	msgs, _ = q.getFromZSetByScore(q.getTimeSlice(60), 60, 12)
 	assert.Equal(t, 1, len(msgs))
-	msgs, _ = q.getFromZSetByScore(bucket, 200, 10)
-	assert.Equal(t, 5, len(msgs))
-	msgs, _ = q.getFromZSetByScore(bucket, 200, 3)
+	msgs, _ = q.getFromZSetByScore(q.getTimeSlice(300), 300, 3)
 	assert.Equal(t, 3, len(msgs))
-	msgs, _ = q.getFromZSetByScore(bucket, 200, 200)
+	msgs, _ = q.getFromZSetByScore(q.getTimeSlice(300), 300, 10)
+	assert.Equal(t, 5, len(msgs))
+	msgs, _ = q.getFromZSetByScore(q.getTimeSlice(300), 300, 200)
 	assert.Equal(t, 5, len(msgs))
 }
 

@@ -10,7 +10,7 @@ import (
 	"github.com/stretchr/testify/assert"
 	"golang.org/x/net/context"
 
-	"github.com/beihai0xff/pudding/app/scheduler/broker"
+	"github.com/beihai0xff/pudding/app/scheduler/broker/redis_broker"
 	"github.com/beihai0xff/pudding/pkg/clock"
 	rdb "github.com/beihai0xff/pudding/pkg/redis"
 	"github.com/beihai0xff/pudding/test/mock"
@@ -22,8 +22,7 @@ var s *Schedule
 func TestMain(m *testing.M) {
 
 	s = &Schedule{
-		delay:        broker.NewDelayQueue(rdb.NewMockRdb()),
-		interval:     60,
+		delay:        redis_broker.NewDelayQueue(rdb.NewMockRdb(), 60),
 		messageTopic: types.DefaultTopic,
 		tokenTopic:   types.TokenTopic,
 		wallClock:    clock.NewFakeClock(time.Date(2022, 1, 1, 0, 0, 0, 0, time.UTC)),
@@ -49,27 +48,6 @@ func beforeEach(t *testing.T) {
 	}).Return(errors.New("broken connection")).Times(3)
 
 	s.realtime = realtime
-}
-
-func TestScheduler_getTimeSlice(t *testing.T) {
-	type args struct {
-		readyTime int64
-	}
-	tests := []struct {
-		name string
-		args args
-		want string
-	}{
-		{"test0", args{readyTime: 0}, "0~60"},
-		{"test1", args{readyTime: 1}, "0~60"},
-		{"test2", args{readyTime: 2}, "0~60"},
-		{"test59", args{readyTime: 59}, "0~60"},
-		{"test60", args{readyTime: 60}, "60~120"},
-		{"test61", args{readyTime: 61}, "60~120"},
-	}
-	for _, tt := range tests {
-		assert.Equal(t, tt.want, s.getTimeSlice(tt.args.readyTime))
-	}
 }
 
 func TestSchedule_checkParams(t *testing.T) {

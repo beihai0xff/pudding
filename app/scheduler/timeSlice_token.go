@@ -37,43 +37,45 @@ func (s *Schedule) tryProduceToken() {
 
 	tick := time.NewTicker(1 * time.Second)
 	for {
+		select {
+		case t := <-tick.C:
+			// get token name
+			tokenName := s.formatTokenName(t.Unix())
 
-		t := <-tick.C
-		// get token name
-		tokenName := s.formatTokenName(t.Unix())
+			// try to lock the token
+			ctx, cancel := context.WithTimeout(context.Background(), time.Second)
+			locker, err := lock.NewRedLock(context.Background(), s.formatTokenLockerName(t.Unix()), time.Millisecond*500)
+			if err != nil {
+				// if the token is not locked, but the error is not ErrNotObtained, log it
+				if !errors.Is(err, lock.ErrNotObtained) {
+					log.Errorf("failed to get token lock: %s, caused by %v", tokenName, err)
+				}
 
-		// try to lock the token
-		ctx, cancel := context.WithTimeout(context.Background(), time.Second)
-		locker, err := lock.NewRedLock(context.Background(), s.formatTokenLockerName(t.Unix()), time.Millisecond*500)
-		if err != nil {
-			// if the token is not locked, but the error is not ErrNotObtained, log it
-			if !errors.Is(err, lock.ErrNotObtained) {
-				log.Errorf("failed to get token lock: %s, caused by %v", tokenName, err)
+				// if the token is locked, skip it
+				continue
 			}
 
-			// if the token is locked, skip it
-			continue
+			// if got the token lock, send it to token topic
+			if err := s.produceRealTime(ctx, &types.Message{Topic: s.tokenTopic, Payload: []byte(tokenName)}); err != nil {
+				log.Errorf("failed to produce token: %s, caused by %v", tokenName, err)
+				continue
+			}
+
+			log.Debugf("success produce token: %s", tokenName)
+
+			// extends the lock with a new TTL
+			if err := locker.Refresh(ctx, 3*time.Second); err != nil {
+				log.Errorf("failed to refresh locker: %s, caused by %v", tokenName, err)
+			}
+			cancel()
+		case <-s.quit:
+			break
 		}
-
-		// if get token lock, send it to token topic
-		if err := s.produceRealTime(ctx, &types.Message{Topic: s.tokenTopic, Payload: []byte(tokenName)}); err != nil {
-			log.Errorf("failed to produce token: %s, caused by %v", tokenName, err)
-			continue
-		}
-
-		log.Debugf("success produce token: %s", tokenName)
-
-		// extends the lock with a new TTL
-		if err := locker.Refresh(ctx, 3*time.Second); err != nil {
-			log.Errorf("failed to refresh locker: %s, caused by %v", tokenName, err)
-		}
-		cancel()
-
 	}
 }
 
 // try to consume token and send to token channel
-func (s *Schedule) getToken(token chan int64) {
+func (s *Schedule) getToken() {
 	log.Infof("start consume token")
 	if err := s.realtime.NewConsumer(types.TokenTopic, types.TokenGroup, 1,
 		func(ctx context.Context, msg *types.Message) error {
@@ -83,7 +85,7 @@ func (s *Schedule) getToken(token chan int64) {
 			if t <= 0 {
 				return fmt.Errorf("failed to parse token: %s", string(msg.Payload))
 			}
-			token <- t
+			s.token <- t
 			return nil
 		}); err != nil {
 		log.Errorf("failed to get token, caused by %v", err)
