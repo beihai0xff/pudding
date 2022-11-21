@@ -25,7 +25,7 @@
           "200": {
             "description": "A successful response.",
             "schema": {
-              "$ref": "#/definitions/v1PingResponse"
+              "$ref": "#/definitions/puddingschedulerv1PingResponse"
             }
           },
           "default": {
@@ -85,6 +85,15 @@
       },
       "additionalProperties": {}
     },
+    "puddingschedulerv1PingResponse": {
+      "type": "object",
+      "properties": {
+        "message": {
+          "type": "string"
+        }
+      },
+      "title": "The Ping response message"
+    },
     "rpcStatus": {
       "type": "object",
       "properties": {
@@ -102,15 +111,6 @@
           }
         }
       }
-    },
-    "v1PingResponse": {
-      "type": "object",
-      "properties": {
-        "message": {
-          "type": "string"
-        }
-      },
-      "title": "The Ping response message"
     },
     "v1SendDelayMessageRequest": {
       "type": "object",
