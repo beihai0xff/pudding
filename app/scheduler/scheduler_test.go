@@ -47,7 +47,7 @@ func beforeEach(t *testing.T) {
 		DeliverAt:    0,
 	}).Return(errors.New("broken connection")).Times(3)
 
-	s.realtime = realtime
+	s.connector = realtime
 }
 
 func TestSchedule_checkParams(t *testing.T) {
