@@ -1,4 +1,5 @@
 #!/bin/sh
 
-mockgen -destination=../../test/mock/scheduler_mock.go --package=mock github.com/beihai0xff/pudding/app/scheduler Scheduler
-mockgen -destination=../../test/mock/broker_mock.go --package=mock github.com/beihai0xff/pudding/app/scheduler/broker DelayBroker,RealTimeConnector
+mockgen -destination=../../test/mock/scheduler_mock.go -package=mock -source=../../app/scheduler/scheduler.go Scheduler
+mockgen -destination=../../test/mock/broker_mock.go -package=mock -source=../../app/scheduler/broker/broker.go DelayBroker
+mockgen -destination=../../test/mock/connector_mock.go -package=mock -source=../../app/scheduler/connector/connector.go RealTimeConnector

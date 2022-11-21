@@ -77,7 +77,7 @@ func (s *Schedule) tryProduceToken() {
 // try to consume token and send to token channel
 func (s *Schedule) getToken() {
 	log.Infof("start consume token")
-	if err := s.realtime.NewConsumer(types.TokenTopic, types.TokenGroup, 1,
+	if err := s.connector.NewConsumer(types.TokenTopic, types.TokenGroup, 1,
 		func(ctx context.Context, msg *types.Message) error {
 			log.Debugf("get token: %s", string(msg.Payload))
 

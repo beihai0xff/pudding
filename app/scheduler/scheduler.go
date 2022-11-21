@@ -9,6 +9,7 @@ import (
 	"github.com/google/uuid"
 
 	"github.com/beihai0xff/pudding/app/scheduler/broker"
+	"github.com/beihai0xff/pudding/app/scheduler/connector"
 	"github.com/beihai0xff/pudding/configs"
 	"github.com/beihai0xff/pudding/pkg/clock"
 	"github.com/beihai0xff/pudding/pkg/lock"
@@ -28,7 +29,7 @@ const (
 )
 
 // nolint:lll
-//go:generate mockgen -destination=../../test/mock/scheduler_mock.go --package=mock github.com/beihai0xff/pudding/app/scheduler Scheduler
+//go:generate mockgen -destination=../../test/mock/scheduler_mock.go -package=mock github.com/beihai0xff/pudding/app/scheduler Scheduler
 
 // Scheduler interface
 type Scheduler interface {
@@ -36,13 +37,13 @@ type Scheduler interface {
 	Run()
 	// Produce produce a Message to DelayBroker
 	Produce(ctx context.Context, msg *types.Message) error
-	// NewConsumer consume Messages from the realtime queue
+	// NewConsumer consume Messages from the RealTime Connector queue
 	NewConsumer(topic, group string, batchSize int, fn types.HandleMessage) error
 }
 
 type Schedule struct {
-	delay    broker.DelayBroker
-	realtime broker.RealTimeConnector
+	delay     broker.DelayBroker
+	connector connector.RealTimeConnector
 	// wallClock wall wallClock time
 	wallClock clock.Clock
 
@@ -57,14 +58,14 @@ type Schedule struct {
 	quit chan int64
 }
 
-func NewQueue(config *configs.SchedulerConfig) (broker.DelayBroker, broker.RealTimeConnector) {
-	return broker.NewDelayBroker(config.Broker), broker.NewConnector(config.Connector)
+func NewQueue(config *configs.SchedulerConfig) (broker.DelayBroker, connector.RealTimeConnector) {
+	return broker.NewDelayBroker(config.Broker), connector.NewConnector(config.Connector)
 }
 
-func New(config *configs.SchedulerConfig, delay broker.DelayBroker, realtime broker.RealTimeConnector) *Schedule {
+func New(config *configs.SchedulerConfig, delay broker.DelayBroker, realtime connector.RealTimeConnector) *Schedule {
 	q := &Schedule{
 		delay:        delay,
-		realtime:     realtime,
+		connector:    realtime,
 		wallClock:    clock.New(),
 		messageTopic: config.MessageTopic,
 		tokenTopic:   config.TokenTopic,
@@ -179,11 +180,11 @@ func (s *Schedule) getLockerName(t int64) string {
 	Produce or Consume RealTime Schedule
 */
 
-// produceRealTime produce a Message to the queue in realtime
+// produceRealTime produce a Message to the queue in connector
 func (s *Schedule) produceRealTime(ctx context.Context, msg *types.Message) error {
 	var err error
 	for i := 0; i < 3; i++ {
-		if err = s.realtime.Produce(ctx, msg); err != nil {
+		if err = s.connector.Produce(ctx, msg); err != nil {
 			log.Errorf("RealTimeConnector: failed to produce message to topic %s, err: %v, retry in %d times",
 				msg.Topic, err, i)
 		} else {
@@ -194,10 +195,10 @@ func (s *Schedule) produceRealTime(ctx context.Context, msg *types.Message) erro
 }
 
 func (s *Schedule) NewConsumer(topic, group string, batchSize int, fn types.HandleMessage) error {
-	return s.realtime.NewConsumer(topic, group, batchSize, fn)
+	return s.connector.NewConsumer(topic, group, batchSize, fn)
 }
 
 func (s *Schedule) Close() error {
 	close(s.quit)
-	return s.realtime.Close()
+	return s.connector.Close()
 }
