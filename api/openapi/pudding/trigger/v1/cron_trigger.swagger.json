@@ -15,7 +15,32 @@
   "produces": [
     "application/json"
   ],
-  "paths": {},
+  "paths": {
+    "/pudding/trigger/v1/ping": {
+      "get": {
+        "summary": "Sends a Ping",
+        "description": "option type is http",
+        "operationId": "CronTriggerService_Ping",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/puddingtriggerv1PingResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "tags": [
+          "CronTriggerService"
+        ]
+      }
+    }
+  },
   "definitions": {
     "protobufAny": {
       "type": "object",
@@ -25,6 +50,15 @@
         }
       },
       "additionalProperties": {}
+    },
+    "puddingtriggerv1PingResponse": {
+      "type": "object",
+      "properties": {
+        "message": {
+          "type": "string"
+        }
+      },
+      "title": "The Ping response message"
     },
     "rpcStatus": {
       "type": "object",

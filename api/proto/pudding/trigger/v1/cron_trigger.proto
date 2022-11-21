@@ -2,11 +2,28 @@ syntax = "proto3";
 package pudding.trigger.v1;
 option go_package = "github.com/beihai0xff/pudding/trigger/v1";
 
+import "google/api/annotations.proto";
+import "google/protobuf/empty.proto";
+
 // The Pudding service definition.
 service CronTriggerService {
+  // Sends a Ping
+  rpc Ping (google.protobuf.Empty) returns (PingResponse) {
+    // option type is http
+    option (google.api.http) = {
+      get: "/pudding/trigger/v1/ping"
+    };
+  }
+
   // UpdateStatus update cron trigger status
   rpc UpdateStatus (UpdateStatusRequest) returns (UpdateStatusResponse) {}
 }
+
+// The Ping response message
+message PingResponse {
+  string message = 1;
+}
+
 
 // The UpdateStatus request message.
 message UpdateStatusRequest {
