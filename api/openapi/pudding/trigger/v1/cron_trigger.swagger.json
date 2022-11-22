@@ -19,7 +19,6 @@
     "/pudding/trigger/v1/ping": {
       "get": {
         "summary": "Sends a Ping",
-        "description": "option type is http",
         "operationId": "CronTriggerService_Ping",
         "responses": {
           "200": {
@@ -77,6 +76,89 @@
           }
         }
       }
+    },
+    "v1CronTriggerTemplate": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "format": "uint64"
+        },
+        "cronExpr": {
+          "type": "string"
+        },
+        "topic": {
+          "type": "string"
+        },
+        "payload": {
+          "type": "string",
+          "format": "byte"
+        },
+        "lastExecutionTime": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "exceptedEndTime": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "loopedTimes": {
+          "type": "string",
+          "format": "uint64"
+        },
+        "status": {
+          "$ref": "#/definitions/v1TriggerStatus"
+        }
+      }
+    },
+    "v1FindOneByIDResponse": {
+      "type": "object",
+      "properties": {
+        "code": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "message": {
+          "type": "string"
+        },
+        "body": {
+          "$ref": "#/definitions/v1CronTriggerTemplate"
+        }
+      }
+    },
+    "v1PageQueryResponse": {
+      "type": "object",
+      "properties": {
+        "code": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "message": {
+          "type": "string"
+        },
+        "total": {
+          "type": "integer",
+          "format": "int64"
+        },
+        "body": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/v1CronTriggerTemplate"
+          }
+        }
+      }
+    },
+    "v1TriggerStatus": {
+      "type": "string",
+      "enum": [
+        "TRIGGER_STATUS_UNKNOWN_UNSPECIFIED",
+        "TRIGGER_STATUS_ENABLED",
+        "TRIGGER_STATUS_DISABLED",
+        "TRIGGER_STATUS_MAX_TIMES",
+        "TRIGGER_STATUS_MAX_AGE"
+      ],
+      "default": "TRIGGER_STATUS_UNKNOWN_UNSPECIFIED",
+      "description": " - TRIGGER_STATUS_UNKNOWN_UNSPECIFIED: TRIGGER_STATUS_UNKNOWN_UNSPECIFIED is unknown, do not use it\n - TRIGGER_STATUS_ENABLED: TRIGGER_STATUS_ENABLED is the status of trigger which is enabled\n - TRIGGER_STATUS_DISABLED: TRIGGER_STATUS_DISABLED is the status of trigger disabled.\n - TRIGGER_STATUS_MAX_TIMES: TRIGGER_STATUS_MAX_TIMES the trigger loop times exceeds the maximum times limit.\n - TRIGGER_STATUS_MAX_AGE: TRIGGER_STATUS_MAX_AGE the trigger exceeds the maximum age limit."
     },
     "v1UpdateStatusResponse": {
       "type": "object",

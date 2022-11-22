@@ -4,6 +4,7 @@ option go_package = "github.com/beihai0xff/pudding/trigger/v1";
 
 import "google/api/annotations.proto";
 import "google/protobuf/empty.proto";
+import "google/protobuf/timestamp.proto";
 
 // The Pudding service definition.
 service CronTriggerService {
@@ -15,8 +16,14 @@ service CronTriggerService {
     };
   }
 
+  // FindOneByID find cron trigger by id
+  rpc FindOneByID (FindOneByIDRequest) returns (FindOneByIDResponse) {}
+  // PageQuery page query cron trigger
+  rpc PageQuery (PageQueryRequest) returns (PageQueryResponse) {}
+
   // UpdateStatus update cron trigger status
   rpc UpdateStatus (UpdateStatusRequest) returns (UpdateStatusResponse) {}
+
 }
 
 // The Ping response message
@@ -24,16 +31,64 @@ message PingResponse {
   string message = 1;
 }
 
+// The UpdateStatus request message.
+message FindOneByIDRequest {
+  // CronTrigger ID
+  uint64 id = 1;
+}
+
+message FindOneByIDResponse {
+  int32 code = 1;
+  string message = 2;
+  CronTriggerTemplate body = 3;
+}
+
+// The UpdateStatus request message.
+message PageQueryRequest {
+  uint64 offset = 1;
+  uint64 limit = 2;
+}
+
+message PageQueryResponse {
+  int32 code = 1;
+  string message = 2;
+  uint32 total = 3;
+  repeated CronTriggerTemplate body = 4;
+}
 
 // The UpdateStatus request message.
 message UpdateStatusRequest {
-  // Message Topic
+  // CronTrigger ID
   uint64 id = 1;
-  // Message Key
-  int64 status = 2;
+  // CronTrigger status
+  TriggerStatus status = 2;
 }
 
 message UpdateStatusResponse {
   int32 code = 1;
   string message = 2;
+}
+
+message CronTriggerTemplate {
+  uint64 id = 1;
+  string cron_expr = 2;
+  string topic = 3;
+  bytes payload = 4;
+  google.protobuf.Timestamp last_execution_time = 5;
+  google.protobuf.Timestamp excepted_end_time = 6;
+  uint64 looped_times = 7;
+  TriggerStatus status = 8;
+}
+
+enum TriggerStatus{
+  // TRIGGER_STATUS_UNKNOWN_UNSPECIFIED is unknown, do not use it
+  TRIGGER_STATUS_UNKNOWN_UNSPECIFIED = 0;
+  // TRIGGER_STATUS_ENABLED is the status of trigger which is enabled
+  TRIGGER_STATUS_ENABLED = 1;
+  // TRIGGER_STATUS_DISABLED is the status of trigger disabled.
+  TRIGGER_STATUS_DISABLED = 2;
+  // TRIGGER_STATUS_MAX_TIMES the trigger loop times exceeds the maximum times limit.
+  TRIGGER_STATUS_MAX_TIMES= 3;
+  // TRIGGER_STATUS_MAX_AGE the trigger exceeds the maximum age limit.
+  TRIGGER_STATUS_MAX_AGE= 4;
 }
