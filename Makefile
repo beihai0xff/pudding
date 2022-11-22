@@ -4,7 +4,7 @@ GO_VERSION ?= 1.18
 GOLANG_IMAGE = golang:$(GO_VERSION)
 
 lint:
-	buf lint
+	cd api/proto && buf mod update && buf lint
 	golangci-lint run
 	go test ./...
 
