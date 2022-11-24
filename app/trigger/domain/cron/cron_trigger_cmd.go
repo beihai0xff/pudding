@@ -4,10 +4,10 @@ import (
 	"context"
 	"fmt"
 
+	pb "github.com/beihai0xff/pudding/api/gen/pudding/trigger/v1"
 	"github.com/beihai0xff/pudding/app/trigger/entity"
 	"github.com/beihai0xff/pudding/pkg/cronexpr"
 	"github.com/beihai0xff/pudding/pkg/log"
-	"github.com/beihai0xff/pudding/types"
 )
 
 // FindByID page query cron templates
@@ -90,13 +90,13 @@ func (t *Trigger) checkRegisterParams(temp *entity.CronTriggerTemplate) error {
 
 	temp.LastExecutionTime = defaultLastExecutionTime
 	// default status is Disable
-	temp.Status = types.TemplateStatusDisabled
+	temp.Status = pb.TriggerStatus_DISABLED
 
 	return nil
 }
 
 // UpdateStatus update cron template status
-func (t *Trigger) UpdateStatus(ctx context.Context, id uint, status int) error {
+func (t *Trigger) UpdateStatus(ctx context.Context, id uint, status pb.TriggerStatus) error {
 	// 1. set template status
 
 	// 2. update the template status to db

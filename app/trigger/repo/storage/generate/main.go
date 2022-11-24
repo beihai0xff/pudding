@@ -5,6 +5,7 @@ import (
 
 	"gorm.io/gen"
 
+	pb "github.com/beihai0xff/pudding/api/gen/pudding/trigger/v1"
 	"github.com/beihai0xff/pudding/app/trigger/repo/storage/po"
 )
 
@@ -17,7 +18,7 @@ type CronTemplateDAO interface {
 	//    {{if status > 0}} status=@status, {{end}}
 	//  {{end}}
 	// WHERE id=@id
-	UpdateStatus(ctx context.Context, id uint, status int) error
+	UpdateStatus(ctx context.Context, id uint, status pb.TriggerStatus) error
 }
 
 func main() {

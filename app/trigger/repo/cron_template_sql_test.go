@@ -7,8 +7,8 @@ import (
 
 	"github.com/stretchr/testify/assert"
 
+	pb "github.com/beihai0xff/pudding/api/gen/pudding/trigger/v1"
 	"github.com/beihai0xff/pudding/app/trigger/entity"
-	"github.com/beihai0xff/pudding/types"
 )
 
 func TestCronTemplate_Insert(t *testing.T) {
@@ -34,7 +34,7 @@ func TestCronTemplate_Insert(t *testing.T) {
 					ExceptedEndTime:   time.Date(2025, 1, 1, 0, 0, 0, 0, time.UTC),
 					ExceptedLoopTimes: 1,
 					LoopedTimes:       1,
-					Status:            types.TemplateStatusDisabled,
+					Status:            pb.TriggerStatus_DISABLED,
 				},
 			},
 			wantErr:   assert.NoError,
@@ -52,7 +52,7 @@ func TestCronTemplate_Insert(t *testing.T) {
 					ExceptedEndTime:   time.Date(2025, 1, 1, 0, 0, 0, 0, time.UTC),
 					ExceptedLoopTimes: 1,
 					LoopedTimes:       1,
-					Status:            types.TemplateStatusDisabled,
+					Status:            pb.TriggerStatus_DISABLED,
 				},
 			},
 			wantErr:   assert.Error,
@@ -78,7 +78,7 @@ func TestCronTemplate_Update(t *testing.T) {
 		ExceptedEndTime:   time.Date(2025, 1, 1, 0, 0, 0, 0, time.UTC),
 		ExceptedLoopTimes: 1,
 		LoopedTimes:       1,
-		Status:            types.TemplateStatusDisabled,
+		Status:            pb.TriggerStatus_DISABLED,
 	}
 	_ = testCronTemplate.Insert(ctx, e)
 
@@ -86,29 +86,29 @@ func TestCronTemplate_Update(t *testing.T) {
 
 	update := &entity.CronTriggerTemplate{
 		ID:     e.ID,
-		Status: types.TemplateStatusEnabled,
+		Status: pb.TriggerStatus_ENABLED,
 	}
 	err := testCronTemplate.UpdateStatus(ctx, update.ID, update.Status)
 	if assert.NoError(t, err) {
 		res, _ := testCronTemplate.FindByID(ctx, e.ID)
-		assert.Equal(t, res.Status, types.TemplateStatusEnabled)
-		e.Status = types.TemplateStatusEnabled
-		assert.Equal(t, res.Status, types.TemplateStatusEnabled)
+		assert.Equal(t, res.Status, pb.TriggerStatus_ENABLED)
+		e.Status = pb.TriggerStatus_ENABLED
+		assert.Equal(t, res.Status, pb.TriggerStatus_ENABLED)
 	}
 
 	// test set status to disable
-	e.Status, update.Status = types.TemplateStatusDisabled, types.TemplateStatusDisabled
+	e.Status, update.Status = pb.TriggerStatus_DISABLED, pb.TriggerStatus_DISABLED
 	err = testCronTemplate.UpdateStatus(ctx, update.ID, update.Status)
 	if assert.NoError(t, err) {
 		res, _ := testCronTemplate.FindByID(ctx, e.ID)
-		assert.Equal(t, res.Status, types.TemplateStatusDisabled)
-		assert.Equal(t, res.Status, types.TemplateStatusDisabled)
+		assert.Equal(t, res.Status, pb.TriggerStatus_DISABLED)
+		assert.Equal(t, res.Status, pb.TriggerStatus_DISABLED)
 	}
 
 	// test update not exist record
 	update = &entity.CronTriggerTemplate{
 		ID:     e.ID * 100,
-		Status: types.TemplateStatusDisabled,
+		Status: pb.TriggerStatus_DISABLED,
 	}
 	err = testCronTemplate.UpdateStatus(ctx, update.ID, update.Status)
 	assert.NoError(t, err)
@@ -125,18 +125,17 @@ func TestCronTemplate_FindEnableRecords(t *testing.T) {
 		ExceptedEndTime:   time.Date(2025, 1, 1, 0, 0, 0, 0, time.UTC),
 		ExceptedLoopTimes: 10,
 		LoopedTimes:       1,
-		Status:            types.TemplateStatusEnabled,
+		Status:            pb.TriggerStatus_ENABLED,
 	}
 	if err := testCronTemplate.Insert(ctx, e); err != nil {
 		t.Fatal(err)
 	}
 
-	fc := types.CronTempHandler(
-		func(e2 *entity.CronTriggerTemplate) error {
-			assert.Equal(t, e, e2)
-			e2.LoopedTimes = 2
-			return nil
-		})
+	fc := func(e2 *entity.CronTriggerTemplate) error {
+		assert.Equal(t, e, e2)
+		e2.LoopedTimes = 2
+		return nil
+	}
 	// test find enable records
 	err := testCronTemplate.BatchHandleRecords(ctx, time.Date(2023, 1, 1, 0, 0, 0, 0, time.Local), 10, fc)
 	assert.NoError(t, err)

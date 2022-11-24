@@ -7,8 +7,8 @@ import (
 
 	"github.com/stretchr/testify/assert"
 
+	pb "github.com/beihai0xff/pudding/api/gen/pudding/trigger/v1"
 	"github.com/beihai0xff/pudding/app/trigger/entity"
-	"github.com/beihai0xff/pudding/types"
 )
 
 func TestTrigger_Register(t1 *testing.T) {
@@ -74,7 +74,7 @@ func TestTrigger_checkRegisterParams(t1 *testing.T) {
 				LastExecutionTime: defaultLastExecutionTime,
 				ExceptedEndTime:   testTrigger.wallClock.Now().Add(defaultTemplateActiveDuration),
 				ExceptedLoopTimes: defaultMaximumLoopTimes,
-				Status:            types.TemplateStatusDisabled,
+				Status:            pb.TriggerStatus_DISABLED,
 			},
 			wantErr: assert.NoError,
 		},
@@ -148,7 +148,7 @@ func TestTrigger_UpdateStatus(t1 *testing.T) {
 	type args struct {
 		ctx    context.Context
 		id     uint
-		status int
+		status pb.TriggerStatus
 	}
 	tests := []struct {
 		name    string
@@ -160,7 +160,7 @@ func TestTrigger_UpdateStatus(t1 *testing.T) {
 			args: args{
 				ctx:    nil,
 				id:     temp.ID,
-				status: types.TemplateStatusEnabled,
+				status: pb.TriggerStatus_ENABLED,
 			},
 			wantErr: assert.NoError,
 		},
@@ -169,7 +169,7 @@ func TestTrigger_UpdateStatus(t1 *testing.T) {
 			args: args{
 				ctx:    nil,
 				id:     temp.ID,
-				status: types.TemplateStatusDisabled,
+				status: pb.TriggerStatus_DISABLED,
 			},
 			wantErr: assert.NoError,
 		},
