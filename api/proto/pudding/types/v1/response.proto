@@ -1,9 +1,14 @@
 syntax = "proto3";
-package response;
+package pudding.types.v1;
 
 option go_package = "github.com/beihai0xff/pudding/api/gen/pudding/types/v1;types";
 
 message Response {
   int32 code = 1;
   string message = 2;
+}
+
+// The Ping response message
+message PingResponse {
+  string message = 1;
 }

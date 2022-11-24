@@ -25,7 +25,7 @@
           "200": {
             "description": "A successful response.",
             "schema": {
-              "$ref": "#/definitions/puddingschedulerv1PingResponse"
+              "$ref": "#/definitions/v1PingResponse"
             }
           },
           "default": {
@@ -48,7 +48,7 @@
           "200": {
             "description": "A successful response.",
             "schema": {
-              "$ref": "#/definitions/v1SendDelayMessageResponse"
+              "$ref": "#/definitions/v1Response"
             }
           },
           "default": {
@@ -61,7 +61,7 @@
         "parameters": [
           {
             "name": "body",
-            "description": "The Ping request message.",
+            "description": "The SendDelayMessage request message.",
             "in": "body",
             "required": true,
             "schema": {
@@ -85,15 +85,6 @@
       },
       "additionalProperties": {}
     },
-    "puddingschedulerv1PingResponse": {
-      "type": "object",
-      "properties": {
-        "message": {
-          "type": "string"
-        }
-      },
-      "title": "The Ping response message"
-    },
     "rpcStatus": {
       "type": "object",
       "properties": {
@@ -109,6 +100,27 @@
           "items": {
             "$ref": "#/definitions/protobufAny"
           }
+        }
+      }
+    },
+    "v1PingResponse": {
+      "type": "object",
+      "properties": {
+        "message": {
+          "type": "string"
+        }
+      },
+      "title": "The Ping response message"
+    },
+    "v1Response": {
+      "type": "object",
+      "properties": {
+        "code": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "message": {
+          "type": "string"
         }
       }
     },
@@ -139,19 +151,7 @@
           "title": "Message Ready Time（now + delay, Unix Timestamp, Seconds）"
         }
       },
-      "description": "The Ping request message."
-    },
-    "v1SendDelayMessageResponse": {
-      "type": "object",
-      "properties": {
-        "code": {
-          "type": "integer",
-          "format": "int32"
-        },
-        "message": {
-          "type": "string"
-        }
-      }
+      "description": "The SendDelayMessage request message."
     }
   }
 }

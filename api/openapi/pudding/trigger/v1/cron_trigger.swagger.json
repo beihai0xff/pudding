@@ -24,7 +24,7 @@
           "200": {
             "description": "A successful response.",
             "schema": {
-              "$ref": "#/definitions/puddingtriggerv1PingResponse"
+              "$ref": "#/definitions/v1PingResponse"
             }
           },
           "default": {
@@ -50,27 +50,6 @@
       },
       "additionalProperties": {}
     },
-    "puddingtriggerv1PingResponse": {
-      "type": "object",
-      "properties": {
-        "message": {
-          "type": "string"
-        }
-      },
-      "title": "The Ping response message"
-    },
-    "responseResponse": {
-      "type": "object",
-      "properties": {
-        "code": {
-          "type": "integer",
-          "format": "int32"
-        },
-        "message": {
-          "type": "string"
-        }
-      }
-    },
     "rpcStatus": {
       "type": "object",
       "properties": {
@@ -89,7 +68,65 @@
         }
       }
     },
-    "typesTriggerStatus": {
+    "v1FindOneByIDResponse": {
+      "type": "object",
+      "properties": {
+        "code": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "message": {
+          "type": "string"
+        },
+        "body": {
+          "$ref": "#/definitions/v1TriggerTemplate"
+        }
+      }
+    },
+    "v1PageQueryResponse": {
+      "type": "object",
+      "properties": {
+        "code": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "message": {
+          "type": "string"
+        },
+        "total": {
+          "type": "integer",
+          "format": "int64"
+        },
+        "body": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/v1TriggerTemplate"
+          }
+        }
+      }
+    },
+    "v1PingResponse": {
+      "type": "object",
+      "properties": {
+        "message": {
+          "type": "string"
+        }
+      },
+      "title": "The Ping response message"
+    },
+    "v1Response": {
+      "type": "object",
+      "properties": {
+        "code": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "message": {
+          "type": "string"
+        }
+      }
+    },
+    "v1TriggerStatus": {
       "type": "string",
       "enum": [
         "UNKNOWN_UNSPECIFIED",
@@ -100,9 +137,9 @@
       ],
       "default": "UNKNOWN_UNSPECIFIED",
       "description": "- UNKNOWN_UNSPECIFIED: TRIGGER_STATUS_UNKNOWN_UNSPECIFIED is unknown, do not use it\n - ENABLED: TRIGGER_STATUS_ENABLED is the status of trigger which is enabled\n - DISABLED: TRIGGER_STATUS_DISABLED is the status of trigger disabled.\n - MAX_TIMES: TRIGGER_STATUS_MAX_TIMES the trigger loop times exceeds the maximum times limit.\n - MAX_AGE: TRIGGER_STATUS_MAX_AGE the trigger exceeds the maximum age limit.",
-      "title": "TriggerStatus defines the trigger status"
+      "title": "buf:lint:ignore ENUM_VALUE_PREFIX\nTriggerStatus defines the trigger status"
     },
-    "typesTriggerTemplate": {
+    "v1TriggerTemplate": {
       "type": "object",
       "properties": {
         "id": {
@@ -132,47 +169,10 @@
           "format": "uint64"
         },
         "status": {
-          "$ref": "#/definitions/typesTriggerStatus"
+          "$ref": "#/definitions/v1TriggerStatus"
         }
       },
       "title": "TriggerTemplate defines the cron trigger template"
-    },
-    "v1FindOneByIDResponse": {
-      "type": "object",
-      "properties": {
-        "code": {
-          "type": "integer",
-          "format": "int32"
-        },
-        "message": {
-          "type": "string"
-        },
-        "body": {
-          "$ref": "#/definitions/typesTriggerTemplate"
-        }
-      }
-    },
-    "v1PageQueryResponse": {
-      "type": "object",
-      "properties": {
-        "code": {
-          "type": "integer",
-          "format": "int32"
-        },
-        "message": {
-          "type": "string"
-        },
-        "total": {
-          "type": "integer",
-          "format": "int64"
-        },
-        "body": {
-          "type": "array",
-          "items": {
-            "$ref": "#/definitions/typesTriggerTemplate"
-          }
-        }
-      }
     }
   }
 }
