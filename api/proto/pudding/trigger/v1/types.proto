@@ -1,0 +1,31 @@
+syntax = "proto3";
+package pudding.trigger.v1.types;
+option go_package = "github.com/beihai0xff/pudding/api/gen/pudding/trigger/v1;trigger";
+
+import "google/protobuf/timestamp.proto";
+
+// TriggerTemplate defines the cron trigger template
+message TriggerTemplate {
+  uint64 id = 1;
+  string cron_expr = 2;
+  string topic = 3;
+  bytes payload = 4;
+  google.protobuf.Timestamp last_execution_time = 5;
+  google.protobuf.Timestamp excepted_end_time = 6;
+  uint64 looped_times = 7;
+  TriggerStatus status = 8;
+}
+
+// TriggerStatus defines the trigger status
+enum TriggerStatus{
+  // TRIGGER_STATUS_UNKNOWN_UNSPECIFIED is unknown, do not use it
+  TRIGGER_STATUS_UNKNOWN_UNSPECIFIED = 0;
+  // TRIGGER_STATUS_ENABLED is the status of trigger which is enabled
+  TRIGGER_STATUS_ENABLED = 1;
+  // TRIGGER_STATUS_DISABLED is the status of trigger disabled.
+  TRIGGER_STATUS_DISABLED = 2;
+  // TRIGGER_STATUS_MAX_TIMES the trigger loop times exceeds the maximum times limit.
+  TRIGGER_STATUS_MAX_TIMES= 3;
+  // TRIGGER_STATUS_MAX_AGE the trigger exceeds the maximum age limit.
+  TRIGGER_STATUS_MAX_AGE= 4;
+}
