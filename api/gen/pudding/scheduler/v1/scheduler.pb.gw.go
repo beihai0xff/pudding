@@ -2,11 +2,11 @@
 // source: pudding/scheduler/v1/scheduler.proto
 
 /*
-Package v1 is a reverse proxy.
+Package scheduler is a reverse proxy.
 
 It translates gRPC into RESTful JSON APIs.
 */
-package v1
+package scheduler
 
 import (
 	"context"
