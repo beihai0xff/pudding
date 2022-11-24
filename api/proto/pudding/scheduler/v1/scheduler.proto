@@ -1,6 +1,6 @@
 syntax = "proto3";
 package pudding.scheduler.v1;
-option go_package = "github.com/beihai0xff/pudding/scheduler/v1";
+option go_package = "github.com/beihai0xff/pudding/api/gen/pudding/scheduler/v1";
 
 import "google/api/annotations.proto";
 import "google/protobuf/empty.proto";

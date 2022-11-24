@@ -2,11 +2,11 @@
 // source: pudding/trigger/v1/cron_trigger.proto
 
 /*
-Package v1 is a reverse proxy.
+Package trigger is a reverse proxy.
 
 It translates gRPC into RESTful JSON APIs.
 */
-package v1
+package trigger
 
 import (
 	"context"
