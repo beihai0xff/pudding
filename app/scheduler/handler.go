@@ -3,7 +3,7 @@ package scheduler
 import (
 	"context"
 
-	codes "google.golang.org/grpc/codes"
+	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 	"google.golang.org/protobuf/types/known/emptypb"
 
@@ -20,7 +20,7 @@ func NewHandler(s Scheduler) *Handler {
 	return &Handler{s: s}
 }
 
-func (s *Handler) Ping(ctx context.Context, req *emptypb.Empty) (*pb.PingResponse, error) {
+func (s *Handler) Ping(context.Context, *emptypb.Empty) (*pb.PingResponse, error) {
 	return &pb.PingResponse{Message: "pong"}, nil
 }
 
