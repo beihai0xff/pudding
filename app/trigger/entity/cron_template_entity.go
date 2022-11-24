@@ -2,6 +2,8 @@ package entity
 
 import (
 	"time"
+
+	pb "github.com/beihai0xff/pudding/api/gen/pudding/trigger/v1"
 )
 
 type CronTriggerTemplate struct {
@@ -25,5 +27,5 @@ type CronTriggerTemplate struct {
 	LoopedTimes uint64 `json:"looped_times"`
 
 	// Status the CronTriggerTemplate status: enable offline
-	Status int `json:"status" validate:"required"`
+	Status pb.TriggerStatus `json:"status" validate:"required"`
 }

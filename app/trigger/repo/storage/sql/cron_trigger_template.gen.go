@@ -18,6 +18,7 @@ import (
 
 	"gorm.io/plugin/dbresolver"
 
+	pb "github.com/beihai0xff/pudding/api/gen/pudding/trigger/v1"
 	"github.com/beihai0xff/pudding/app/trigger/repo/storage/po"
 )
 
@@ -40,7 +41,7 @@ func newCronTriggerTemplate(db *gorm.DB, opts ...gen.DOOption) cronTriggerTempla
 	_cronTriggerTemplate.ExceptedEndTime = field.NewTime(tableName, "excepted_end_time")
 	_cronTriggerTemplate.ExceptedLoopTimes = field.NewUint64(tableName, "excepted_loop_times")
 	_cronTriggerTemplate.LoopedTimes = field.NewUint64(tableName, "looped_times")
-	_cronTriggerTemplate.Status = field.NewInt(tableName, "status")
+	_cronTriggerTemplate.Status = field.NewInt32(tableName, "status")
 
 	_cronTriggerTemplate.fillFieldMap()
 
@@ -62,7 +63,7 @@ type cronTriggerTemplate struct {
 	ExceptedEndTime   field.Time
 	ExceptedLoopTimes field.Uint64
 	LoopedTimes       field.Uint64
-	Status            field.Int
+	Status            field.Int32
 
 	fieldMap map[string]field.Expr
 }
@@ -90,7 +91,7 @@ func (c *cronTriggerTemplate) updateTableName(table string) *cronTriggerTemplate
 	c.ExceptedEndTime = field.NewTime(table, "excepted_end_time")
 	c.ExceptedLoopTimes = field.NewUint64(table, "excepted_loop_times")
 	c.LoopedTimes = field.NewUint64(table, "looped_times")
-	c.Status = field.NewInt(table, "status")
+	c.Status = field.NewInt32(table, "status")
 
 	c.fillFieldMap()
 
@@ -162,7 +163,7 @@ func (c cronTriggerTemplateDo) FindByID(id uint) (result *po.CronTriggerTemplate
 //   {{if status > 0}} status=@status, {{end}}
 // {{end}}
 //WHERE id=@id
-func (c cronTriggerTemplateDo) UpdateStatus(ctx context.Context, id uint, status int) (err error) {
+func (c cronTriggerTemplateDo) UpdateStatus(ctx context.Context, id uint, status pb.TriggerStatus) (err error) {
 	var params []interface{}
 
 	var generateSQL strings.Builder

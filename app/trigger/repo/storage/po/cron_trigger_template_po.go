@@ -5,6 +5,8 @@ import (
 	"time"
 
 	"gorm.io/gorm"
+
+	pb "github.com/beihai0xff/pudding/api/gen/pudding/trigger/v1"
 )
 
 type CronTriggerTemplate struct {
@@ -29,7 +31,7 @@ type CronTriggerTemplate struct {
 	LoopedTimes uint64 `gorm:"column:looped_times;type:int unsigned;not null;default:0;comment:'已循环次数'" copier:"must,nopanic"`
 
 	// Status the CronTriggerTemplate status: enable disable offline
-	Status int `gorm:"column:status;type:int unsigned;not null;default:0;comment:'CronTriggerTemplate status'" copier:"must,nopanic"`
+	Status pb.TriggerStatus `gorm:"column:status;type:int unsigned;not null;default:0;comment:'CronTriggerTemplate status'" copier:"must,nopanic"`
 }
 
 func (CronTriggerTemplate) TableName() string {

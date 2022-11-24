@@ -428,7 +428,7 @@ func (x *UpdateStatusRequest) GetStatus() TriggerStatus {
 	if x != nil {
 		return x.Status
 	}
-	return TriggerStatus_TRIGGER_STATUS_UNKNOWN_UNSPECIFIED
+	return TriggerStatus_UNKNOWN_UNSPECIFIED
 }
 
 var File_pudding_trigger_v1_cron_trigger_proto protoreflect.FileDescriptor

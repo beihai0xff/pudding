@@ -19,13 +19,13 @@ message TriggerTemplate {
 // TriggerStatus defines the trigger status
 enum TriggerStatus{
   // TRIGGER_STATUS_UNKNOWN_UNSPECIFIED is unknown, do not use it
-  TRIGGER_STATUS_UNKNOWN_UNSPECIFIED = 0;
+  UNKNOWN_UNSPECIFIED = 0;
   // TRIGGER_STATUS_ENABLED is the status of trigger which is enabled
-  TRIGGER_STATUS_ENABLED = 1;
+  ENABLED = 1;
   // TRIGGER_STATUS_DISABLED is the status of trigger disabled.
-  TRIGGER_STATUS_DISABLED = 2;
+  DISABLED = 2;
   // TRIGGER_STATUS_MAX_TIMES the trigger loop times exceeds the maximum times limit.
-  TRIGGER_STATUS_MAX_TIMES= 3;
+  MAX_TIMES= 3;
   // TRIGGER_STATUS_MAX_AGE the trigger exceeds the maximum age limit.
-  TRIGGER_STATUS_MAX_AGE= 4;
+  MAX_AGE= 4;
 }
