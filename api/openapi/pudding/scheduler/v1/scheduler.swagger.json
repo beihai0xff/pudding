@@ -25,7 +25,7 @@
           "200": {
             "description": "A successful response.",
             "schema": {
-              "$ref": "#/definitions/puddingschedulerv1PingResponse"
+              "$ref": "#/definitions/responsePingResponse"
             }
           },
           "default": {
@@ -48,7 +48,7 @@
           "200": {
             "description": "A successful response.",
             "schema": {
-              "$ref": "#/definitions/v1SendDelayMessageResponse"
+              "$ref": "#/definitions/responseResponse"
             }
           },
           "default": {
@@ -61,7 +61,7 @@
         "parameters": [
           {
             "name": "body",
-            "description": "The Ping request message.",
+            "description": "The SendDelayMessage request message.",
             "in": "body",
             "required": true,
             "schema": {
@@ -85,7 +85,7 @@
       },
       "additionalProperties": {}
     },
-    "puddingschedulerv1PingResponse": {
+    "responsePingResponse": {
       "type": "object",
       "properties": {
         "message": {
@@ -93,6 +93,18 @@
         }
       },
       "title": "The Ping response message"
+    },
+    "responseResponse": {
+      "type": "object",
+      "properties": {
+        "code": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "message": {
+          "type": "string"
+        }
+      }
     },
     "rpcStatus": {
       "type": "object",
@@ -139,19 +151,7 @@
           "title": "Message Ready Time（now + delay, Unix Timestamp, Seconds）"
         }
       },
-      "description": "The Ping request message."
-    },
-    "v1SendDelayMessageResponse": {
-      "type": "object",
-      "properties": {
-        "code": {
-          "type": "integer",
-          "format": "int32"
-        },
-        "message": {
-          "type": "string"
-        }
-      }
+      "description": "The SendDelayMessage request message."
     }
   }
 }

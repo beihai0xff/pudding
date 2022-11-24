@@ -21,7 +21,7 @@ const _ = grpc.SupportPackageIsVersion7
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type CronTriggerServiceClient interface {
 	// Sends a Ping
-	Ping(ctx context.Context, in *emptypb.Empty, opts ...grpc.CallOption) (*PingResponse, error)
+	Ping(ctx context.Context, in *emptypb.Empty, opts ...grpc.CallOption) (*v1.PingResponse, error)
 	// FindOneByID find cron trigger by id
 	FindOneByID(ctx context.Context, in *FindOneByIDRequest, opts ...grpc.CallOption) (*FindOneByIDResponse, error)
 	// PageQuery page query cron trigger
@@ -40,8 +40,8 @@ func NewCronTriggerServiceClient(cc grpc.ClientConnInterface) CronTriggerService
 	return &cronTriggerServiceClient{cc}
 }
 
-func (c *cronTriggerServiceClient) Ping(ctx context.Context, in *emptypb.Empty, opts ...grpc.CallOption) (*PingResponse, error) {
-	out := new(PingResponse)
+func (c *cronTriggerServiceClient) Ping(ctx context.Context, in *emptypb.Empty, opts ...grpc.CallOption) (*v1.PingResponse, error) {
+	out := new(v1.PingResponse)
 	err := c.cc.Invoke(ctx, "/pudding.trigger.v1.CronTriggerService/Ping", in, out, opts...)
 	if err != nil {
 		return nil, err
@@ -90,7 +90,7 @@ func (c *cronTriggerServiceClient) UpdateStatus(ctx context.Context, in *UpdateS
 // for forward compatibility
 type CronTriggerServiceServer interface {
 	// Sends a Ping
-	Ping(context.Context, *emptypb.Empty) (*PingResponse, error)
+	Ping(context.Context, *emptypb.Empty) (*v1.PingResponse, error)
 	// FindOneByID find cron trigger by id
 	FindOneByID(context.Context, *FindOneByIDRequest) (*FindOneByIDResponse, error)
 	// PageQuery page query cron trigger
@@ -106,7 +106,7 @@ type CronTriggerServiceServer interface {
 type UnimplementedCronTriggerServiceServer struct {
 }
 
-func (UnimplementedCronTriggerServiceServer) Ping(context.Context, *emptypb.Empty) (*PingResponse, error) {
+func (UnimplementedCronTriggerServiceServer) Ping(context.Context, *emptypb.Empty) (*v1.PingResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method Ping not implemented")
 }
 func (UnimplementedCronTriggerServiceServer) FindOneByID(context.Context, *FindOneByIDRequest) (*FindOneByIDResponse, error) {

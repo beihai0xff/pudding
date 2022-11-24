@@ -24,7 +24,7 @@
           "200": {
             "description": "A successful response.",
             "schema": {
-              "$ref": "#/definitions/puddingtriggerv1PingResponse"
+              "$ref": "#/definitions/responsePingResponse"
             }
           },
           "default": {
@@ -50,7 +50,7 @@
       },
       "additionalProperties": {}
     },
-    "puddingtriggerv1PingResponse": {
+    "responsePingResponse": {
       "type": "object",
       "properties": {
         "message": {

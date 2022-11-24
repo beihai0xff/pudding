@@ -12,7 +12,7 @@ import "pudding/trigger/v1/types.proto";
 // The Pudding service definition.
 service CronTriggerService {
   // Sends a Ping
-  rpc Ping (google.protobuf.Empty) returns (PingResponse) {
+  rpc Ping (google.protobuf.Empty) returns (response.PingResponse) {
     // option type is http
     option (google.api.http) = {
       get: "/pudding/trigger/v1/ping"
@@ -30,11 +30,6 @@ service CronTriggerService {
   // UpdateStatus update cron trigger status
   rpc UpdateStatus (UpdateStatusRequest) returns (response.Response) {}
 
-}
-
-// The Ping response message
-message PingResponse {
-  string message = 1;
 }
 
 // The UpdateStatus request message.
