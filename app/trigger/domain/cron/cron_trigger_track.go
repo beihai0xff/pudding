@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"time"
 
+	pb "github.com/beihai0xff/pudding/api/gen/pudding/trigger/v1"
 	"github.com/beihai0xff/pudding/app/scheduler"
 	"github.com/beihai0xff/pudding/app/trigger/entity"
 	"github.com/beihai0xff/pudding/app/trigger/repo"
@@ -108,7 +109,7 @@ func (t *Trigger) Tracking(temp *entity.CronTriggerTemplate) error {
 		log.Infof("cron template [%d] has reached the maximum loop times, "+
 			"update status to TemplateStatusMaxTimes", temp.ID)
 
-		temp.Status = types.TemplateStatusMaxTimes
+		temp.Status = pb.TriggerStatus_MAX_TIMES
 	}
 	log.Infof("cron template [%d] looped times: %d", temp.ID, temp.LoopedTimes)
 
@@ -120,7 +121,7 @@ func (t *Trigger) checkTempShouldRun(temp *entity.CronTriggerTemplate, nextTime 
 	if temp.LoopedTimes >= temp.ExceptedLoopTimes {
 		log.Warnf("cron template [%d] has reached the maximum loop times, but it has been tracked", temp.ID)
 
-		temp.Status = types.TemplateStatusMaxTimes
+		temp.Status = pb.TriggerStatus_MAX_TIMES
 		return false
 	}
 
@@ -128,7 +129,7 @@ func (t *Trigger) checkTempShouldRun(temp *entity.CronTriggerTemplate, nextTime 
 	if nextTime.After(temp.ExceptedEndTime) {
 		log.Warnf("cron template [%d] has reached the maximum age, set it to StatusMaxAge", temp.ID)
 
-		temp.Status = types.TemplateStatusMaxAge
+		temp.Status = pb.TriggerStatus_MAX_AGE
 		return false
 	}
 

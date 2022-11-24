@@ -92,14 +92,14 @@
     "typesTriggerStatus": {
       "type": "string",
       "enum": [
-        "TRIGGER_STATUS_UNKNOWN_UNSPECIFIED",
-        "TRIGGER_STATUS_ENABLED",
-        "TRIGGER_STATUS_DISABLED",
-        "TRIGGER_STATUS_MAX_TIMES",
-        "TRIGGER_STATUS_MAX_AGE"
+        "UNKNOWN_UNSPECIFIED",
+        "ENABLED",
+        "DISABLED",
+        "MAX_TIMES",
+        "MAX_AGE"
       ],
-      "default": "TRIGGER_STATUS_UNKNOWN_UNSPECIFIED",
-      "description": "- TRIGGER_STATUS_UNKNOWN_UNSPECIFIED: TRIGGER_STATUS_UNKNOWN_UNSPECIFIED is unknown, do not use it\n - TRIGGER_STATUS_ENABLED: TRIGGER_STATUS_ENABLED is the status of trigger which is enabled\n - TRIGGER_STATUS_DISABLED: TRIGGER_STATUS_DISABLED is the status of trigger disabled.\n - TRIGGER_STATUS_MAX_TIMES: TRIGGER_STATUS_MAX_TIMES the trigger loop times exceeds the maximum times limit.\n - TRIGGER_STATUS_MAX_AGE: TRIGGER_STATUS_MAX_AGE the trigger exceeds the maximum age limit.",
+      "default": "UNKNOWN_UNSPECIFIED",
+      "description": "- UNKNOWN_UNSPECIFIED: TRIGGER_STATUS_UNKNOWN_UNSPECIFIED is unknown, do not use it\n - ENABLED: TRIGGER_STATUS_ENABLED is the status of trigger which is enabled\n - DISABLED: TRIGGER_STATUS_DISABLED is the status of trigger disabled.\n - MAX_TIMES: TRIGGER_STATUS_MAX_TIMES the trigger loop times exceeds the maximum times limit.\n - MAX_AGE: TRIGGER_STATUS_MAX_AGE the trigger exceeds the maximum age limit.",
       "title": "TriggerStatus defines the trigger status"
     },
     "typesTriggerTemplate": {

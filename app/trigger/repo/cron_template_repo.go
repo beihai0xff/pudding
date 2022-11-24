@@ -10,17 +10,19 @@ import (
 	"gorm.io/gen"
 	"gorm.io/gorm/clause"
 
+	pb "github.com/beihai0xff/pudding/api/gen/pudding/trigger/v1"
 	"github.com/beihai0xff/pudding/app/trigger/entity"
 	"github.com/beihai0xff/pudding/app/trigger/repo/convertor"
 	"github.com/beihai0xff/pudding/app/trigger/repo/storage/po"
 	"github.com/beihai0xff/pudding/app/trigger/repo/storage/sql"
 	"github.com/beihai0xff/pudding/pkg/db/mysql"
 	"github.com/beihai0xff/pudding/pkg/log"
-	"github.com/beihai0xff/pudding/types"
 )
 
 // use a single instance of Validate, it caches struct info
 var validate = validator.New()
+
+type CronTempHandler func(results *entity.CronTriggerTemplate) error
 
 type CronTemplateDAO interface {
 	// FindByID find a cron template by id
@@ -31,9 +33,9 @@ type CronTemplateDAO interface {
 	// Insert insert a cron template
 	Insert(ctx context.Context, e *entity.CronTriggerTemplate) error
 	// UpdateStatus update the status of a cron template
-	UpdateStatus(ctx context.Context, id uint, status int) error
+	UpdateStatus(ctx context.Context, id uint, status pb.TriggerStatus) error
 	// BatchHandleRecords batch handle the records which need to be executed
-	BatchHandleRecords(ctx context.Context, t time.Time, batchSize int, f types.CronTempHandler) error
+	BatchHandleRecords(ctx context.Context, t time.Time, batchSize int, f CronTempHandler) error
 }
 
 type CronTemplate struct{}
@@ -91,12 +93,12 @@ func (dao *CronTemplate) Insert(ctx context.Context, e *entity.CronTriggerTempla
 	return nil
 }
 
-func (dao *CronTemplate) UpdateStatus(ctx context.Context, id uint, status int) error {
+func (dao *CronTemplate) UpdateStatus(ctx context.Context, id uint, status pb.TriggerStatus) error {
 	return sql.CronTriggerTemplate.WithContext(ctx).UpdateStatus(ctx, id, status)
 }
 
 func (dao *CronTemplate) BatchHandleRecords(ctx context.Context, t time.Time, batchSize int,
-	f types.CronTempHandler) error {
+	f CronTempHandler) error {
 	var results []*po.CronTriggerTemplate
 
 	// handle function
@@ -125,7 +127,7 @@ func (dao *CronTemplate) BatchHandleRecords(ctx context.Context, t time.Time, ba
 		Strength: "UPDATE",
 		Options:  "SKIP LOCKED",
 	}).Where(sql.CronTriggerTemplate.LastExecutionTime.Lte(t)).
-		Where(sql.CronTriggerTemplate.Status.Eq(types.TemplateStatusEnabled)).
+		Where(sql.CronTriggerTemplate.Status.Eq(int32(pb.TriggerStatus_ENABLED))).
 		FindInBatches(&results, batchSize, fc)
 
 }

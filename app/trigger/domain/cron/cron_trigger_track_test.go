@@ -7,8 +7,8 @@ import (
 
 	"github.com/stretchr/testify/assert"
 
+	pb "github.com/beihai0xff/pudding/api/gen/pudding/trigger/v1"
 	"github.com/beihai0xff/pudding/app/trigger/entity"
-	"github.com/beihai0xff/pudding/types"
 )
 
 func TestTrigger_checkTempShouldRun(t1 *testing.T) {
@@ -30,7 +30,7 @@ func TestTrigger_checkTempShouldRun(t1 *testing.T) {
 					LastExecutionTime: testTrigger.wallClock.Now(),
 					ExceptedEndTime:   testTrigger.wallClock.Now().AddDate(1, 1, 0),
 					ExceptedLoopTimes: 10,
-					Status:            types.TemplateStatusEnabled,
+					Status:            pb.TriggerStatus_ENABLED,
 				},
 				nextTime: testTrigger.wallClock.Now().AddDate(0, 2, 0)},
 			want: true,
@@ -44,7 +44,7 @@ func TestTrigger_checkTempShouldRun(t1 *testing.T) {
 					LastExecutionTime: testTrigger.wallClock.Now(),
 					ExceptedEndTime:   testTrigger.wallClock.Now().AddDate(1, 1, 0),
 					ExceptedLoopTimes: 10,
-					Status:            types.TemplateStatusEnabled,
+					Status:            pb.TriggerStatus_ENABLED,
 				},
 				nextTime: testTrigger.wallClock.Now().AddDate(0, 2, 0)},
 			want: false,
@@ -58,7 +58,7 @@ func TestTrigger_checkTempShouldRun(t1 *testing.T) {
 					LastExecutionTime: testTrigger.wallClock.Now().AddDate(0, 1, 0),
 					ExceptedEndTime:   testTrigger.wallClock.Now().AddDate(0, 1, 0),
 					ExceptedLoopTimes: 10,
-					Status:            types.TemplateStatusEnabled,
+					Status:            pb.TriggerStatus_ENABLED,
 				},
 				nextTime: testTrigger.wallClock.Now().AddDate(0, 2, 0)},
 			want: false,
