@@ -13,7 +13,7 @@ type Handler struct {
 	pb.UnimplementedCronTriggerServiceServer
 }
 
-func (h Handler) Ping(ctx context.Context, empty *emptypb.Empty) (*pb.PingResponse, error) {
+func (h Handler) Ping(ctx context.Context, empty *emptypb.Empty) (*types.PingResponse, error) {
 	// TODO implement me
 	panic("implement me")
 }
