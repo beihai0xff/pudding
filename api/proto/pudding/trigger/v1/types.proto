@@ -1,5 +1,5 @@
 syntax = "proto3";
-package pudding.trigger.v1.types;
+package pudding.trigger.v1;
 option go_package = "github.com/beihai0xff/pudding/api/gen/pudding/trigger/v1;trigger";
 
 import "google/protobuf/timestamp.proto";
@@ -16,6 +16,7 @@ message TriggerTemplate {
   TriggerStatus status = 8;
 }
 
+// buf:lint:ignore ENUM_VALUE_PREFIX
 // TriggerStatus defines the trigger status
 enum TriggerStatus{
   // TRIGGER_STATUS_UNKNOWN_UNSPECIFIED is unknown, do not use it

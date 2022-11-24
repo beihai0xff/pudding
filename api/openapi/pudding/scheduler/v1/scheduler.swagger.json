@@ -25,7 +25,7 @@
           "200": {
             "description": "A successful response.",
             "schema": {
-              "$ref": "#/definitions/responsePingResponse"
+              "$ref": "#/definitions/v1PingResponse"
             }
           },
           "default": {
@@ -48,7 +48,7 @@
           "200": {
             "description": "A successful response.",
             "schema": {
-              "$ref": "#/definitions/responseResponse"
+              "$ref": "#/definitions/v1Response"
             }
           },
           "default": {
@@ -85,27 +85,6 @@
       },
       "additionalProperties": {}
     },
-    "responsePingResponse": {
-      "type": "object",
-      "properties": {
-        "message": {
-          "type": "string"
-        }
-      },
-      "title": "The Ping response message"
-    },
-    "responseResponse": {
-      "type": "object",
-      "properties": {
-        "code": {
-          "type": "integer",
-          "format": "int32"
-        },
-        "message": {
-          "type": "string"
-        }
-      }
-    },
     "rpcStatus": {
       "type": "object",
       "properties": {
@@ -121,6 +100,27 @@
           "items": {
             "$ref": "#/definitions/protobufAny"
           }
+        }
+      }
+    },
+    "v1PingResponse": {
+      "type": "object",
+      "properties": {
+        "message": {
+          "type": "string"
+        }
+      },
+      "title": "The Ping response message"
+    },
+    "v1Response": {
+      "type": "object",
+      "properties": {
+        "code": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "message": {
+          "type": "string"
         }
       }
     },

@@ -10,7 +10,7 @@ import "pudding/types/v1/response.proto";
 // The Pudding service definition.
 service SchedulerService {
   // Sends a Ping
-  rpc Ping (google.protobuf.Empty) returns (response.PingResponse) {
+  rpc Ping (google.protobuf.Empty) returns (types.v1.PingResponse) {
     // option type is http
 
     option (google.api.http) = {
@@ -19,7 +19,7 @@ service SchedulerService {
   }
 
   // Sends a Delay Message
-  rpc SendDelayMessage (SendDelayMessageRequest) returns (response.Response) {
+  rpc SendDelayMessage (SendDelayMessageRequest) returns (types.v1.Response) {
     option (google.api.http) = {
       post: "/pudding/scheduler/v1/sendDelayMessage"
       body: "*"

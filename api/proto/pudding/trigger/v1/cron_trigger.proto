@@ -6,13 +6,13 @@ import "google/api/annotations.proto";
 import "google/protobuf/empty.proto";
 
 
-import "pudding/types/v1/response.proto";
+import "pudding/types/v1/response.proto" ;
 import "pudding/trigger/v1/types.proto";
 
 // The Pudding service definition.
 service CronTriggerService {
   // Sends a Ping
-  rpc Ping (google.protobuf.Empty) returns (response.PingResponse) {
+  rpc Ping (google.protobuf.Empty) returns (types.v1.PingResponse) {
     // option type is http
     option (google.api.http) = {
       get: "/pudding/trigger/v1/ping"
@@ -25,10 +25,10 @@ service CronTriggerService {
   rpc PageQuery (PageQueryRequest) returns (PageQueryResponse) {}
 
   // Register create a cron trigger
-  rpc Register (RegisterRequest) returns (response.Response) {}
+  rpc Register (RegisterRequest) returns (types.v1.Response) {}
 
   // UpdateStatus update cron trigger status
-  rpc UpdateStatus (UpdateStatusRequest) returns (response.Response) {}
+  rpc UpdateStatus (UpdateStatusRequest) returns (types.v1.Response) {}
 
 }
 
@@ -41,7 +41,7 @@ message FindOneByIDRequest {
 message FindOneByIDResponse {
   int32 code = 1;
   string message = 2;
-  types.TriggerTemplate body = 3;
+  TriggerTemplate body = 3;
 }
 
 // The UpdateStatus request message.
@@ -54,7 +54,7 @@ message PageQueryResponse {
   int32 code = 1;
   string message = 2;
   uint32 total = 3;
-  repeated types.TriggerTemplate body = 4;
+  repeated TriggerTemplate body = 4;
 }
 
 
@@ -69,7 +69,7 @@ message UpdateStatusRequest {
   // CronTrigger ID
   uint64 id = 1;
   // CronTrigger status
-  types.TriggerStatus status = 2;
+   TriggerStatus status = 2;
 }
 
 
