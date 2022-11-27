@@ -27,9 +27,9 @@ type CronTriggerServiceClient interface {
 	// PageQuery page query cron trigger
 	PageQuery(ctx context.Context, in *PageQueryRequest, opts ...grpc.CallOption) (*PageQueryResponse, error)
 	// Register create a cron trigger
-	Register(ctx context.Context, in *RegisterRequest, opts ...grpc.CallOption) (*v1.Response, error)
+	Register(ctx context.Context, in *RegisterRequest, opts ...grpc.CallOption) (*emptypb.Empty, error)
 	// UpdateStatus update cron trigger status
-	UpdateStatus(ctx context.Context, in *UpdateStatusRequest, opts ...grpc.CallOption) (*v1.Response, error)
+	UpdateStatus(ctx context.Context, in *UpdateStatusRequest, opts ...grpc.CallOption) (*UpdateStatusResponse, error)
 }
 
 type cronTriggerServiceClient struct {
@@ -67,8 +67,8 @@ func (c *cronTriggerServiceClient) PageQuery(ctx context.Context, in *PageQueryR
 	return out, nil
 }
 
-func (c *cronTriggerServiceClient) Register(ctx context.Context, in *RegisterRequest, opts ...grpc.CallOption) (*v1.Response, error) {
-	out := new(v1.Response)
+func (c *cronTriggerServiceClient) Register(ctx context.Context, in *RegisterRequest, opts ...grpc.CallOption) (*emptypb.Empty, error) {
+	out := new(emptypb.Empty)
 	err := c.cc.Invoke(ctx, "/pudding.trigger.v1.CronTriggerService/Register", in, out, opts...)
 	if err != nil {
 		return nil, err
@@ -76,8 +76,8 @@ func (c *cronTriggerServiceClient) Register(ctx context.Context, in *RegisterReq
 	return out, nil
 }
 
-func (c *cronTriggerServiceClient) UpdateStatus(ctx context.Context, in *UpdateStatusRequest, opts ...grpc.CallOption) (*v1.Response, error) {
-	out := new(v1.Response)
+func (c *cronTriggerServiceClient) UpdateStatus(ctx context.Context, in *UpdateStatusRequest, opts ...grpc.CallOption) (*UpdateStatusResponse, error) {
+	out := new(UpdateStatusResponse)
 	err := c.cc.Invoke(ctx, "/pudding.trigger.v1.CronTriggerService/UpdateStatus", in, out, opts...)
 	if err != nil {
 		return nil, err
@@ -96,9 +96,9 @@ type CronTriggerServiceServer interface {
 	// PageQuery page query cron trigger
 	PageQuery(context.Context, *PageQueryRequest) (*PageQueryResponse, error)
 	// Register create a cron trigger
-	Register(context.Context, *RegisterRequest) (*v1.Response, error)
+	Register(context.Context, *RegisterRequest) (*emptypb.Empty, error)
 	// UpdateStatus update cron trigger status
-	UpdateStatus(context.Context, *UpdateStatusRequest) (*v1.Response, error)
+	UpdateStatus(context.Context, *UpdateStatusRequest) (*UpdateStatusResponse, error)
 	mustEmbedUnimplementedCronTriggerServiceServer()
 }
 
@@ -115,10 +115,10 @@ func (UnimplementedCronTriggerServiceServer) FindOneByID(context.Context, *FindO
 func (UnimplementedCronTriggerServiceServer) PageQuery(context.Context, *PageQueryRequest) (*PageQueryResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method PageQuery not implemented")
 }
-func (UnimplementedCronTriggerServiceServer) Register(context.Context, *RegisterRequest) (*v1.Response, error) {
+func (UnimplementedCronTriggerServiceServer) Register(context.Context, *RegisterRequest) (*emptypb.Empty, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method Register not implemented")
 }
-func (UnimplementedCronTriggerServiceServer) UpdateStatus(context.Context, *UpdateStatusRequest) (*v1.Response, error) {
+func (UnimplementedCronTriggerServiceServer) UpdateStatus(context.Context, *UpdateStatusRequest) (*UpdateStatusResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method UpdateStatus not implemented")
 }
 func (UnimplementedCronTriggerServiceServer) mustEmbedUnimplementedCronTriggerServiceServer() {}

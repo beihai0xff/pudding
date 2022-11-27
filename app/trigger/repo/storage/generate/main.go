@@ -18,7 +18,7 @@ type CronTemplateDAO interface {
 	//    {{if status > 0}} status=@status, {{end}}
 	//  {{end}}
 	// WHERE id=@id
-	UpdateStatus(ctx context.Context, id uint, status pb.TriggerStatus) error
+	UpdateStatus(ctx context.Context, id uint, status pb.TriggerStatus) (gen.RowsAffected, error)
 }
 
 func main() {

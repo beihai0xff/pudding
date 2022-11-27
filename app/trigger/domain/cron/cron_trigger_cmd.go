@@ -96,14 +96,15 @@ func (t *Trigger) checkRegisterParams(temp *entity.CronTriggerTemplate) error {
 }
 
 // UpdateStatus update cron template status
-func (t *Trigger) UpdateStatus(ctx context.Context, id uint, status pb.TriggerStatus) error {
+func (t *Trigger) UpdateStatus(ctx context.Context, id uint, status pb.TriggerStatus) (int64, error) {
 	// 1. set template status
 
 	// 2. update the template status to db
-	if err := t.repo.UpdateStatus(ctx, id, status); err != nil {
+	rowsAffected, err := t.repo.UpdateStatus(ctx, id, status)
+	if err != nil {
 		log.Errorf("failed to update cron template, caused by %w", err)
-		return err
+		return 0, err
 	}
 
-	return nil
+	return rowsAffected, nil
 }
