@@ -23,7 +23,7 @@ type SchedulerServiceClient interface {
 	// Sends a Ping
 	Ping(ctx context.Context, in *emptypb.Empty, opts ...grpc.CallOption) (*v1.PingResponse, error)
 	// Sends a Delay Message
-	SendDelayMessage(ctx context.Context, in *SendDelayMessageRequest, opts ...grpc.CallOption) (*v1.Response, error)
+	SendDelayMessage(ctx context.Context, in *SendDelayMessageRequest, opts ...grpc.CallOption) (*emptypb.Empty, error)
 }
 
 type schedulerServiceClient struct {
@@ -43,8 +43,8 @@ func (c *schedulerServiceClient) Ping(ctx context.Context, in *emptypb.Empty, op
 	return out, nil
 }
 
-func (c *schedulerServiceClient) SendDelayMessage(ctx context.Context, in *SendDelayMessageRequest, opts ...grpc.CallOption) (*v1.Response, error) {
-	out := new(v1.Response)
+func (c *schedulerServiceClient) SendDelayMessage(ctx context.Context, in *SendDelayMessageRequest, opts ...grpc.CallOption) (*emptypb.Empty, error) {
+	out := new(emptypb.Empty)
 	err := c.cc.Invoke(ctx, "/pudding.scheduler.v1.SchedulerService/SendDelayMessage", in, out, opts...)
 	if err != nil {
 		return nil, err
@@ -59,7 +59,7 @@ type SchedulerServiceServer interface {
 	// Sends a Ping
 	Ping(context.Context, *emptypb.Empty) (*v1.PingResponse, error)
 	// Sends a Delay Message
-	SendDelayMessage(context.Context, *SendDelayMessageRequest) (*v1.Response, error)
+	SendDelayMessage(context.Context, *SendDelayMessageRequest) (*emptypb.Empty, error)
 	mustEmbedUnimplementedSchedulerServiceServer()
 }
 
@@ -70,7 +70,7 @@ type UnimplementedSchedulerServiceServer struct {
 func (UnimplementedSchedulerServiceServer) Ping(context.Context, *emptypb.Empty) (*v1.PingResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method Ping not implemented")
 }
-func (UnimplementedSchedulerServiceServer) SendDelayMessage(context.Context, *SendDelayMessageRequest) (*v1.Response, error) {
+func (UnimplementedSchedulerServiceServer) SendDelayMessage(context.Context, *SendDelayMessageRequest) (*emptypb.Empty, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method SendDelayMessage not implemented")
 }
 func (UnimplementedSchedulerServiceServer) mustEmbedUnimplementedSchedulerServiceServer() {}

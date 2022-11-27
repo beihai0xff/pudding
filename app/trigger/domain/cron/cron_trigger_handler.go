@@ -2,6 +2,7 @@ package cron
 
 import (
 	"context"
+	"fmt"
 	"strconv"
 
 	"google.golang.org/genproto/googleapis/rpc/errdetails"
@@ -34,9 +35,9 @@ func (h *Handler) Ping(context.Context, *emptypb.Empty) (*types.PingResponse, er
 
 func (h *Handler) FindOneByID(ctx context.Context, req *pb.FindOneByIDRequest) (*pb.FindOneByIDResponse, error) {
 	if req.Id <= 0 {
-		return nil, errno.BadRequest("Bad Request", &errdetails.BadRequest_FieldViolation{
+		return nil, errno.BadRequest("Invalid ID", &errdetails.BadRequest_FieldViolation{
 			Field:       "ID",
-			Description: "ID can not be less than zero",
+			Description: fmt.Sprintf("ID [%d] should be greater than zero", req.Id),
 		})
 	}
 	e, err := h.t.FindByID(ctx, uint(req.Id))
@@ -71,7 +72,6 @@ func (h *Handler) PageQuery(ctx context.Context, req *pb.PageQueryRequest) (*pb.
 
 func (h *Handler) Register(ctx context.Context, req *pb.RegisterRequest) (*emptypb.Empty, error) {
 	e := &entity.CronTriggerTemplate{
-		ID:       0,
 		CronExpr: req.CronExpr,
 		Topic:    req.Topic,
 		Payload:  req.Payload,
@@ -89,15 +89,15 @@ func (h *Handler) Register(ctx context.Context, req *pb.RegisterRequest) (*empty
 func (h *Handler) UpdateStatus(ctx context.Context, req *pb.UpdateStatusRequest) (*pb.UpdateStatusResponse, error) {
 	// check params
 	if req.Id <= 0 {
-		return nil, errno.BadRequest("Bad Request", &errdetails.BadRequest_FieldViolation{
+		return nil, errno.BadRequest("Invalid ID", &errdetails.BadRequest_FieldViolation{
 			Field:       "ID",
-			Description: "ID must be great than zero",
+			Description: fmt.Sprintf("ID [%d] should be greater than zero", req.Id),
 		})
 	}
 	if req.Status > pb.TriggerStatus_MAX_AGE || req.Status <= pb.TriggerStatus_UNKNOWN_UNSPECIFIED {
-		return nil, errno.BadRequest("Bad Request", &errdetails.BadRequest_FieldViolation{
+		return nil, errno.BadRequest("Invalid status code", &errdetails.BadRequest_FieldViolation{
 			Field:       "status",
-			Description: "Invalid status code, please use proto define status code",
+			Description: fmt.Sprintf("Invalid status code [%d], please use proto define status code", req.Status),
 		})
 	}
 
