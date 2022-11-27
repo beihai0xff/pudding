@@ -143,7 +143,7 @@ func (c cronTriggerTemplate) replaceDB(db *gorm.DB) cronTriggerTemplate {
 
 type cronTriggerTemplateDo struct{ gen.DO }
 
-//SELECT * FROM @@table WHERE id=@id
+// SELECT * FROM @@table WHERE id=@id
 func (c cronTriggerTemplateDo) FindByID(id uint) (result *po.CronTriggerTemplate, err error) {
 	var params []interface{}
 
@@ -158,12 +158,14 @@ func (c cronTriggerTemplateDo) FindByID(id uint) (result *po.CronTriggerTemplate
 	return
 }
 
-//UPDATE @@table
+// UPDATE @@table
 // {{set}}
-//   {{if status > 0}} status=@status, {{end}}
+//
+//	{{if status > 0}} status=@status, {{end}}
+//
 // {{end}}
-//WHERE id=@id
-func (c cronTriggerTemplateDo) UpdateStatus(ctx context.Context, id uint, status pb.TriggerStatus) (err error) {
+// WHERE id=@id
+func (c cronTriggerTemplateDo) UpdateStatus(ctx context.Context, id uint, status pb.TriggerStatus) (rowsAffected int64, err error) {
 	var params []interface{}
 
 	var generateSQL strings.Builder
@@ -180,6 +182,7 @@ func (c cronTriggerTemplateDo) UpdateStatus(ctx context.Context, id uint, status
 	var executeSQL *gorm.DB
 
 	executeSQL = c.UnderlyingDB().Exec(generateSQL.String(), params...)
+	rowsAffected = executeSQL.RowsAffected
 	err = executeSQL.Error
 	return
 }

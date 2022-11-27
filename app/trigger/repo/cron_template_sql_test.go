@@ -88,7 +88,7 @@ func TestCronTemplate_Update(t *testing.T) {
 		ID:     e.ID,
 		Status: pb.TriggerStatus_ENABLED,
 	}
-	err := testCronTemplate.UpdateStatus(ctx, update.ID, update.Status)
+	_, err := testCronTemplate.UpdateStatus(ctx, update.ID, update.Status)
 	if assert.NoError(t, err) {
 		res, _ := testCronTemplate.FindByID(ctx, e.ID)
 		assert.Equal(t, res.Status, pb.TriggerStatus_ENABLED)
@@ -98,7 +98,7 @@ func TestCronTemplate_Update(t *testing.T) {
 
 	// test set status to disable
 	e.Status, update.Status = pb.TriggerStatus_DISABLED, pb.TriggerStatus_DISABLED
-	err = testCronTemplate.UpdateStatus(ctx, update.ID, update.Status)
+	_, err = testCronTemplate.UpdateStatus(ctx, update.ID, update.Status)
 	if assert.NoError(t, err) {
 		res, _ := testCronTemplate.FindByID(ctx, e.ID)
 		assert.Equal(t, res.Status, pb.TriggerStatus_DISABLED)
@@ -110,7 +110,7 @@ func TestCronTemplate_Update(t *testing.T) {
 		ID:     e.ID * 100,
 		Status: pb.TriggerStatus_DISABLED,
 	}
-	err = testCronTemplate.UpdateStatus(ctx, update.ID, update.Status)
+	_, err = testCronTemplate.UpdateStatus(ctx, update.ID, update.Status)
 	assert.NoError(t, err)
 
 }

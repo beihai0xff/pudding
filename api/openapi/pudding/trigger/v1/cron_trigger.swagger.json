@@ -71,13 +71,6 @@
     "v1FindOneByIDResponse": {
       "type": "object",
       "properties": {
-        "code": {
-          "type": "integer",
-          "format": "int32"
-        },
-        "message": {
-          "type": "string"
-        },
         "body": {
           "$ref": "#/definitions/v1TriggerTemplate"
         }
@@ -86,16 +79,9 @@
     "v1PageQueryResponse": {
       "type": "object",
       "properties": {
-        "code": {
-          "type": "integer",
-          "format": "int32"
-        },
-        "message": {
-          "type": "string"
-        },
-        "total": {
-          "type": "integer",
-          "format": "int64"
+        "count": {
+          "type": "string",
+          "format": "uint64"
         },
         "body": {
           "type": "array",
@@ -113,18 +99,6 @@
         }
       },
       "title": "The Ping response message"
-    },
-    "v1Response": {
-      "type": "object",
-      "properties": {
-        "code": {
-          "type": "integer",
-          "format": "int32"
-        },
-        "message": {
-          "type": "string"
-        }
-      }
     },
     "v1TriggerStatus": {
       "type": "string",
@@ -173,6 +147,15 @@
         }
       },
       "title": "TriggerTemplate defines the cron trigger template"
+    },
+    "v1UpdateStatusResponse": {
+      "type": "object",
+      "properties": {
+        "rowsAffected": {
+          "type": "string",
+          "format": "int64"
+        }
+      }
     }
   }
 }

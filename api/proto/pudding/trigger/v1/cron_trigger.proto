@@ -25,10 +25,10 @@ service CronTriggerService {
   rpc PageQuery (PageQueryRequest) returns (PageQueryResponse) {}
 
   // Register create a cron trigger
-  rpc Register (RegisterRequest) returns (types.v1.Response) {}
+  rpc Register (RegisterRequest) returns (google.protobuf.Empty) {}
 
   // UpdateStatus update cron trigger status
-  rpc UpdateStatus (UpdateStatusRequest) returns (types.v1.Response) {}
+  rpc UpdateStatus (UpdateStatusRequest) returns (UpdateStatusResponse) {}
 
 }
 
@@ -39,8 +39,6 @@ message FindOneByIDRequest {
 }
 
 message FindOneByIDResponse {
-  int32 code = 1;
-  string message = 2;
   TriggerTemplate body = 3;
 }
 
@@ -51,10 +49,8 @@ message PageQueryRequest {
 }
 
 message PageQueryResponse {
-  int32 code = 1;
-  string message = 2;
-  uint32 total = 3;
-  repeated TriggerTemplate body = 4;
+  uint64 count = 1;
+  repeated TriggerTemplate body = 2;
 }
 
 
@@ -70,6 +66,10 @@ message UpdateStatusRequest {
   uint64 id = 1;
   // CronTrigger status
    TriggerStatus status = 2;
+}
+
+message UpdateStatusResponse {
+  int64 rows_affected = 1;
 }
 
 

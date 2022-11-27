@@ -33,7 +33,7 @@ type CronTemplateDAO interface {
 	// Insert insert a cron template
 	Insert(ctx context.Context, e *entity.CronTriggerTemplate) error
 	// UpdateStatus update the status of a cron template
-	UpdateStatus(ctx context.Context, id uint, status pb.TriggerStatus) error
+	UpdateStatus(ctx context.Context, id uint, status pb.TriggerStatus) (int64, error)
 	// BatchHandleRecords batch handle the records which need to be executed
 	BatchHandleRecords(ctx context.Context, t time.Time, batchSize int, f CronTempHandler) error
 }
@@ -93,7 +93,7 @@ func (dao *CronTemplate) Insert(ctx context.Context, e *entity.CronTriggerTempla
 	return nil
 }
 
-func (dao *CronTemplate) UpdateStatus(ctx context.Context, id uint, status pb.TriggerStatus) error {
+func (dao *CronTemplate) UpdateStatus(ctx context.Context, id uint, status pb.TriggerStatus) (int64, error) {
 	return sql.CronTriggerTemplate.WithContext(ctx).UpdateStatus(ctx, id, status)
 }
 

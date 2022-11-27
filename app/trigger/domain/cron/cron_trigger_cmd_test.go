@@ -176,7 +176,8 @@ func TestTrigger_UpdateStatus(t1 *testing.T) {
 	}
 	for _, tt := range tests {
 		t1.Run(tt.name, func(t1 *testing.T) {
-			tt.wantErr(t1, testTrigger.UpdateStatus(tt.args.ctx, tt.args.id, tt.args.status), fmt.Sprintf("UpdateStatus(%+v, %+v, %+v)", tt.args.ctx, tt.args.id, tt.args.status))
+			_, err := testTrigger.UpdateStatus(tt.args.ctx, tt.args.id, tt.args.status)
+			tt.wantErr(t1, err, fmt.Sprintf("UpdateStatus(%+v, %+v, %+v)", tt.args.ctx, tt.args.id, tt.args.status))
 			e, _ := testTrigger.repo.FindByID(ctx, tt.args.id)
 			assert.Equalf(t1, tt.args.status, e.Status, fmt.Sprintf("get UpdateStatus(%+v)", e))
 		})
