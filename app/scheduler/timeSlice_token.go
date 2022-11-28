@@ -26,7 +26,7 @@ const (
 */
 
 // try to produce token to bucket
-func (s *Schedule) tryProduceToken() {
+func (s *scheduler) tryProduceToken() {
 	log.Infof("start produce token")
 
 	now := s.wallClock.Now()
@@ -75,7 +75,7 @@ func (s *Schedule) tryProduceToken() {
 }
 
 // try to consume token and send to token channel
-func (s *Schedule) getToken() {
+func (s *scheduler) getToken() {
 	log.Infof("start consume token")
 	if err := s.connector.NewConsumer(types.TokenTopic, types.TokenGroup, 1,
 		func(ctx context.Context, msg *types.Message) error {
@@ -94,17 +94,17 @@ func (s *Schedule) getToken() {
 
 }
 
-func (s *Schedule) formatTokenName(time int64) string {
+func (s *scheduler) formatTokenName(time int64) string {
 	return fmt.Sprintf(prefixToken+"%d", time)
 }
 
-func (s *Schedule) formatTokenLockerName(time int64) string {
+func (s *scheduler) formatTokenLockerName(time int64) string {
 	return fmt.Sprintf(prefixTokenLocker+"%d", time)
 }
 
 // parseNowFromToken parse token from token name
 // if return value is -1, means parse failed
-func (s *Schedule) parseNowFromToken(token string) int64 {
+func (s *scheduler) parseNowFromToken(token string) int64 {
 	if strings.HasPrefix(token, prefixToken) {
 		t, err := strconv.ParseInt(token[len(prefixToken):], 10, 64)
 		if err != nil {

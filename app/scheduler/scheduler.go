@@ -41,7 +41,7 @@ type Scheduler interface {
 	NewConsumer(topic, group string, batchSize int, fn types.HandleMessage) error
 }
 
-type Schedule struct {
+type scheduler struct {
 	delay     broker.DelayBroker
 	connector connector.RealTimeConnector
 	// wallClock wall wallClock time
@@ -62,8 +62,8 @@ func NewQueue(config *configs.SchedulerConfig) (broker.DelayBroker, connector.Re
 	return broker.NewDelayBroker(config.Broker), connector.NewConnector(config.Connector)
 }
 
-func New(config *configs.SchedulerConfig, delay broker.DelayBroker, realtime connector.RealTimeConnector) *Schedule {
-	q := &Schedule{
+func New(config *configs.SchedulerConfig, delay broker.DelayBroker, realtime connector.RealTimeConnector) *scheduler {
+	q := &scheduler{
 		delay:        delay,
 		connector:    realtime,
 		wallClock:    clock.New(),
@@ -76,21 +76,21 @@ func New(config *configs.SchedulerConfig, delay broker.DelayBroker, realtime con
 	return q
 }
 
-func (s *Schedule) Run() {
+func (s *scheduler) Run() {
 	go s.tryProduceToken()
 	s.getToken()
 	if err := s.startSchedule(); err != nil {
-		log.Errorf("start Schedule failed: %v", err)
+		log.Errorf("start scheduler failed: %v", err)
 		panic(err)
 	}
 }
 
 /*
-	Produce or Consume DeliverAfter Schedule
+	Produce or Consume DeliverAfter scheduler
 */
 
 // Produce produce a Message to the delay queue
-func (s *Schedule) Produce(ctx context.Context, msg *types.Message) error {
+func (s *scheduler) Produce(ctx context.Context, msg *types.Message) error {
 	var err error
 
 	if err = s.checkParams(msg); err != nil {
@@ -110,7 +110,7 @@ func (s *Schedule) Produce(ctx context.Context, msg *types.Message) error {
 }
 
 // checkParams check the Produced message params
-func (s *Schedule) checkParams(msg *types.Message) error {
+func (s *scheduler) checkParams(msg *types.Message) error {
 	// if Message.DeliverAt is set, use DeliverAt
 	// otherwise use current time + DeliverAfter Seconds
 	if msg.DeliverAt <= 0 {
@@ -138,7 +138,7 @@ func (s *Schedule) checkParams(msg *types.Message) error {
 
 // startSchedule start a scheduler to consume DelayBroker
 // and move delayed messages to RealTimeConnector
-func (s *Schedule) startSchedule() error {
+func (s *scheduler) startSchedule() error {
 	log.Infof("start Scheduler")
 
 	for {
@@ -172,16 +172,16 @@ func (s *Schedule) startSchedule() error {
 
 }
 
-func (s *Schedule) getLockerName(t int64) string {
+func (s *scheduler) getLockerName(t int64) string {
 	return fmt.Sprintf(prefixTimeLocker, t)
 }
 
 /*
-	Produce or Consume RealTime Schedule
+	Produce or Consume RealTime scheduler
 */
 
 // produceRealTime produce a Message to the queue in connector
-func (s *Schedule) produceRealTime(ctx context.Context, msg *types.Message) error {
+func (s *scheduler) produceRealTime(ctx context.Context, msg *types.Message) error {
 	var err error
 	for i := 0; i < 3; i++ {
 		if err = s.connector.Produce(ctx, msg); err != nil {
@@ -194,11 +194,11 @@ func (s *Schedule) produceRealTime(ctx context.Context, msg *types.Message) erro
 	return err
 }
 
-func (s *Schedule) NewConsumer(topic, group string, batchSize int, fn types.HandleMessage) error {
+func (s *scheduler) NewConsumer(topic, group string, batchSize int, fn types.HandleMessage) error {
 	return s.connector.NewConsumer(topic, group, batchSize, fn)
 }
 
-func (s *Schedule) Close() error {
+func (s *scheduler) Close() error {
 	close(s.quit)
 	return s.connector.Close()
 }
