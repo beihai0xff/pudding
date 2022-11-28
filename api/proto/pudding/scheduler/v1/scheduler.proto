@@ -19,7 +19,7 @@ service SchedulerService {
   }
 
   // Sends a Delay Message
-  rpc SendDelayMessage (SendDelayMessageRequest) returns (types.v1.Response) {
+  rpc SendDelayMessage (SendDelayMessageRequest) returns (google.protobuf.Empty) {
     option (google.api.http) = {
       post: "/pudding/scheduler/v1/sendDelayMessage"
       body: "*"

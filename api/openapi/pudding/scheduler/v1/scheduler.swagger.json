@@ -48,7 +48,8 @@
           "200": {
             "description": "A successful response.",
             "schema": {
-              "$ref": "#/definitions/v1Response"
+              "type": "object",
+              "properties": {}
             }
           },
           "default": {
@@ -111,18 +112,6 @@
         }
       },
       "title": "The Ping response message"
-    },
-    "v1Response": {
-      "type": "object",
-      "properties": {
-        "code": {
-          "type": "integer",
-          "format": "int32"
-        },
-        "message": {
-          "type": "string"
-        }
-      }
     },
     "v1SendDelayMessageRequest": {
       "type": "object",
