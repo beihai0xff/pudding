@@ -17,11 +17,11 @@ import (
 	"github.com/beihai0xff/pudding/types"
 )
 
-var s *Schedule
+var s *scheduler
 
 func TestMain(m *testing.M) {
 
-	s = &Schedule{
+	s = &scheduler{
 		delay:        redis_broker.NewDelayQueue(rdb.NewMockRdb(), 60),
 		messageTopic: types.DefaultTopic,
 		tokenTopic:   types.TokenTopic,
