@@ -7,8 +7,9 @@ require (
 	github.com/apache/pulsar-client-go v0.9.0
 	github.com/bsm/redislock v0.8.2
 	github.com/go-playground/validator/v10 v10.11.1
-	github.com/go-redis/redis/v9 v9.0.0-rc.1
+	github.com/go-redis/redis/v9 v9.0.0-rc.2
 	github.com/golang/mock v1.6.0
+	github.com/golang/protobuf v1.5.2
 	github.com/golangci/golangci-lint v1.42.1
 	github.com/google/uuid v1.3.0
 	github.com/grpc-ecosystem/go-grpc-middleware v1.3.0
@@ -83,7 +84,6 @@ require (
 	github.com/gogo/protobuf v1.3.2 // indirect
 	github.com/golang-jwt/jwt v3.2.1+incompatible // indirect
 	github.com/golang/glog v1.0.0 // indirect
-	github.com/golang/protobuf v1.5.2 // indirect
 	github.com/golang/snappy v0.0.1 // indirect
 	github.com/golangci/check v0.0.0-20180506172741-cfe4005ccda2 // indirect
 	github.com/golangci/dupl v0.0.0-20180902072040-3e9179ac440a // indirect
