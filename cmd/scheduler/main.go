@@ -72,7 +72,7 @@ func main() {
 	sign := <-interrupt
 	log.Warn("received shutdown signal ", sign.String())
 
-	resolver.Deregister(serviceID)
+	_ = resolver.Deregister(serviceID)
 	gracefulShutdown(grpcServer, healthcheck, httpServer)
 }
 
