@@ -1,4 +1,5 @@
 name: pudding
+consul_url:
 scheduler_config:
   broker: redis
   connector: pulsar

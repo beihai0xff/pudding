@@ -21,7 +21,11 @@ import (
 	"github.com/beihai0xff/pudding/pkg/log"
 	"github.com/beihai0xff/pudding/pkg/log/logger"
 	"github.com/beihai0xff/pudding/pkg/redis"
+	"github.com/beihai0xff/pudding/pkg/resolver"
+	"github.com/beihai0xff/pudding/pkg/utils"
 )
+
+const serviceName = "pudding.scheduler"
 
 var (
 	grpcPort = flag.Int("grpcPort", 50051, "The grpc server grpcPort")
@@ -55,10 +59,20 @@ func main() {
 	grpcServer, healthcheck := startGrpcService(grpcLis)
 	httpServer := startHTTPService(grpcLis, httpLis)
 
+	// register service to consul
+	resolver, err := resolver.NewConsulResolver(configs.GetConsulURL())
+	if err != nil {
+		log.Fatalf("failed to create resolver: %w", err)
+	}
+	serviceID, err := resolver.Register(serviceName, utils.GetOutBoundIP(), *grpcPort)
+	if err != nil {
+		log.Fatalf("failed to register service: %w", err)
+	}
 	// block until a signal is received.
 	sign := <-interrupt
 	log.Warn("received shutdown signal ", sign.String())
 
+	resolver.Deregister(serviceID)
 	gracefulShutdown(grpcServer, healthcheck, httpServer)
 }
 
