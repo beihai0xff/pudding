@@ -24,9 +24,9 @@ func NewConsulResolver(addr string) (Resolver, error) {
 
 // Register register gRPC service to consul
 func (c *consulResolver) Register(serviceName string, ip string, port int) (string, error) {
-	// 健康检查
+	// health check
 	check := &api.AgentServiceCheck{
-		GRPC:     fmt.Sprintf("%s:%d", ip, port), // 这里一定是外部可以访问的地址
+		GRPC:     fmt.Sprintf("%s:%d", ip, port),
 		Timeout:  "10s",
 		Interval: "10s",
 		// 指定时间后自动注销不健康的服务节点

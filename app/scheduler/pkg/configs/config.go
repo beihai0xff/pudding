@@ -15,6 +15,7 @@ var c = &Config{
 		ConnectionTimeout: 10,
 		ProducersConfig:   nil,
 	},
+	ConsulURL: "",
 }
 
 // Config is the config for scheduler module.
@@ -26,7 +27,8 @@ type Config struct {
 	Pulsar *conf.PulsarConfig `json:"pulsar_config" yaml:"pulsar_config" mapstructure:"pulsar_config"`
 
 	// Logger log config for output config message, do not use it
-	Logger map[string]*conf.LogConfig `json:"log_config" yaml:"log_config" mapstructure:"log_config"`
+	Logger    map[string]*conf.LogConfig `json:"log_config" yaml:"log_config" mapstructure:"log_config"`
+	ConsulURL string                     `json:"consul_url" yaml:"consul_url" mapstructure:"consul_url"`
 }
 
 // GetRedisConfig returns the redis config.
@@ -42,4 +44,9 @@ func GetPulsarConfig() *conf.PulsarConfig {
 // GetSchedulerConfig returns the scheduler config.
 func GetSchedulerConfig() *conf.SchedulerConfig {
 	return c.Scheduler
+}
+
+// GetConsulURL returns the consul url.
+func GetConsulURL() string {
+	return c.ConsulURL
 }
