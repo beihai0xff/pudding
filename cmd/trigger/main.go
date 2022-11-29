@@ -8,34 +8,30 @@ import (
 	"syscall"
 	"time"
 
-	"github.com/beihai0xff/pudding/app/scheduler/pkg/configs"
-	"github.com/beihai0xff/pudding/pkg/lock"
+	"github.com/beihai0xff/pudding/app/trigger/pkg/configs"
 	"github.com/beihai0xff/pudding/pkg/log"
 	"github.com/beihai0xff/pudding/pkg/log/logger"
-	"github.com/beihai0xff/pudding/pkg/redis"
 	"github.com/beihai0xff/pudding/pkg/resolver"
 	"github.com/beihai0xff/pudding/pkg/shutdown"
 	"github.com/beihai0xff/pudding/pkg/utils"
 )
 
-const serviceName = "pudding.scheduler"
+const serviceName = "pudding.trigger"
 
 var (
-	grpcPort = flag.Int("grpcPort", 50051, "The grpc server grpcPort")
-	httpPort = flag.Int("httpPort", 8081, "The http server grpcPort")
+	grpcPort = flag.Int("grpcPort", 50051, "The grpc server port")
+	httpPort = flag.Int("httpPort", 8081, "The http server port")
 
-	confPath  = flag.String("config", "./config.yaml", "The server config file path")
-	redisURL  = flag.String("redis", "", "The server redis url")
-	pulsarURL = flag.String("pulsar", "", "The server pulsar url")
+	confPath = flag.String("config", "./config.yaml", "The server config file path")
+	mysqlDSN = flag.String("mysql", "", "The server mysql dsn")
 )
 
 func main() {
 	flag.Parse()
 
-	configs.Init(*confPath, configs.WithRedisURL(*redisURL), configs.WithPulsarURL(*pulsarURL))
+	configs.Init(*confPath, configs.WithMySQLDSN(*mysqlDSN))
 	registerLogger()
 
-	// log.RegisterLogger("gorm_log", log.WithCallerSkip(3))
 	interrupt := make(chan os.Signal, 1)
 	signal.Notify(interrupt, syscall.SIGINT, syscall.SIGTERM)
 	defer signal.Stop(interrupt)
@@ -73,9 +69,6 @@ func serviceRegistration() (resolver.Resolver, string) {
 
 func registerLogger() {
 	log.RegisterLogger(log.DefaultLoggerName, log.WithCallerSkip(1))
-	log.RegisterLogger(logger.PulsarLoggerName, log.WithCallerSkip(1))
-	log.RegisterLogger(logger.GRPCLoggerName, log.WithCallerSkip(1))
+	log.RegisterLogger("gorm_log", log.WithCallerSkip(3))
 	logger.GetGRPCLogger()
-	rdb := redis.New(configs.GetRedisConfig())
-	lock.Init(rdb)
 }
