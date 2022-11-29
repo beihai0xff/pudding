@@ -1,8 +1,10 @@
 package utils
 
 import (
+	"math/rand"
 	"net"
 	"strings"
+	"time"
 
 	"github.com/beihai0xff/pudding/pkg/log"
 )
@@ -14,4 +16,9 @@ func GetOutBoundIP() string {
 	}
 	localAddr := conn.LocalAddr().(*net.UDPAddr)
 	return strings.Split(localAddr.String(), ":")[0]
+}
+
+func GetRand(start, end int) int {
+	rand.Seed(time.Now().UnixNano())
+	return rand.Intn(end-start) + start
 }
