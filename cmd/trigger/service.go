@@ -18,9 +18,10 @@ import (
 	"google.golang.org/grpc/keepalive"
 	"google.golang.org/grpc/reflection"
 
-	pb "github.com/beihai0xff/pudding/api/gen/pudding/scheduler/v1"
-	"github.com/beihai0xff/pudding/app/scheduler"
-	"github.com/beihai0xff/pudding/app/scheduler/pkg/configs"
+	pb "github.com/beihai0xff/pudding/api/gen/pudding/trigger/v1"
+	"github.com/beihai0xff/pudding/app/trigger/domain/cron"
+	"github.com/beihai0xff/pudding/app/trigger/pkg/configs"
+	"github.com/beihai0xff/pudding/pkg/db/mysql"
 	"github.com/beihai0xff/pudding/pkg/log"
 )
 
@@ -57,11 +58,10 @@ func startGrpcService(lis net.Listener) (*grpc.Server, *health.Server) {
 		)),
 	)
 
-	// register scheduler server
-	schedulerConfig := configs.GetSchedulerConfig()
-	delay, realtime := scheduler.NewQueue(schedulerConfig)
-	handler := scheduler.NewHandler(scheduler.New(schedulerConfig, delay, realtime))
-	pb.RegisterSchedulerServiceServer(server, handler)
+	// register Trigger server
+	db := mysql.New(configs.GetMySQLConfig())
+	handler := cron.NewHandler(cron.NewTrigger(db, nil))
+	pb.RegisterCronTriggerServiceServer(server, handler)
 	// register health check server
 	healthcheck := health.NewServer()
 	pbhealth.RegisterHealthServer(server, healthcheck)
@@ -70,7 +70,7 @@ func startGrpcService(lis net.Listener) (*grpc.Server, *health.Server) {
 
 	go func() {
 		// asynchronously inspect dependencies and toggle serving status as needed
-		healthcheck.SetServingStatus(pb.SchedulerService_ServiceDesc.ServiceName, pbhealth.HealthCheckResponse_SERVING)
+		healthcheck.SetServingStatus(pb.CronTriggerService_ServiceDesc.ServiceName, pbhealth.HealthCheckResponse_SERVING)
 		log.Infof("grpc server listening at %v", lis.Addr())
 		if err := server.Serve(lis); err != nil {
 			log.Fatalf("failed to start grpc serve: %v", err)
@@ -95,12 +95,12 @@ func startHTTPService(grpcLis, httpLis net.Listener) *http.Server {
 
 	// gRPC-Gateway httpServer
 	gwmux := runtime.NewServeMux()
-	err = pb.RegisterSchedulerServiceHandler(context.Background(), gwmux, conn)
+	err = pb.RegisterCronTriggerServiceHandler(context.Background(), gwmux, conn)
 	if err != nil {
 		log.Fatalf("Failed to register gateway: %w", err)
 	}
 
-	// 定义HTTP server配置
+	// HTTP server config
 	httpServer := &http.Server{
 		Handler: gwmux,
 	}
