@@ -98,6 +98,8 @@ func Fatalf(format string, args ...interface{}) {
 func Sync() {
 	for loggerName, logger := range loggers {
 		if err := logger.Sync(); err != nil {
+			// https://github.com/uber-go/zap/issues/1026
+			// Sync is not allowed on os.Stdout if it's being fed to a terminal.
 			if !errors.Is(err, syscall.ENOTTY) {
 				Errorf("sync logger [%s] error: %v", loggerName, err)
 			}
