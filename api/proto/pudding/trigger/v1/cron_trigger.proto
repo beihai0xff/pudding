@@ -20,15 +20,33 @@ service CronTriggerService {
   }
 
   // FindOneByID find cron trigger by id
-  rpc FindOneByID (FindOneByIDRequest) returns (FindOneByIDResponse) {}
+  rpc FindOneByID (FindOneByIDRequest) returns (FindOneByIDResponse) {
+    option (google.api.http) = {
+      get: "/pudding/trigger/v1/find_one/{id}"
+    };
+  }
   // PageQuery page query cron trigger
-  rpc PageQuery (PageQueryRequest) returns (PageQueryResponse) {}
+  rpc PageQuery (PageQueryRequest) returns (PageQueryResponse) {
+    option (google.api.http) = {
+      get: "/pudding/trigger/v1/page_query/{offset}/{limit}"
+    };
+  }
 
   // Register create a cron trigger
-  rpc Register (RegisterRequest) returns (google.protobuf.Empty) {}
+  rpc Register (RegisterRequest) returns (google.protobuf.Empty) {
+    option (google.api.http) = {
+      put: "/pudding/trigger/v1/register"
+      body: "*"
+    };
+  }
 
   // UpdateStatus update cron trigger status
-  rpc UpdateStatus (UpdateStatusRequest) returns (UpdateStatusResponse) {}
+  rpc UpdateStatus (UpdateStatusRequest) returns (UpdateStatusResponse) {
+    option (google.api.http) = {
+      post: "/pudding/trigger/v1/update_status"
+      body: "*"
+    };
+  }
 
 }
 

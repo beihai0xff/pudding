@@ -1,5 +1,10 @@
 package log
 
+import (
+	"errors"
+	"syscall"
+)
+
 type Logger interface {
 	// Debug logs to DEBUG log
 	Debug(args ...interface{})
@@ -93,7 +98,9 @@ func Fatalf(format string, args ...interface{}) {
 func Sync() {
 	for loggerName, logger := range loggers {
 		if err := logger.Sync(); err != nil {
-			Errorf("sync logger [%s] error: %v", loggerName, err)
+			if !errors.Is(err, syscall.ENOTTY) {
+				Errorf("sync logger [%s] error: %v", loggerName, err)
+			}
 		}
 	}
 }

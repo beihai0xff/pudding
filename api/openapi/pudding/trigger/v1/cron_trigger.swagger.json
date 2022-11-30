@@ -16,6 +16,78 @@
     "application/json"
   ],
   "paths": {
+    "/pudding/trigger/v1/find_one/{id}": {
+      "get": {
+        "summary": "FindOneByID find cron trigger by id",
+        "operationId": "CronTriggerService_FindOneByID",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v1FindOneByIDResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "id",
+            "description": "CronTrigger ID",
+            "in": "path",
+            "required": true,
+            "type": "string",
+            "format": "uint64"
+          }
+        ],
+        "tags": [
+          "CronTriggerService"
+        ]
+      }
+    },
+    "/pudding/trigger/v1/page_query/{offset}/{limit}": {
+      "get": {
+        "summary": "PageQuery page query cron trigger",
+        "operationId": "CronTriggerService_PageQuery",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v1PageQueryResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "offset",
+            "in": "path",
+            "required": true,
+            "type": "string",
+            "format": "uint64"
+          },
+          {
+            "name": "limit",
+            "in": "path",
+            "required": true,
+            "type": "string",
+            "format": "uint64"
+          }
+        ],
+        "tags": [
+          "CronTriggerService"
+        ]
+      }
+    },
     "/pudding/trigger/v1/ping": {
       "get": {
         "summary": "Sends a Ping",
@@ -34,6 +106,74 @@
             }
           }
         },
+        "tags": [
+          "CronTriggerService"
+        ]
+      }
+    },
+    "/pudding/trigger/v1/register": {
+      "put": {
+        "summary": "Register create a cron trigger",
+        "operationId": "CronTriggerService_Register",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "type": "object",
+              "properties": {}
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/v1RegisterRequest"
+            }
+          }
+        ],
+        "tags": [
+          "CronTriggerService"
+        ]
+      }
+    },
+    "/pudding/trigger/v1/update_status": {
+      "post": {
+        "summary": "UpdateStatus update cron trigger status",
+        "operationId": "CronTriggerService_UpdateStatus",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v1UpdateStatusResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "description": "UpdateStatus request message.",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/v1UpdateStatusRequest"
+            }
+          }
+        ],
         "tags": [
           "CronTriggerService"
         ]
@@ -100,6 +240,21 @@
       },
       "title": "The Ping response message"
     },
+    "v1RegisterRequest": {
+      "type": "object",
+      "properties": {
+        "cronExpr": {
+          "type": "string"
+        },
+        "topic": {
+          "type": "string"
+        },
+        "payload": {
+          "type": "string",
+          "format": "byte"
+        }
+      }
+    },
     "v1TriggerStatus": {
       "type": "string",
       "enum": [
@@ -147,6 +302,21 @@
         }
       },
       "title": "TriggerTemplate defines the cron trigger template"
+    },
+    "v1UpdateStatusRequest": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "format": "uint64",
+          "title": "CronTrigger ID"
+        },
+        "status": {
+          "$ref": "#/definitions/v1TriggerStatus",
+          "title": "CronTrigger status"
+        }
+      },
+      "description": "UpdateStatus request message."
     },
     "v1UpdateStatusResponse": {
       "type": "object",
