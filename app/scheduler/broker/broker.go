@@ -33,7 +33,7 @@ func NewDelayBroker(broker string) DelayBroker {
 		interval := configs.GetSchedulerConfig().TimeSliceInterval
 		t, err := time.ParseDuration(interval)
 		if err != nil {
-			log.Fatalf("failed to parse '%s' to time.Duration: %w", interval, err)
+			log.Fatalf("failed to parse '%s' to time.Duration: %v", interval, err)
 		}
 		log.Infof("timeSlice interval is: %d seconds", t.Seconds())
 		return redis_broker.NewDelayQueue(rdb.New(configs.GetRedisConfig()), int64(t.Seconds()))

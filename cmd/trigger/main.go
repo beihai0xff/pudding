@@ -58,11 +58,11 @@ func main() {
 func serviceRegistration() (resolver.Resolver, string) {
 	rsv, err := resolver.NewConsulResolver(configs.GetConsulURL())
 	if err != nil {
-		log.Fatalf("failed to create rsv: %w", err)
+		log.Fatalf("failed to create rsv: %v", err)
 	}
 	serviceID, err := rsv.Register(serviceName, utils.GetOutBoundIP(), *grpcPort)
 	if err != nil {
-		log.Fatalf("failed to register service: %w", err)
+		log.Fatalf("failed to register service: %v", err)
 	}
 	return rsv, serviceID
 }
