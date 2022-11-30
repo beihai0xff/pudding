@@ -65,7 +65,7 @@ func (t *Trigger) checkRegisterParams(temp *entity.CronTriggerTemplate) error {
 	// 1. check cron expression
 	if _, err := cronexpr.Parse(temp.CronExpr); err != nil {
 		log.Errorf("Invalid cron expression: %v", err)
-		return fmt.Errorf("invalid cron expression: %w", err)
+		return fmt.Errorf("invalid cron expression: %v", err)
 	}
 
 	// 2. check topic
