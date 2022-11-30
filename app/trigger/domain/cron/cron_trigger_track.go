@@ -71,7 +71,7 @@ func (t *Trigger) Run() {
 		ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 
 		if err := t.repo.BatchHandleRecords(ctx, now, 100, t.Tracking); err != nil {
-			log.Errorf("failed to find enable cron template, caused by %w", err)
+			log.Errorf("failed to find enable cron template, caused by %v", err)
 		}
 
 		cancel()

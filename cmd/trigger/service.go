@@ -91,14 +91,14 @@ func startHTTPService(grpcLis, httpLis net.Listener) *http.Server {
 		grpc.WithTransportCredentials(insecure.NewCredentials()),
 	)
 	if err != nil {
-		log.Fatalf("Failed to dial server: %w", err)
+		log.Fatalf("Failed to dial server: %v", err)
 	}
 
 	// gRPC-Gateway httpServer
 	gwmux := runtime.NewServeMux()
 	err = pb.RegisterCronTriggerServiceHandler(context.Background(), gwmux, conn)
 	if err != nil {
-		log.Fatalf("Failed to register gateway: %w", err)
+		log.Fatalf("Failed to register gateway: %v", err)
 	}
 
 	// HTTP server config
@@ -108,13 +108,13 @@ func startHTTPService(grpcLis, httpLis net.Listener) *http.Server {
 
 	go func() {
 		time.Sleep(3 * time.Second)
-		log.Infof("http server listening at %v", httpLis.Addr())
+		log.Infof("http server listening at %s", httpLis.Addr().String())
 		if err = httpServer.Serve(httpLis); err != nil {
 			if errors.Is(err, http.ErrServerClosed) {
 				log.Info(err.Error())
 				return
 			}
-			log.Fatalf("Failed to serve gRPC-Gateway: %s", err.Error())
+			log.Fatalf("Failed to serve gRPC-Gateway: %v", err)
 		}
 	}()
 

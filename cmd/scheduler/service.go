@@ -90,14 +90,14 @@ func startHTTPService(grpcLis, httpLis net.Listener) *http.Server {
 		grpc.WithTransportCredentials(insecure.NewCredentials()),
 	)
 	if err != nil {
-		log.Fatalf("Failed to dial server: %w", err)
+		log.Fatalf("Failed to dial server: %v", err)
 	}
 
 	// gRPC-Gateway httpServer
 	gwmux := runtime.NewServeMux()
 	err = pb.RegisterSchedulerServiceHandler(context.Background(), gwmux, conn)
 	if err != nil {
-		log.Fatalf("Failed to register gateway: %w", err)
+		log.Fatalf("Failed to register gateway: %v", err)
 	}
 
 	// 定义HTTP server配置
@@ -109,7 +109,7 @@ func startHTTPService(grpcLis, httpLis net.Listener) *http.Server {
 		time.Sleep(3 * time.Second)
 		log.Infof("http server listening at %v", httpLis.Addr())
 		if err = httpServer.Serve(httpLis); err != nil {
-			log.Fatalf("Failed to serve gRPC-Gateway: %s", err.Error())
+			log.Fatalf("Failed to serve gRPC-Gateway: %v", err)
 		}
 	}()
 

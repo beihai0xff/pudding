@@ -63,7 +63,7 @@ func LogSync() OptionFunc {
 func GracefulShutdown(ctx context.Context, opts ...OptionFunc) {
 	for _, opt := range opts {
 		if err := opt(ctx); err != nil {
-			log.Error("failed to shutdown gracefully: %w", err)
+			log.Errorf("failed to shutdown gracefully: %v", err)
 		}
 	}
 }

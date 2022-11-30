@@ -45,18 +45,18 @@ func (q *DelayQueue) Produce(ctx context.Context, msg *types.Message) error {
 func (q *DelayQueue) pushToZSet(ctx context.Context, timeSlice string, msg *types.Message) error {
 	/*	err := q.rdb.ZAddNX(ctx, q.getZSetName(timeSlice), *member)
 		if err != nil {
-			return fmt.Errorf("pushToZSet failed: %w", err)
+			return fmt.Errorf("pushToZSet failed: %v", err)
 		}
 	*/
 	c, err := msgpack.Encode(msg)
 	if err != nil {
-		return fmt.Errorf("pushToZSet: failed to marshal message:%w", err)
+		return fmt.Errorf("pushToZSet: failed to marshal message: %w", err)
 	}
 
 	count, err := pushScript.Run(ctx, q.rdb.GetClient(), []string{q.getZSetName(timeSlice),
 		q.getHashtableName(timeSlice)}, msg.Key, c, msg.DeliverAt).Int()
 	if err != nil {
-		return fmt.Errorf("pushToZSet: failed to push message:%w", err)
+		return fmt.Errorf("pushToZSet: failed to push message: %w", err)
 	}
 	if count == 0 {
 		return errno.ErrDuplicateMessage
@@ -87,7 +87,7 @@ func (q *DelayQueue) Consume(ctx context.Context, now, batchSize int64,
 			// 处理消息
 			err = fn(ctx, &msg)
 			if err != nil {
-				log.Errorf("failed to handle message: %+v, caused by: %w", msg, err)
+				log.Errorf("failed to handle message: %+v, caused by: %v", msg, err)
 				continue
 			}
 
@@ -129,12 +129,12 @@ func (q *DelayQueue) getFromZSetByScore(timeSlice string, now, batchSize int64) 
 		// 获取消息的 body
 		body, err := q.rdb.HGet(context.Background(), hashTable, key)
 		if err != nil {
-			log.Errorf("failed to get message body from hashTable: %w", err)
+			log.Errorf("failed to get message body from hashTable: %v", err)
 			continue
 		}
 		msg := &types.Message{}
 		if err := msgpack.Decode(body, msg); err != nil {
-			log.Errorf("failed to decode message body: %w", err)
+			log.Errorf("failed to decode message body: %v", err)
 			continue
 		}
 		log.Debugf("get message from zset: %+v", msg)

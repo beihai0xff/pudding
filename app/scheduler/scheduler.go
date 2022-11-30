@@ -94,7 +94,7 @@ func (s *scheduler) Produce(ctx context.Context, msg *types.Message) error {
 	var err error
 
 	if err = s.checkParams(msg); err != nil {
-		log.Errorf("check message params failed: %w", err)
+		log.Errorf("check message params failed: %v", err)
 		return fmt.Errorf("check message params failed: %w", err)
 	}
 
@@ -104,7 +104,7 @@ func (s *scheduler) Produce(ctx context.Context, msg *types.Message) error {
 			break
 		}
 		// if produce failed, retry in three times
-		log.Errorf("DelayBroker: failed to produce message: %w, retry in [%d] times", err, i)
+		log.Errorf("DelayBroker: failed to produce message: %v, retry in [%d] times", err, i)
 	}
 	return err
 }
@@ -157,12 +157,12 @@ func (s *scheduler) startSchedule() error {
 			}
 
 			if err := s.delay.Consume(ctx, t, 100, s.produceRealTime); err != nil {
-				log.Errorf("failed to consume time: %d, caused by %w", t, err)
+				log.Errorf("failed to consume time: %d, caused by %v", t, err)
 			}
 
 			// Release the lock
 			if err := locker.Release(ctx); err != nil {
-				log.Errorf("failed to release time locker: %s, caused by %w", name, err)
+				log.Errorf("failed to release time locker: %s, caused by %v", name, err)
 			}
 
 		case <-s.quit:
