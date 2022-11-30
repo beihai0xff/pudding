@@ -1,7 +1,8 @@
-IMAGE_NAME = pudding-test:latest
+IMAGE_NAME = pudding.scheduler:latest
 IMAGE_VERSION = alpha-1
 GO_VERSION ?= 1.18
 GOLANG_IMAGE = golang:$(GO_VERSION)
+app = ""
 
 lint:
 	cd api/proto && buf mod update && buf lint
@@ -11,7 +12,8 @@ lint:
 
 .PHONY: build
 build: gen
-	cd scripts && sh -x ./build.sh
+	echo ${app}
+	cd scripts && sh -x ./build.sh -a ${app}
 
 
 .PHONY: gen
@@ -24,9 +26,9 @@ gen:
 
 .PHONY: docker-build
 docker-build: clean
-	DOCKER_BUILDKIT=0 docker build -t scheduler:${IMAGE_VERSION} -f ./build/scheduler/Dockerfile .
+	DOCKER_BUILDKIT=0 docker build -t ${app}:${IMAGE_VERSION} -f ./build/Dockerfile . --build-arg app=${app}
 
-.PHONY:docker- clean
+.PHONY:docker-clean
 docker-clean:
 	docker image prune
 
