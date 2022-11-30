@@ -50,13 +50,13 @@ func (q *DelayQueue) pushToZSet(ctx context.Context, timeSlice string, msg *type
 	*/
 	c, err := msgpack.Encode(msg)
 	if err != nil {
-		return fmt.Errorf("pushToZSet: failed to marshal message: %v", err)
+		return fmt.Errorf("pushToZSet: failed to marshal message: %w", err)
 	}
 
 	count, err := pushScript.Run(ctx, q.rdb.GetClient(), []string{q.getZSetName(timeSlice),
 		q.getHashtableName(timeSlice)}, msg.Key, c, msg.DeliverAt).Int()
 	if err != nil {
-		return fmt.Errorf("pushToZSet: failed to push message: %v", err)
+		return fmt.Errorf("pushToZSet: failed to push message: %w", err)
 	}
 	if count == 0 {
 		return errno.ErrDuplicateMessage
@@ -112,7 +112,7 @@ func (q *DelayQueue) getFromZSetByScore(timeSlice string, now, batchSize int64) 
 	})
 
 	if err != nil {
-		return nil, fmt.Errorf("failed to get messages from zset: %v", err)
+		return nil, fmt.Errorf("failed to get messages from zset: %w", err)
 	}
 
 	if len(zs) == 0 {
