@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"net"
 	"net/http"
@@ -109,6 +110,10 @@ func startHTTPService(grpcLis, httpLis net.Listener) *http.Server {
 		time.Sleep(3 * time.Second)
 		log.Infof("http server listening at %v", httpLis.Addr())
 		if err = httpServer.Serve(httpLis); err != nil {
+			if errors.Is(err, http.ErrServerClosed) {
+				log.Info(err.Error())
+				return
+			}
 			log.Fatalf("Failed to serve gRPC-Gateway: %s", err.Error())
 		}
 	}()

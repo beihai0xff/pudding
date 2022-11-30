@@ -1,0 +1,40 @@
+name: pudding
+consul_url: http://127.0.0.1:8500
+mysql_config:
+  dsn: root:my-secret-pw@tcp(localhost:3306)/test?charset=utf8mb4&parseTime=True&loc=Local
+log_config:
+  default:
+    level: debug
+    writers:
+      - console
+      - file
+    format: json
+    file_config:
+      # log file path
+      filepath: ./log/server.log
+      # file max_age
+      max_age: 7
+      # max backup files
+      max_backups: 7
+      # max file size, MB
+      max_size: 128
+      # log file is compress
+      compress: false
+  gorm_log:
+    level: info
+    writers:
+      - console
+      - file
+    format: json
+    file_config:
+      # log file path
+      filepath: ./log/gorm_log
+      # file max_age
+      max_age: 7
+      # max backup files
+      max_backups: 7
+      # max file size, MB
+      max_size: 128
+      # log file is compress
+      compress: false
+

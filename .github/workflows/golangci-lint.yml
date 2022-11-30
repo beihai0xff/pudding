@@ -22,7 +22,7 @@ jobs:
     steps:
       - uses: actions/setup-go@v3
         with:
-          go-version: 1.17
+          go-version: 1.18
       - uses: actions/checkout@v3.1.0
       - name: golangci-lint
         uses: golangci/golangci-lint-action@v3
@@ -46,3 +46,8 @@ jobs:
 
           # Optional: if set to true then the action don't cache or restore ~/.cache/go-build.
           # skip-build-cache: true
+      - uses: bufbuild/buf-setup-action@v1
+      # Run lint only in the `proto` sub-directory
+      - uses: bufbuild/buf-lint-action@v1
+        with:
+          input: api/proto

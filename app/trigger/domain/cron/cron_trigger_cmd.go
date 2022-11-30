@@ -14,13 +14,13 @@ import (
 func (t *Trigger) FindByID(ctx context.Context, id uint) (*entity.CronTriggerTemplate, error) {
 	if id <= 0 {
 		err := fmt.Errorf("invalid id, id: %d", id)
-		log.Errorf("%w", err)
+		log.Errorf("%v", err)
 		return nil, err
 	}
 
 	res, err := t.repo.FindByID(ctx, id)
 	if err != nil {
-		log.Errorf("failed to insert cron template, caused by %w", err)
+		log.Errorf("failed to insert cron template, caused by %v", err)
 		return nil, err
 	}
 
@@ -31,12 +31,12 @@ func (t *Trigger) FindByID(ctx context.Context, id uint) (*entity.CronTriggerTem
 func (t *Trigger) PageQuery(ctx context.Context, offset, limit int) ([]*entity.CronTriggerTemplate, int64, error) {
 	if offset < 0 || limit <= 0 {
 		err := fmt.Errorf("invalid offset or limit, offset: %d, limit: %d", offset, limit)
-		log.Errorf("%w", err)
+		log.Errorf("%+v", err)
 		return nil, 0, err
 	}
 	res, count, err := t.repo.PageQuery(ctx, offset, limit)
 	if err != nil {
-		log.Errorf("failed to PageQuery cron template, caused by %w", err)
+		log.Errorf("failed to PageQuery cron template, caused by %v", err)
 		return nil, 0, err
 	}
 
@@ -47,13 +47,13 @@ func (t *Trigger) PageQuery(ctx context.Context, offset, limit int) ([]*entity.C
 func (t *Trigger) Register(ctx context.Context, temp *entity.CronTriggerTemplate) error {
 	// 1. check params
 	if err := t.checkRegisterParams(temp); err != nil {
-		log.Errorf("failed to check params, caused by %w", err)
+		log.Errorf("failed to check params, caused by %v", err)
 		return err
 	}
 
 	// 2. save the template to db
 	if err := t.repo.Insert(ctx, temp); err != nil {
-		log.Errorf("failed to insert cron template, caused by %w", err)
+		log.Errorf("failed to insert cron template, caused by %v", err)
 		return err
 	}
 
@@ -64,7 +64,7 @@ func (t *Trigger) Register(ctx context.Context, temp *entity.CronTriggerTemplate
 func (t *Trigger) checkRegisterParams(temp *entity.CronTriggerTemplate) error {
 	// 1. check cron expression
 	if _, err := cronexpr.Parse(temp.CronExpr); err != nil {
-		log.Errorf("Invalid cron expression: %w", err)
+		log.Errorf("Invalid cron expression: %v", err)
 		return fmt.Errorf("invalid cron expression: %w", err)
 	}
 
@@ -102,7 +102,7 @@ func (t *Trigger) UpdateStatus(ctx context.Context, id uint, status pb.TriggerSt
 	// 2. update the template status to db
 	rowsAffected, err := t.repo.UpdateStatus(ctx, id, status)
 	if err != nil {
-		log.Errorf("failed to update cron template, caused by %w", err)
+		log.Errorf("failed to update cron template, caused by %v", err)
 		return 0, err
 	}
 
