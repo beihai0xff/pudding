@@ -58,10 +58,6 @@ type scheduler struct {
 	quit chan int64
 }
 
-func NewQueue(config *configs.SchedulerConfig) (broker.DelayBroker, connector.RealTimeConnector) {
-	return broker.NewDelayBroker(config.Broker), connector.NewConnector(config.Connector)
-}
-
 func New(config *configs.SchedulerConfig, delay broker.DelayBroker, realtime connector.RealTimeConnector) Scheduler {
 	q := &scheduler{
 		delay:        delay,

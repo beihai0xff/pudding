@@ -2,12 +2,7 @@ package broker
 
 import (
 	"context"
-	"time"
 
-	"github.com/beihai0xff/pudding/app/scheduler/broker/redis_broker"
-	"github.com/beihai0xff/pudding/app/scheduler/pkg/configs"
-	"github.com/beihai0xff/pudding/pkg/log"
-	rdb "github.com/beihai0xff/pudding/pkg/redis"
 	"github.com/beihai0xff/pudding/types"
 )
 
@@ -23,22 +18,4 @@ type DelayBroker interface {
 	Consume(ctx context.Context, now, batchSize int64, fn types.HandleMessage) error
 	// Close the queue
 	Close() error
-}
-
-// NewDelayBroker create a new DelayBroker
-func NewDelayBroker(broker string) DelayBroker {
-	switch broker {
-	case "redis":
-		// parse Polling delay queue interval
-		interval := configs.GetSchedulerConfig().TimeSliceInterval
-		t, err := time.ParseDuration(interval)
-		if err != nil {
-			log.Fatalf("failed to parse '%s' to time.Duration: %v", interval, err)
-		}
-		log.Infof("timeSlice interval is: %d seconds", t.Seconds())
-		return redis_broker.NewDelayQueue(rdb.New(configs.GetRedisConfig()), int64(t.Seconds()))
-	default:
-		log.Fatalf("unknown broker type: [%s]", broker)
-	}
-	return nil
 }
