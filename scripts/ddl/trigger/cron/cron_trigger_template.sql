@@ -1,4 +1,4 @@
-CREATE TABLE IF NOT EXIST `cron_trigger_template` (
+CREATE TABLE IF NOT EXISTS `cron_trigger_template` (
     `id` bigint unsigned AUTO_INCREMENT,
     `created_at` datetime NULL,
     `updated_at` datetime NULL,
