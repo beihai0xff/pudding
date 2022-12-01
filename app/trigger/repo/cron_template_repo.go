@@ -1,3 +1,6 @@
+// package repo is a package for the repo layer.
+// It contains the repository interfaces and implementations.
+
 package repo
 
 import (
