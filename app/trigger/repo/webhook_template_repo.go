@@ -58,7 +58,7 @@ func (dao *WebhookTemplate) PageQuery(ctx context.Context, offset, limit int, st
 	var res []*po.WebhookTriggerTemplate
 	var count int64
 	var err error
-	if status > 0 {
+	if status > pb.TriggerStatus_UNKNOWN_UNSPECIFIED && status <= pb.TriggerStatus_MAX_AGE {
 		res, count, err = sql.WebhookTriggerTemplate.WithContext(ctx).
 			Where(sql.WebhookTriggerTemplate.Status.Eq(int32(status))).FindByPage(offset, limit)
 	} else {

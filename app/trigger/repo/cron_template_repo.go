@@ -71,7 +71,7 @@ func (dao *CronTemplate) PageQuery(ctx context.Context, offset, limit int, statu
 	var res []*po.CronTriggerTemplate
 	var count int64
 	var err error
-	if status > 0 {
+	if status > pb.TriggerStatus_UNKNOWN_UNSPECIFIED && status <= pb.TriggerStatus_MAX_AGE {
 		res, count, err = sql.CronTriggerTemplate.WithContext(ctx).
 			Where(sql.CronTriggerTemplate.Status.Eq(int32(status))).FindByPage(offset, limit)
 	} else {
