@@ -10,7 +10,10 @@ import (
 	"github.com/beihai0xff/pudding/pkg/log"
 )
 
-var testCronTemplate CronTemplateDAO
+var (
+	testCronTemplate    CronTemplateDAO
+	testWebhookTemplate WebhookTemplateDAO
+)
 
 func TestMain(m *testing.M) {
 
@@ -40,6 +43,10 @@ func createTable(db *mysql.Client) {
 	if err != nil {
 		log.Errorf("create table failed: %v", err)
 	}
+	err = db.Set("gorm:table_options", "ENGINE=InnoDB").Migrator().CreateTable(&po.WebhookTriggerTemplate{})
+	if err != nil {
+		log.Errorf("create table failed: %v", err)
+	}
 }
 
 func dropTable(db *mysql.Client) {
@@ -51,4 +58,5 @@ func dropTable(db *mysql.Client) {
 
 func createDao(db *mysql.Client) {
 	testCronTemplate = NewCronTemplate(db)
+	testWebhookTemplate = NewWebhookTemplate(db)
 }

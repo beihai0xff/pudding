@@ -16,34 +16,39 @@ import (
 )
 
 var (
-	Q                   = new(Query)
-	CronTriggerTemplate *cronTriggerTemplate
+	Q                      = new(Query)
+	CronTriggerTemplate    *cronTriggerTemplate
+	WebhookTriggerTemplate *webhookTriggerTemplate
 )
 
 func SetDefault(db *gorm.DB, opts ...gen.DOOption) {
 	*Q = *Use(db, opts...)
 	CronTriggerTemplate = &Q.CronTriggerTemplate
+	WebhookTriggerTemplate = &Q.WebhookTriggerTemplate
 }
 
 func Use(db *gorm.DB, opts ...gen.DOOption) *Query {
 	return &Query{
-		db:                  db,
-		CronTriggerTemplate: newCronTriggerTemplate(db, opts...),
+		db:                     db,
+		CronTriggerTemplate:    newCronTriggerTemplate(db, opts...),
+		WebhookTriggerTemplate: newWebhookTriggerTemplate(db, opts...),
 	}
 }
 
 type Query struct {
 	db *gorm.DB
 
-	CronTriggerTemplate cronTriggerTemplate
+	CronTriggerTemplate    cronTriggerTemplate
+	WebhookTriggerTemplate webhookTriggerTemplate
 }
 
 func (q *Query) Available() bool { return q.db != nil }
 
 func (q *Query) clone(db *gorm.DB) *Query {
 	return &Query{
-		db:                  db,
-		CronTriggerTemplate: q.CronTriggerTemplate.clone(db),
+		db:                     db,
+		CronTriggerTemplate:    q.CronTriggerTemplate.clone(db),
+		WebhookTriggerTemplate: q.WebhookTriggerTemplate.clone(db),
 	}
 }
 
@@ -57,18 +62,21 @@ func (q *Query) WriteDB() *Query {
 
 func (q *Query) ReplaceDB(db *gorm.DB) *Query {
 	return &Query{
-		db:                  db,
-		CronTriggerTemplate: q.CronTriggerTemplate.replaceDB(db),
+		db:                     db,
+		CronTriggerTemplate:    q.CronTriggerTemplate.replaceDB(db),
+		WebhookTriggerTemplate: q.WebhookTriggerTemplate.replaceDB(db),
 	}
 }
 
 type queryCtx struct {
-	CronTriggerTemplate *cronTriggerTemplateDo
+	CronTriggerTemplate    *cronTriggerTemplateDo
+	WebhookTriggerTemplate *webhookTriggerTemplateDo
 }
 
 func (q *Query) WithContext(ctx context.Context) *queryCtx {
 	return &queryCtx{
-		CronTriggerTemplate: q.CronTriggerTemplate.WithContext(ctx),
+		CronTriggerTemplate:    q.CronTriggerTemplate.WithContext(ctx),
+		WebhookTriggerTemplate: q.WebhookTriggerTemplate.WithContext(ctx),
 	}
 }
 
