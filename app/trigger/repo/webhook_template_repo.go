@@ -20,7 +20,7 @@ type WebhookTemplateDAO interface {
 	// FindByID find a cron template by id
 	FindByID(ctx context.Context, id uint) (*entity.WebhookTriggerTemplate, error)
 	// PageQuery query cron templates by page
-	PageQuery(ctx context.Context, offset, limit int, id uint) (res []*entity.WebhookTriggerTemplate,
+	PageQuery(ctx context.Context, offset, limit int, status pb.TriggerStatus) (res []*entity.WebhookTriggerTemplate,
 		count int64, err error)
 
 	// Insert create a cron template
@@ -52,15 +52,15 @@ func (dao *WebhookTemplate) FindByID(ctx context.Context, id uint) (*entity.Webh
 
 }
 
-func (dao *WebhookTemplate) PageQuery(ctx context.Context, offset, limit int, id uint) (
+func (dao *WebhookTemplate) PageQuery(ctx context.Context, offset, limit int, status pb.TriggerStatus) (
 	[]*entity.WebhookTriggerTemplate, int64, error) {
 
 	var res []*po.WebhookTriggerTemplate
 	var count int64
 	var err error
-	if id > 0 {
+	if status > pb.TriggerStatus_UNKNOWN_UNSPECIFIED && status <= pb.TriggerStatus_MAX_AGE {
 		res, count, err = sql.WebhookTriggerTemplate.WithContext(ctx).
-			Where(sql.WebhookTriggerTemplate.ID.Eq(id)).FindByPage(offset, limit)
+			Where(sql.WebhookTriggerTemplate.Status.Eq(int32(status))).FindByPage(offset, limit)
 	} else {
 		res, count, err = sql.WebhookTriggerTemplate.WithContext(ctx).FindByPage(offset, limit)
 	}
