@@ -18,10 +18,7 @@ import (
 
 	"gorm.io/plugin/dbresolver"
 
-<<<<<<< HEAD
 	pb "github.com/beihai0xff/pudding/api/gen/pudding/trigger/v1"
-=======
->>>>>>> 4201627 (feat: impl webhook trigger repo)
 	"github.com/beihai0xff/pudding/app/trigger/repo/storage/po"
 )
 
