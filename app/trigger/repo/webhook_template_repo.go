@@ -20,7 +20,8 @@ type WebhookTemplateDAO interface {
 	// FindByID find a cron template by id
 	FindByID(ctx context.Context, id uint) (*entity.WebhookTriggerTemplate, error)
 	// PageQuery query cron templates by page
-	PageQuery(ctx context.Context, offset, limit int, id uint) (res []*entity.WebhookTriggerTemplate, count int64, err error)
+	PageQuery(ctx context.Context, offset, limit int, id uint) (res []*entity.WebhookTriggerTemplate,
+		count int64, err error)
 
 	// Insert create a cron template
 	Insert(ctx context.Context, e *entity.WebhookTriggerTemplate) error
@@ -28,7 +29,8 @@ type WebhookTemplateDAO interface {
 	UpdateStatus(ctx context.Context, id uint, status pb.TriggerStatus) (int64, error)
 }
 
-type WebhookTemplate struct{}
+type WebhookTemplate struct {
+}
 
 func NewWebhookTemplate(db *mysql.Client) *WebhookTemplate {
 	sql.SetDefault(db.GetDB())
@@ -56,10 +58,13 @@ func (dao *WebhookTemplate) PageQuery(ctx context.Context, offset, limit int, id
 	var res []*po.WebhookTriggerTemplate
 	var count int64
 	var err error
-	if id == 0 {
+	if id > 0 {
+		res, count, err = sql.WebhookTriggerTemplate.WithContext(ctx).
+			Where(sql.WebhookTriggerTemplate.ID.Eq(id)).FindByPage(offset, limit)
+	} else {
 		res, count, err = sql.WebhookTriggerTemplate.WithContext(ctx).FindByPage(offset, limit)
 	}
-	res, count, err = sql.WebhookTriggerTemplate.WithContext(ctx).FindByPage(offset, limit)
+
 	if err != nil {
 		return nil, 0, err
 	}
