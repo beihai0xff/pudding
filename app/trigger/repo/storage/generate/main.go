@@ -9,7 +9,21 @@ import (
 	"github.com/beihai0xff/pudding/app/trigger/repo/storage/po"
 )
 
+// CronTemplateDAO is the interface of cron template DAO
 type CronTemplateDAO interface {
+	// SELECT * FROM @@table WHERE id=@id
+	FindByID(id uint) (*gen.T, error)
+
+	// UPDATE @@table
+	//  {{set}}
+	//    {{if status > 0}} status=@status, {{end}}
+	//  {{end}}
+	// WHERE id=@id
+	UpdateStatus(ctx context.Context, id uint, status pb.TriggerStatus) (gen.RowsAffected, error)
+}
+
+// WebhookTemplateDAO is the interface of WebhookTriggerTemplate.
+type WebhookTemplateDAO interface {
 	// SELECT * FROM @@table WHERE id=@id
 	FindByID(id uint) (*gen.T, error)
 
@@ -28,9 +42,9 @@ func main() {
 		Mode:    gen.WithDefaultQuery,
 	})
 
-	g.ApplyBasic(po.CronTriggerTemplate{})
+	g.ApplyBasic(po.CronTriggerTemplate{}, po.WebhookTriggerTemplate{})
 
 	g.ApplyInterface(func(CronTemplateDAO) {}, po.CronTriggerTemplate{})
+	g.ApplyInterface(func(WebhookTemplateDAO) {}, po.WebhookTriggerTemplate{})
 	g.Execute()
-
 }
