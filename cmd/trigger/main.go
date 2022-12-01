@@ -43,7 +43,7 @@ func main() {
 
 	// block until a signal is received.
 	sign := <-interrupt
-	log.Warn("received shutdown signal ", sign.String())
+	log.Warnf("received shutdown signal: %s", sign.String())
 
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()

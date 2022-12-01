@@ -35,7 +35,6 @@ func main() {
 	configs.Init(*confPath, configs.WithRedisURL(*redisURL), configs.WithPulsarURL(*pulsarURL))
 	registerLogger()
 
-	// log.RegisterLogger("gorm_log", log.WithCallerSkip(3))
 	interrupt := make(chan os.Signal, 1)
 	signal.Notify(interrupt, syscall.SIGINT, syscall.SIGTERM)
 	defer signal.Stop(interrupt)
@@ -47,7 +46,7 @@ func main() {
 
 	// block until a signal is received.
 	sign := <-interrupt
-	log.Warn("received shutdown signal ", sign.String())
+	log.Warnf("received shutdown signal: %s", sign.String())
 
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()

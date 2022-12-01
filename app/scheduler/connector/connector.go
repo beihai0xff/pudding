@@ -3,10 +3,6 @@ package connector
 import (
 	"context"
 
-	"github.com/beihai0xff/pudding/app/scheduler/connector/pulsar_connector"
-	"github.com/beihai0xff/pudding/app/scheduler/pkg/configs"
-	"github.com/beihai0xff/pudding/pkg/log"
-	"github.com/beihai0xff/pudding/pkg/mq/pulsar"
 	"github.com/beihai0xff/pudding/types"
 )
 
@@ -22,16 +18,4 @@ type RealTimeConnector interface {
 	NewConsumer(topic, group string, batchSize int, fn types.HandleMessage) error
 	// Close the queue
 	Close() error
-}
-
-// NewConnector create a new RealTime Queue Connector
-func NewConnector(connector string) RealTimeConnector {
-	switch connector {
-	case "pulsar":
-		return pulsar_connector.NewRealTimeQueue(pulsar.New(configs.GetPulsarConfig()))
-	default:
-		log.Fatalf("unknown connector type: [%s]", connector)
-	}
-	return nil
-
 }
