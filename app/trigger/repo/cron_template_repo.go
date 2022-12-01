@@ -27,6 +27,7 @@ var validate = validator.New()
 
 type CronTempHandler func(results *entity.CronTriggerTemplate) error
 
+// CronTemplateDAO is the interface for the CronTemplate repository.
 type CronTemplateDAO interface {
 	// FindByID find a cron template by id
 	FindByID(ctx context.Context, id uint) (*entity.CronTriggerTemplate, error)

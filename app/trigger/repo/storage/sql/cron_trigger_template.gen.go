@@ -18,6 +18,7 @@ import (
 
 	"gorm.io/plugin/dbresolver"
 
+	pb "github.com/beihai0xff/pudding/api/gen/pudding/trigger/v1"
 	"github.com/beihai0xff/pudding/app/trigger/repo/storage/po"
 )
 
