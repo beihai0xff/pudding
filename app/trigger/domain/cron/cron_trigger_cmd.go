@@ -30,7 +30,7 @@ func (t *Trigger) FindByID(ctx context.Context, id uint) (*entity.CronTriggerTem
 // PageQuery page query cron templates
 func (t *Trigger) PageQuery(ctx context.Context, p *entity.PageQuery,
 	status pb.TriggerStatus) ([]*entity.CronTriggerTemplate, int64, error) {
-
+	// check params
 	if p.Offset < 0 || p.Limit <= 0 {
 		err := fmt.Errorf("invalid offset or limit, offset: %d, limit: %d", p.Offset, p.Limit)
 		log.Errorf("%v", err)

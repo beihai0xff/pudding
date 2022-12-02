@@ -23,11 +23,11 @@ type CronTriggerServiceClient interface {
 	// Sends a Ping
 	Ping(ctx context.Context, in *emptypb.Empty, opts ...grpc.CallOption) (*v1.PingResponse, error)
 	// FindOneByID find cron trigger by id
-	FindOneByID(ctx context.Context, in *FindOneByIDRequest, opts ...grpc.CallOption) (*FindOneByIDResponse, error)
-	// PageQuery page query cron trigger
-	PageQuery(ctx context.Context, in *PageQueryRequest, opts ...grpc.CallOption) (*PageQueryResponse, error)
+	FindOneByID(ctx context.Context, in *FindOneByIDRequest, opts ...grpc.CallOption) (*CronFindOneByIDResponse, error)
+	// PageQueryTemplate page query cron trigger template
+	PageQueryTemplate(ctx context.Context, in *PageQueryTemplateRequest, opts ...grpc.CallOption) (*CronPageQueryResponse, error)
 	// Register create a cron trigger
-	Register(ctx context.Context, in *RegisterRequest, opts ...grpc.CallOption) (*emptypb.Empty, error)
+	Register(ctx context.Context, in *CronTriggerServiceRegisterRequest, opts ...grpc.CallOption) (*emptypb.Empty, error)
 	// UpdateStatus update cron trigger status
 	UpdateStatus(ctx context.Context, in *UpdateStatusRequest, opts ...grpc.CallOption) (*UpdateStatusResponse, error)
 }
@@ -49,8 +49,8 @@ func (c *cronTriggerServiceClient) Ping(ctx context.Context, in *emptypb.Empty, 
 	return out, nil
 }
 
-func (c *cronTriggerServiceClient) FindOneByID(ctx context.Context, in *FindOneByIDRequest, opts ...grpc.CallOption) (*FindOneByIDResponse, error) {
-	out := new(FindOneByIDResponse)
+func (c *cronTriggerServiceClient) FindOneByID(ctx context.Context, in *FindOneByIDRequest, opts ...grpc.CallOption) (*CronFindOneByIDResponse, error) {
+	out := new(CronFindOneByIDResponse)
 	err := c.cc.Invoke(ctx, "/pudding.trigger.v1.CronTriggerService/FindOneByID", in, out, opts...)
 	if err != nil {
 		return nil, err
@@ -58,16 +58,16 @@ func (c *cronTriggerServiceClient) FindOneByID(ctx context.Context, in *FindOneB
 	return out, nil
 }
 
-func (c *cronTriggerServiceClient) PageQuery(ctx context.Context, in *PageQueryRequest, opts ...grpc.CallOption) (*PageQueryResponse, error) {
-	out := new(PageQueryResponse)
-	err := c.cc.Invoke(ctx, "/pudding.trigger.v1.CronTriggerService/PageQuery", in, out, opts...)
+func (c *cronTriggerServiceClient) PageQueryTemplate(ctx context.Context, in *PageQueryTemplateRequest, opts ...grpc.CallOption) (*CronPageQueryResponse, error) {
+	out := new(CronPageQueryResponse)
+	err := c.cc.Invoke(ctx, "/pudding.trigger.v1.CronTriggerService/PageQueryTemplate", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
 	return out, nil
 }
 
-func (c *cronTriggerServiceClient) Register(ctx context.Context, in *RegisterRequest, opts ...grpc.CallOption) (*emptypb.Empty, error) {
+func (c *cronTriggerServiceClient) Register(ctx context.Context, in *CronTriggerServiceRegisterRequest, opts ...grpc.CallOption) (*emptypb.Empty, error) {
 	out := new(emptypb.Empty)
 	err := c.cc.Invoke(ctx, "/pudding.trigger.v1.CronTriggerService/Register", in, out, opts...)
 	if err != nil {
@@ -92,11 +92,11 @@ type CronTriggerServiceServer interface {
 	// Sends a Ping
 	Ping(context.Context, *emptypb.Empty) (*v1.PingResponse, error)
 	// FindOneByID find cron trigger by id
-	FindOneByID(context.Context, *FindOneByIDRequest) (*FindOneByIDResponse, error)
-	// PageQuery page query cron trigger
-	PageQuery(context.Context, *PageQueryRequest) (*PageQueryResponse, error)
+	FindOneByID(context.Context, *FindOneByIDRequest) (*CronFindOneByIDResponse, error)
+	// PageQueryTemplate page query cron trigger template
+	PageQueryTemplate(context.Context, *PageQueryTemplateRequest) (*CronPageQueryResponse, error)
 	// Register create a cron trigger
-	Register(context.Context, *RegisterRequest) (*emptypb.Empty, error)
+	Register(context.Context, *CronTriggerServiceRegisterRequest) (*emptypb.Empty, error)
 	// UpdateStatus update cron trigger status
 	UpdateStatus(context.Context, *UpdateStatusRequest) (*UpdateStatusResponse, error)
 	mustEmbedUnimplementedCronTriggerServiceServer()
@@ -109,13 +109,13 @@ type UnimplementedCronTriggerServiceServer struct {
 func (UnimplementedCronTriggerServiceServer) Ping(context.Context, *emptypb.Empty) (*v1.PingResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method Ping not implemented")
 }
-func (UnimplementedCronTriggerServiceServer) FindOneByID(context.Context, *FindOneByIDRequest) (*FindOneByIDResponse, error) {
+func (UnimplementedCronTriggerServiceServer) FindOneByID(context.Context, *FindOneByIDRequest) (*CronFindOneByIDResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method FindOneByID not implemented")
 }
-func (UnimplementedCronTriggerServiceServer) PageQuery(context.Context, *PageQueryRequest) (*PageQueryResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method PageQuery not implemented")
+func (UnimplementedCronTriggerServiceServer) PageQueryTemplate(context.Context, *PageQueryTemplateRequest) (*CronPageQueryResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method PageQueryTemplate not implemented")
 }
-func (UnimplementedCronTriggerServiceServer) Register(context.Context, *RegisterRequest) (*emptypb.Empty, error) {
+func (UnimplementedCronTriggerServiceServer) Register(context.Context, *CronTriggerServiceRegisterRequest) (*emptypb.Empty, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method Register not implemented")
 }
 func (UnimplementedCronTriggerServiceServer) UpdateStatus(context.Context, *UpdateStatusRequest) (*UpdateStatusResponse, error) {
@@ -170,26 +170,26 @@ func _CronTriggerService_FindOneByID_Handler(srv interface{}, ctx context.Contex
 	return interceptor(ctx, in, info, handler)
 }
 
-func _CronTriggerService_PageQuery_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(PageQueryRequest)
+func _CronTriggerService_PageQueryTemplate_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(PageQueryTemplateRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(CronTriggerServiceServer).PageQuery(ctx, in)
+		return srv.(CronTriggerServiceServer).PageQueryTemplate(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/pudding.trigger.v1.CronTriggerService/PageQuery",
+		FullMethod: "/pudding.trigger.v1.CronTriggerService/PageQueryTemplate",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(CronTriggerServiceServer).PageQuery(ctx, req.(*PageQueryRequest))
+		return srv.(CronTriggerServiceServer).PageQueryTemplate(ctx, req.(*PageQueryTemplateRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
 
 func _CronTriggerService_Register_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(RegisterRequest)
+	in := new(CronTriggerServiceRegisterRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
@@ -201,7 +201,7 @@ func _CronTriggerService_Register_Handler(srv interface{}, ctx context.Context, 
 		FullMethod: "/pudding.trigger.v1.CronTriggerService/Register",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(CronTriggerServiceServer).Register(ctx, req.(*RegisterRequest))
+		return srv.(CronTriggerServiceServer).Register(ctx, req.(*CronTriggerServiceRegisterRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -240,8 +240,8 @@ var CronTriggerService_ServiceDesc = grpc.ServiceDesc{
 			Handler:    _CronTriggerService_FindOneByID_Handler,
 		},
 		{
-			MethodName: "PageQuery",
-			Handler:    _CronTriggerService_PageQuery_Handler,
+			MethodName: "PageQueryTemplate",
+			Handler:    _CronTriggerService_PageQueryTemplate_Handler,
 		},
 		{
 			MethodName: "Register",

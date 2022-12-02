@@ -1,12 +1,12 @@
 {
   "swagger": "2.0",
   "info": {
-    "title": "pudding/trigger/v1/cron_trigger.proto",
+    "title": "pudding/trigger/v1/webhook_trigger.proto",
     "version": "version not set"
   },
   "tags": [
     {
-      "name": "CronTriggerService"
+      "name": "WebhookTriggerService"
     }
   ],
   "consumes": [
@@ -16,15 +16,15 @@
     "application/json"
   ],
   "paths": {
-    "/pudding/trigger/cron/v1/find_one/{id}": {
+    "/pudding/trigger/webhook/v1/find_one/{id}": {
       "get": {
-        "summary": "FindOneByID find cron trigger by id",
-        "operationId": "CronTriggerService_FindOneByID",
+        "summary": "FindOneByID find webhook trigger by id",
+        "operationId": "WebhookTriggerService_FindOneByID",
         "responses": {
           "200": {
             "description": "A successful response.",
             "schema": {
-              "$ref": "#/definitions/v1CronFindOneByIDResponse"
+              "$ref": "#/definitions/v1WebhookFindOneByIDResponse"
             }
           },
           "default": {
@@ -45,19 +45,19 @@
           }
         ],
         "tags": [
-          "CronTriggerService"
+          "WebhookTriggerService"
         ]
       }
     },
-    "/pudding/trigger/cron/v1/page_query/template/{offset}/{limit}/{status}": {
+    "/pudding/trigger/webhook/v1/page_query/template/{offset}/{limit}/{status}": {
       "get": {
-        "summary": "PageQueryTemplate page query cron trigger template",
-        "operationId": "CronTriggerService_PageQueryTemplate",
+        "summary": "PageQueryTemplate page query webhook trigger template",
+        "operationId": "WebhookTriggerService_PageQueryTemplate",
         "responses": {
           "200": {
             "description": "A successful response.",
             "schema": {
-              "$ref": "#/definitions/v1CronPageQueryResponse"
+              "$ref": "#/definitions/v1WebhookPageQueryResponse"
             }
           },
           "default": {
@@ -97,14 +97,14 @@
           }
         ],
         "tags": [
-          "CronTriggerService"
+          "WebhookTriggerService"
         ]
       }
     },
-    "/pudding/trigger/cron/v1/ping": {
+    "/pudding/trigger/webhook/v1/ping": {
       "get": {
         "summary": "Sends a Ping",
-        "operationId": "CronTriggerService_Ping",
+        "operationId": "WebhookTriggerService_Ping",
         "responses": {
           "200": {
             "description": "A successful response.",
@@ -120,20 +120,19 @@
           }
         },
         "tags": [
-          "CronTriggerService"
+          "WebhookTriggerService"
         ]
       }
     },
-    "/pudding/trigger/cron/v1/register": {
+    "/pudding/trigger/webhook/v1/register": {
       "put": {
-        "summary": "Register create a cron trigger",
-        "operationId": "CronTriggerService_Register",
+        "summary": "Register create a webhook trigger",
+        "operationId": "WebhookTriggerService_Register",
         "responses": {
           "200": {
             "description": "A successful response.",
             "schema": {
-              "type": "object",
-              "properties": {}
+              "$ref": "#/definitions/v1WebhookRegisterResponse"
             }
           },
           "default": {
@@ -146,23 +145,22 @@
         "parameters": [
           {
             "name": "body",
-            "description": "CronRegisterRequest Register cron trigger template Request message.",
             "in": "body",
             "required": true,
             "schema": {
-              "$ref": "#/definitions/v1CronTriggerServiceRegisterRequest"
+              "$ref": "#/definitions/v1WebhookTriggerServiceRegisterRequest"
             }
           }
         ],
         "tags": [
-          "CronTriggerService"
+          "WebhookTriggerService"
         ]
       }
     },
-    "/pudding/trigger/cron/v1/update_status": {
+    "/pudding/trigger/webhook/v1/update_status": {
       "post": {
-        "summary": "UpdateStatus update cron trigger status",
-        "operationId": "CronTriggerService_UpdateStatus",
+        "summary": "UpdateStatus update webhook trigger status",
+        "operationId": "WebhookTriggerService_UpdateStatus",
         "responses": {
           "200": {
             "description": "A successful response.",
@@ -189,7 +187,7 @@
           }
         ],
         "tags": [
-          "CronTriggerService"
+          "WebhookTriggerService"
         ]
       }
     }
@@ -221,94 +219,6 @@
           }
         }
       }
-    },
-    "v1CronFindOneByIDResponse": {
-      "type": "object",
-      "properties": {
-        "body": {
-          "$ref": "#/definitions/v1CronTriggerTemplate"
-        }
-      },
-      "description": "CronFindOneByIDRequest The FindOneByID Response message."
-    },
-    "v1CronPageQueryResponse": {
-      "type": "object",
-      "properties": {
-        "count": {
-          "type": "string",
-          "format": "uint64"
-        },
-        "body": {
-          "type": "array",
-          "items": {
-            "$ref": "#/definitions/v1CronTriggerTemplate"
-          }
-        }
-      },
-      "title": "CronPageQueryResponse PageQuery Response body"
-    },
-    "v1CronTriggerServiceRegisterRequest": {
-      "type": "object",
-      "properties": {
-        "cronExpr": {
-          "type": "string"
-        },
-        "topic": {
-          "type": "string"
-        },
-        "payload": {
-          "type": "string",
-          "format": "byte"
-        },
-        "exceptedEndTime": {
-          "type": "string",
-          "format": "date-time"
-        },
-        "exceptedLoopTimes": {
-          "type": "string",
-          "format": "uint64"
-        }
-      },
-      "description": "CronRegisterRequest Register cron trigger template Request message."
-    },
-    "v1CronTriggerTemplate": {
-      "type": "object",
-      "properties": {
-        "id": {
-          "type": "string",
-          "format": "uint64"
-        },
-        "cronExpr": {
-          "type": "string"
-        },
-        "topic": {
-          "type": "string"
-        },
-        "payload": {
-          "type": "string",
-          "format": "byte"
-        },
-        "lastExecutionTime": {
-          "type": "string",
-          "format": "date-time"
-        },
-        "loopedTimes": {
-          "type": "string",
-          "format": "uint64"
-        },
-        "exceptedEndTime": {
-          "type": "string",
-          "format": "date-time"
-        },
-        "exceptedLoopTimes": {
-          "type": "string",
-          "format": "uint64"
-        },
-        "status": {
-          "$ref": "#/definitions/v1TriggerStatus"
-        }
-      },
-      "title": "CronTriggerTemplate defines the cron trigger template"
     },
     "v1PingResponse": {
       "type": "object",
@@ -356,6 +266,86 @@
         }
       },
       "description": "UpdateStatusResponse update trigger response message."
+    },
+    "v1WebhookFindOneByIDResponse": {
+      "type": "object",
+      "properties": {
+        "body": {
+          "$ref": "#/definitions/v1WebhookTriggerTemplate"
+        }
+      },
+      "description": "WebhookFindOneByIDRequest The FindOneByID Response message."
+    },
+    "v1WebhookPageQueryResponse": {
+      "type": "object",
+      "properties": {
+        "count": {
+          "type": "string",
+          "format": "uint64"
+        },
+        "body": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/v1WebhookTriggerTemplate"
+          }
+        }
+      }
+    },
+    "v1WebhookRegisterResponse": {
+      "type": "object",
+      "properties": {
+        "url": {
+          "type": "string"
+        }
+      }
+    },
+    "v1WebhookTriggerServiceRegisterRequest": {
+      "type": "object",
+      "properties": {
+        "topic": {
+          "type": "string"
+        },
+        "payload": {
+          "type": "string",
+          "format": "byte"
+        }
+      }
+    },
+    "v1WebhookTriggerTemplate": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "format": "uint64"
+        },
+        "topic": {
+          "type": "string"
+        },
+        "payload": {
+          "type": "string",
+          "format": "byte"
+        },
+        "lastExecutionTime": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "loopedTimes": {
+          "type": "string",
+          "format": "uint64"
+        },
+        "exceptedEndTime": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "exceptedLoopTimes": {
+          "type": "string",
+          "format": "uint64"
+        },
+        "status": {
+          "$ref": "#/definitions/v1TriggerStatus"
+        }
+      },
+      "title": "WebhookTriggerTemplate defines the webhook trigger template"
     }
   }
 }
