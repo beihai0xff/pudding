@@ -15,8 +15,8 @@ import (
 	"github.com/beihai0xff/pudding/pkg/db/mysql"
 )
 
-// WebhookTemplateDAO is the interface for the webhookTemplate repository.
-type WebhookTemplateDAO interface {
+// WebhookTemplate is the interface for the webhook template repository.
+type WebhookTemplate interface {
 	// FindByID find a cron template by id
 	FindByID(ctx context.Context, id uint) (*entity.WebhookTriggerTemplate, error)
 	// PageQuery query cron templates by page
@@ -29,11 +29,11 @@ type WebhookTemplateDAO interface {
 	UpdateStatus(ctx context.Context, id uint, status pb.TriggerStatus) (int64, error)
 }
 
-// webhookTemplate is the implementation of WebhookTemplateDAO
+// webhookTemplate is the implementation of WebhookTemplate
 type webhookTemplate struct{}
 
 // NewWebhookTemplate create a new Webhook template repository
-func NewWebhookTemplate(db *mysql.Client) WebhookTemplateDAO {
+func NewWebhookTemplate(db *mysql.Client) WebhookTemplate {
 	sql.SetDefault(db.GetDB())
 	return &webhookTemplate{}
 }

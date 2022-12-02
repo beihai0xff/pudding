@@ -1,5 +1,7 @@
 package entity
 
+import "time"
+
 // PageQuery is a helper struct to page query
 type PageQuery struct {
 	// Offset is the offset of the query
@@ -8,3 +10,11 @@ type PageQuery struct {
 	// Limit must be greater than 0
 	Offset, Limit int
 }
+
+const (
+
+	// DefaultMaximumLoopTimes Maximum Loop Times of Cron Trigger: 1024
+	DefaultMaximumLoopTimes = 1 << 10
+	// DefaultTemplateActiveDuration is the default active duration of cron template: 30 days
+	DefaultTemplateActiveDuration = 30 * 24 * time.Hour
+)

@@ -1,17 +1,40 @@
-package cron
+package webhook
 
 import (
 	"context"
+	"errors"
 	"fmt"
 
 	pb "github.com/beihai0xff/pudding/api/gen/pudding/trigger/v1"
 	"github.com/beihai0xff/pudding/app/trigger/entity"
-	"github.com/beihai0xff/pudding/pkg/cronexpr"
+	"github.com/beihai0xff/pudding/app/trigger/repo"
+	"github.com/beihai0xff/pudding/pkg/clock"
+	"github.com/beihai0xff/pudding/pkg/db/mysql"
 	"github.com/beihai0xff/pudding/pkg/log"
 )
 
-// FindByID find cron template by id
-func (t *Trigger) FindByID(ctx context.Context, id uint) (*entity.CronTriggerTemplate, error) {
+var (
+	// errWebhookTemplateTopicNotFound is the error of webhook template topic is empty
+	errWebhookTemplateTopicNotFound = errors.New("webhook template topic not found")
+	// errWebhookTemplatePayloadNotFound is the error of webhook template payload is empty
+	errWebhookTemplatePayloadNotFound = errors.New("webhook template topic payload not found")
+)
+
+type Trigger struct {
+	repo repo.WebhookTemplate
+	// wallClock is the clock used to get current time
+	wallClock clock.Clock
+}
+
+func NewTrigger(db *mysql.Client) *Trigger {
+	return &Trigger{
+		repo:      repo.NewWebhookTemplate(db),
+		wallClock: clock.New(),
+	}
+}
+
+// FindByID find webhook template by id
+func (t *Trigger) FindByID(ctx context.Context, id uint) (*entity.WebhookTriggerTemplate, error) {
 	if id <= 0 {
 		err := fmt.Errorf("invalid id, id: %d", id)
 		log.Errorf("%v", err)
@@ -27,9 +50,9 @@ func (t *Trigger) FindByID(ctx context.Context, id uint) (*entity.CronTriggerTem
 	return res, nil
 }
 
-// PageQuery page query cron templates
+// PageQuery page query webhook templates
 func (t *Trigger) PageQuery(ctx context.Context, p *entity.PageQuery,
-	status pb.TriggerStatus) ([]*entity.CronTriggerTemplate, int64, error) {
+	status pb.TriggerStatus) ([]*entity.WebhookTriggerTemplate, int64, error) {
 	// check params
 	if p.Offset < 0 || p.Limit <= 0 {
 		err := fmt.Errorf("invalid offset or limit, offset: %d, limit: %d", p.Offset, p.Limit)
@@ -46,8 +69,8 @@ func (t *Trigger) PageQuery(ctx context.Context, p *entity.PageQuery,
 	return res, count, nil
 }
 
-// Register register a cron template
-func (t *Trigger) Register(ctx context.Context, temp *entity.CronTriggerTemplate) error {
+// Register create a webhook template
+func (t *Trigger) Register(ctx context.Context, temp *entity.WebhookTriggerTemplate) error {
 	// 1. check params
 	if err := t.checkRegisterParams(temp); err != nil {
 		log.Errorf("failed to check params, caused by %v", err)
@@ -63,27 +86,21 @@ func (t *Trigger) Register(ctx context.Context, temp *entity.CronTriggerTemplate
 	return nil
 }
 
-// checkRegisterParams check the params of register cron template
-func (t *Trigger) checkRegisterParams(temp *entity.CronTriggerTemplate) error {
-	// 1. check cron expression
-	if _, err := cronexpr.Parse(temp.CronExpr); err != nil {
-		log.Errorf("Invalid cron expression: %v", err)
-		return fmt.Errorf("invalid cron expression: %w", err)
-	}
-
-	// 2. check topic
+// checkRegisterParams check the params of register webhook template
+func (t *Trigger) checkRegisterParams(temp *entity.WebhookTriggerTemplate) error {
+	// 1. check topic
 	if temp.Topic == "" {
-		log.Error(errCronTemplateTopicNotFound.Error())
-		return errCronTemplateTopicNotFound
+		log.Error(errWebhookTemplateTopicNotFound.Error())
+		return errWebhookTemplateTopicNotFound
 	}
 
-	// 3. check payload
+	// 2. check payload
 	if len(temp.Payload) == 0 {
-		log.Error(errCronTemplatePayloadNotFound.Error())
-		return errCronTemplatePayloadNotFound
+		log.Error(errWebhookTemplatePayloadNotFound.Error())
+		return errWebhookTemplatePayloadNotFound
 	}
 
-	// 4. set default value if necessary
+	// 3. set default value if necessary
 	if temp.ExceptedEndTime.IsZero() {
 		temp.ExceptedEndTime = t.wallClock.Now().Add(entity.DefaultTemplateActiveDuration)
 	}
@@ -91,21 +108,18 @@ func (t *Trigger) checkRegisterParams(temp *entity.CronTriggerTemplate) error {
 		temp.ExceptedLoopTimes = entity.DefaultMaximumLoopTimes
 	}
 
-	temp.LastExecutionTime = defaultLastExecutionTime
 	// default status is Disable
 	temp.Status = pb.TriggerStatus_DISABLED
 
 	return nil
 }
 
-// UpdateStatus update cron template status
+// UpdateStatus update webhook template status
 func (t *Trigger) UpdateStatus(ctx context.Context, id uint, status pb.TriggerStatus) (int64, error) {
-	// 1. set template status
-
-	// 2. update the template status to db
+	// 1. update the template status to db
 	rowsAffected, err := t.repo.UpdateStatus(ctx, id, status)
 	if err != nil {
-		log.Errorf("failed to update cron template, caused by %v", err)
+		log.Errorf("failed to update webhook template, caused by %v", err)
 		return 0, err
 	}
 
