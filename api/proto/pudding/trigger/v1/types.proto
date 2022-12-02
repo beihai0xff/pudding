@@ -19,14 +19,14 @@ message TriggerTemplate {
 // buf:lint:ignore ENUM_VALUE_PREFIX
 // TriggerStatus defines the trigger status
 enum TriggerStatus{
-  // TRIGGER_STATUS_UNKNOWN_UNSPECIFIED is unknown, do not use it
+  // UNKNOWN_UNSPECIFIED is unknown, do not use it
   UNKNOWN_UNSPECIFIED = 0;
-  // TRIGGER_STATUS_ENABLED is the status of trigger which is enabled
+  // ENABLED is the status of trigger which is enabled
   ENABLED = 1;
-  // TRIGGER_STATUS_DISABLED is the status of trigger disabled.
+  // DISABLED is the status of trigger disabled.
   DISABLED = 2;
-  // TRIGGER_STATUS_MAX_TIMES the trigger loop times exceeds the maximum times limit.
+  // MAX_TIMES the trigger loop times exceeds the maximum times limit.
   MAX_TIMES= 3;
-  // TRIGGER_STATUS_MAX_AGE the trigger exceeds the maximum age limit.
+  // MAX_AGE the trigger exceeds the maximum age limit.
   MAX_AGE= 4;
 }

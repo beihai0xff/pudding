@@ -26,15 +26,15 @@ const (
 type TriggerStatus int32
 
 const (
-	// TRIGGER_STATUS_UNKNOWN_UNSPECIFIED is unknown, do not use it
+	// UNKNOWN_UNSPECIFIED is unknown, do not use it
 	TriggerStatus_UNKNOWN_UNSPECIFIED TriggerStatus = 0
-	// TRIGGER_STATUS_ENABLED is the status of trigger which is enabled
+	// ENABLED is the status of trigger which is enabled
 	TriggerStatus_ENABLED TriggerStatus = 1
-	// TRIGGER_STATUS_DISABLED is the status of trigger disabled.
+	// DISABLED is the status of trigger disabled.
 	TriggerStatus_DISABLED TriggerStatus = 2
-	// TRIGGER_STATUS_MAX_TIMES the trigger loop times exceeds the maximum times limit.
+	// MAX_TIMES the trigger loop times exceeds the maximum times limit.
 	TriggerStatus_MAX_TIMES TriggerStatus = 3
-	// TRIGGER_STATUS_MAX_AGE the trigger exceeds the maximum age limit.
+	// MAX_AGE the trigger exceeds the maximum age limit.
 	TriggerStatus_MAX_AGE TriggerStatus = 4
 )
 

@@ -15,12 +15,12 @@ import (
 	"github.com/beihai0xff/pudding/pkg/db/mysql"
 )
 
-// WebhookTemplateDAO is the interface for the WebhookTemplate repository.
+// WebhookTemplateDAO is the interface for the webhookTemplate repository.
 type WebhookTemplateDAO interface {
 	// FindByID find a cron template by id
 	FindByID(ctx context.Context, id uint) (*entity.WebhookTriggerTemplate, error)
 	// PageQuery query cron templates by page
-	PageQuery(ctx context.Context, offset, limit int, status pb.TriggerStatus) (res []*entity.WebhookTriggerTemplate,
+	PageQuery(ctx context.Context, p *entity.PageQuery, status pb.TriggerStatus) (res []*entity.WebhookTriggerTemplate,
 		count int64, err error)
 
 	// Insert create a cron template
@@ -29,15 +29,17 @@ type WebhookTemplateDAO interface {
 	UpdateStatus(ctx context.Context, id uint, status pb.TriggerStatus) (int64, error)
 }
 
-type WebhookTemplate struct {
-}
+// webhookTemplate is the implementation of WebhookTemplateDAO
+type webhookTemplate struct{}
 
-func NewWebhookTemplate(db *mysql.Client) *WebhookTemplate {
+// NewWebhookTemplate create a new Webhook template repository
+func NewWebhookTemplate(db *mysql.Client) WebhookTemplateDAO {
 	sql.SetDefault(db.GetDB())
-	return &WebhookTemplate{}
+	return &webhookTemplate{}
 }
 
-func (dao *WebhookTemplate) FindByID(ctx context.Context, id uint) (*entity.WebhookTriggerTemplate, error) {
+// FindByID find a Webhook template by id
+func (dao *webhookTemplate) FindByID(ctx context.Context, id uint) (*entity.WebhookTriggerTemplate, error) {
 	// SELECT * FROM pudding_webhook_trigger_template WHERE id =
 	res, err := sql.WebhookTriggerTemplate.WithContext(ctx).FindByID(id)
 	if err != nil {
@@ -52,7 +54,8 @@ func (dao *WebhookTemplate) FindByID(ctx context.Context, id uint) (*entity.Webh
 
 }
 
-func (dao *WebhookTemplate) PageQuery(ctx context.Context, offset, limit int, status pb.TriggerStatus) (
+// PageQuery query Webhook templates by page
+func (dao *webhookTemplate) PageQuery(ctx context.Context, p *entity.PageQuery, status pb.TriggerStatus) (
 	[]*entity.WebhookTriggerTemplate, int64, error) {
 
 	var res []*po.WebhookTriggerTemplate
@@ -60,9 +63,9 @@ func (dao *WebhookTemplate) PageQuery(ctx context.Context, offset, limit int, st
 	var err error
 	if status > pb.TriggerStatus_UNKNOWN_UNSPECIFIED && status <= pb.TriggerStatus_MAX_AGE {
 		res, count, err = sql.WebhookTriggerTemplate.WithContext(ctx).
-			Where(sql.WebhookTriggerTemplate.Status.Eq(int32(status))).FindByPage(offset, limit)
+			Where(sql.WebhookTriggerTemplate.Status.Eq(int32(status))).FindByPage(p.Offset, p.Limit)
 	} else {
-		res, count, err = sql.WebhookTriggerTemplate.WithContext(ctx).FindByPage(offset, limit)
+		res, count, err = sql.WebhookTriggerTemplate.WithContext(ctx).FindByPage(p.Offset, p.Limit)
 	}
 
 	if err != nil {
@@ -77,7 +80,8 @@ func (dao *WebhookTemplate) PageQuery(ctx context.Context, offset, limit int, st
 
 }
 
-func (dao *WebhookTemplate) Insert(ctx context.Context, e *entity.WebhookTriggerTemplate) error {
+// Insert create a Webhook template
+func (dao *webhookTemplate) Insert(ctx context.Context, e *entity.WebhookTriggerTemplate) error {
 	if err := validate.Struct(e); err != nil {
 		return fmt.Errorf("invalid validation error: %w", err)
 	}
@@ -94,6 +98,7 @@ func (dao *WebhookTemplate) Insert(ctx context.Context, e *entity.WebhookTrigger
 	return nil
 }
 
-func (dao *WebhookTemplate) UpdateStatus(ctx context.Context, id uint, status pb.TriggerStatus) (int64, error) {
+// UpdateStatus update the status of a Webhook template
+func (dao *webhookTemplate) UpdateStatus(ctx context.Context, id uint, status pb.TriggerStatus) (int64, error) {
 	return sql.WebhookTriggerTemplate.WithContext(ctx).UpdateStatus(ctx, id, status)
 }
