@@ -4,7 +4,7 @@ option go_package = "github.com/beihai0xff/pudding/api/gen/pudding/trigger/v1;tr
 
 import "google/api/annotations.proto";
 import "google/protobuf/empty.proto";
-
+import "google/protobuf/timestamp.proto";
 
 import "pudding/types/v1/response.proto" ;
 import "pudding/trigger/v1/types.proto";
@@ -15,27 +15,28 @@ service CronTriggerService {
   rpc Ping (google.protobuf.Empty) returns (types.v1.PingResponse) {
     // option type is http
     option (google.api.http) = {
-      get: "/pudding/trigger/v1/ping"
+      get: "/pudding/trigger/cron/v1/ping"
     };
   }
 
   // FindOneByID find cron trigger by id
-  rpc FindOneByID (FindOneByIDRequest) returns (FindOneByIDResponse) {
+  rpc FindOneByID (FindOneByIDRequest) returns (CronFindOneByIDResponse) {
     option (google.api.http) = {
-      get: "/pudding/trigger/v1/find_one/{id}"
+      get: "/pudding/trigger/cron/v1/find_one/{id}"
     };
   }
-  // PageQuery page query cron trigger
-  rpc PageQuery (PageQueryRequest) returns (PageQueryResponse) {
+
+  // PageQueryTemplate page query cron trigger template
+  rpc PageQueryTemplate (PageQueryTemplateRequest) returns (CronPageQueryResponse) {
     option (google.api.http) = {
-      get: "/pudding/trigger/v1/page_query/{offset}/{limit}"
+      get: "/pudding/trigger/cron/v1/page_query/template/{offset}/{limit}/{status}"
     };
   }
 
   // Register create a cron trigger
-  rpc Register (RegisterRequest) returns (google.protobuf.Empty) {
+  rpc Register (CronTriggerServiceRegisterRequest) returns (google.protobuf.Empty) {
     option (google.api.http) = {
-      put: "/pudding/trigger/v1/register"
+      put: "/pudding/trigger/cron/v1/register"
       body: "*"
     };
   }
@@ -43,52 +44,30 @@ service CronTriggerService {
   // UpdateStatus update cron trigger status
   rpc UpdateStatus (UpdateStatusRequest) returns (UpdateStatusResponse) {
     option (google.api.http) = {
-      post: "/pudding/trigger/v1/update_status"
+      post: "/pudding/trigger/cron/v1/update_status"
       body: "*"
     };
   }
 
 }
 
-// The UpdateStatus request message.
-message FindOneByIDRequest {
-  // CronTrigger ID
-  uint64 id = 1;
+// CronFindOneByIDRequest The FindOneByID Response message.
+message CronFindOneByIDResponse {
+  CronTriggerTemplate body = 1;
 }
 
-message FindOneByIDResponse {
-  TriggerTemplate body = 3;
-}
-
-// The UpdateStatus request message.
-message PageQueryRequest {
-  uint64 offset = 1;
-  uint64 limit = 2;
-  TriggerStatus status = 3;
-}
-
-message PageQueryResponse {
+// CronPageQueryResponse PageQuery Response body
+message CronPageQueryResponse {
   uint64 count = 1;
-  repeated TriggerTemplate body = 2;
+  repeated CronTriggerTemplate body = 2;
 }
 
-
-message RegisterRequest{
+// CronRegisterRequest Register cron trigger template Request message.
+message CronTriggerServiceRegisterRequest{
   string cron_expr = 1;
   string topic = 2;
   bytes payload = 3;
+  google.protobuf.Timestamp excepted_end_time = 4;
+  uint64 excepted_loop_times = 5;
 }
-
-// UpdateStatus request message.
-message UpdateStatusRequest {
-  // CronTrigger ID
-  uint64 id = 1;
-  // CronTrigger status
-   TriggerStatus status = 2;
-}
-
-message UpdateStatusResponse {
-  int64 rows_affected = 1;
-}
-
 

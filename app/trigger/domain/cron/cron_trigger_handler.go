@@ -33,7 +33,7 @@ func (h *Handler) Ping(context.Context, *emptypb.Empty) (*types.PingResponse, er
 	return &types.PingResponse{Message: "pong"}, nil
 }
 
-func (h *Handler) FindOneByID(ctx context.Context, req *pb.FindOneByIDRequest) (*pb.FindOneByIDResponse, error) {
+func (h *Handler) FindOneByID(ctx context.Context, req *pb.FindOneByIDRequest) (*pb.CronFindOneByIDResponse, error) {
 	if req.Id <= 0 {
 		return nil, errno.BadRequest("Invalid ID", &errdetails.BadRequest_FieldViolation{
 			Field:       "ID",
@@ -48,12 +48,12 @@ func (h *Handler) FindOneByID(ctx context.Context, req *pb.FindOneByIDRequest) (
 			Metadata: map[string]string{"id": strconv.FormatUint(req.Id, 10)},
 		})
 	}
-	return &pb.FindOneByIDResponse{
+	return &pb.CronFindOneByIDResponse{
 		Body: h.convertTemplateEntityToPb(e),
 	}, nil
 }
 
-func (h *Handler) PageQuery(ctx context.Context, req *pb.PageQueryRequest) (*pb.PageQueryResponse, error) {
+func (h *Handler) PageQuery(ctx context.Context, req *pb.PageQueryTemplateRequest) (*pb.CronPageQueryResponse, error) {
 	p := entity.PageQuery{
 		Offset: int(req.Offset),
 		Limit:  int(req.Limit),
@@ -68,13 +68,13 @@ func (h *Handler) PageQuery(ctx context.Context, req *pb.PageQueryRequest) (*pb.
 		})
 	}
 
-	return &pb.PageQueryResponse{
+	return &pb.CronPageQueryResponse{
 		Count: uint64(count),
 		Body:  h.convertTemplateEntitySliceToPb(res),
 	}, nil
 }
 
-func (h *Handler) Register(ctx context.Context, req *pb.RegisterRequest) (*emptypb.Empty, error) {
+func (h *Handler) Register(ctx context.Context, req *pb.CronTriggerServiceRegisterRequest) (*emptypb.Empty, error) {
 	e := &entity.CronTriggerTemplate{
 		CronExpr: req.CronExpr,
 		Topic:    req.Topic,
@@ -119,21 +119,22 @@ func (h *Handler) UpdateStatus(ctx context.Context, req *pb.UpdateStatusRequest)
 	return &pb.UpdateStatusResponse{RowsAffected: rowsAffected}, nil
 }
 
-func (h *Handler) convertTemplateEntityToPb(e *entity.CronTriggerTemplate) *pb.TriggerTemplate {
-	return &pb.TriggerTemplate{
+func (h *Handler) convertTemplateEntityToPb(e *entity.CronTriggerTemplate) *pb.CronTriggerTemplate {
+	return &pb.CronTriggerTemplate{
 		Id:                uint64(e.ID),
 		CronExpr:          e.CronExpr,
 		Topic:             e.Topic,
 		Payload:           e.Payload,
 		LastExecutionTime: timestamppb.New(e.LastExecutionTime),
-		ExceptedEndTime:   timestamppb.New(e.ExceptedEndTime),
 		LoopedTimes:       e.LoopedTimes,
+		ExceptedEndTime:   timestamppb.New(e.ExceptedEndTime),
+		ExceptedLoopTimes: e.ExceptedLoopTimes,
 		Status:            e.Status,
 	}
 }
 
-func (h *Handler) convertTemplateEntitySliceToPb(es []*entity.CronTriggerTemplate) []*pb.TriggerTemplate {
-	res := make([]*pb.TriggerTemplate, len(es))
+func (h *Handler) convertTemplateEntitySliceToPb(es []*entity.CronTriggerTemplate) []*pb.CronTriggerTemplate {
+	res := make([]*pb.CronTriggerTemplate, len(es))
 	for _, e := range es {
 		res = append(res, h.convertTemplateEntityToPb(e))
 	}

@@ -4,15 +4,29 @@ option go_package = "github.com/beihai0xff/pudding/api/gen/pudding/trigger/v1;tr
 
 import "google/protobuf/timestamp.proto";
 
-// TriggerTemplate defines the cron trigger template
-message TriggerTemplate {
+// CronTriggerTemplate defines the cron trigger template
+message CronTriggerTemplate {
   uint64 id = 1;
   string cron_expr = 2;
   string topic = 3;
   bytes payload = 4;
   google.protobuf.Timestamp last_execution_time = 5;
+  uint64 looped_times = 6;
+  google.protobuf.Timestamp excepted_end_time = 7;
+  uint64 excepted_loop_times = 8;
+  TriggerStatus status = 9;
+}
+
+
+// WebhookTriggerTemplate defines the webhook trigger template
+message WebhookTriggerTemplate {
+  uint64 id = 1;
+  string topic = 2;
+  bytes payload = 3;
+  google.protobuf.Timestamp last_execution_time = 4;
+  uint64 looped_times = 5;
   google.protobuf.Timestamp excepted_end_time = 6;
-  uint64 looped_times = 7;
+  uint64 excepted_loop_times = 7;
   TriggerStatus status = 8;
 }
 
@@ -29,4 +43,30 @@ enum TriggerStatus{
   MAX_TIMES= 3;
   // MAX_AGE the trigger exceeds the maximum age limit.
   MAX_AGE= 4;
+}
+
+// FindOneByIDRequest The FindOneByID request message.
+message FindOneByIDRequest {
+  // Trigger template ID
+  uint64 id = 1;
+}
+
+// PageQueryRequest the PageQuery request message.
+message PageQueryTemplateRequest {
+  uint64 offset = 1;
+  uint64 limit = 2;
+  TriggerStatus status = 3;
+}
+
+// UpdateStatus update trigger request message.
+message UpdateStatusRequest {
+  // Trigger ID
+  uint64 id = 1;
+  // Trigger status
+  TriggerStatus status = 2;
+}
+
+// UpdateStatusResponse update trigger response message.
+message UpdateStatusResponse {
+  int64 rows_affected = 1;
 }
