@@ -28,12 +28,15 @@ func (t *Trigger) FindByID(ctx context.Context, id uint) (*entity.CronTriggerTem
 }
 
 // PageQuery page query cron templates
-func (t *Trigger) PageQuery(ctx context.Context, p *entity.PageQuery, status pb.TriggerStatus) ([]*entity.CronTriggerTemplate, int64, error) {
+func (t *Trigger) PageQuery(ctx context.Context, p *entity.PageQuery,
+	status pb.TriggerStatus) ([]*entity.CronTriggerTemplate, int64, error) {
+
 	if p.Offset < 0 || p.Limit <= 0 {
 		err := fmt.Errorf("invalid offset or limit, offset: %d, limit: %d", p.Offset, p.Limit)
 		log.Errorf("%v", err)
 		return nil, 0, err
 	}
+
 	res, count, err := t.repo.PageQuery(ctx, p, status)
 	if err != nil {
 		log.Errorf("failed to PageQuery cron template, caused by %v", err)
