@@ -54,7 +54,11 @@ func (h *Handler) FindOneByID(ctx context.Context, req *pb.FindOneByIDRequest) (
 }
 
 func (h *Handler) PageQuery(ctx context.Context, req *pb.PageQueryRequest) (*pb.PageQueryResponse, error) {
-	res, count, err := h.t.PageQuery(ctx, int(req.Offset), int(req.Limit))
+	p := entity.PageQuery{
+		Offset: int(req.Offset),
+		Limit:  int(req.Limit),
+	}
+	res, count, err := h.t.PageQuery(ctx, &p, req.Status)
 	if err != nil {
 		return nil, errno.InternalError("can not pageQuery cron trigger", &errdetails.ErrorInfo{
 			Reason: err.Error(),

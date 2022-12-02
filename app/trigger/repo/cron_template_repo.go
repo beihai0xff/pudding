@@ -32,7 +32,7 @@ type CronTemplateDAO interface {
 	// FindByID find a cron template by id
 	FindByID(ctx context.Context, id uint) (*entity.CronTriggerTemplate, error)
 	// PageQuery query cron templates by page
-	PageQuery(ctx context.Context, offset, limit int, status pb.TriggerStatus) (res []*entity.CronTriggerTemplate,
+	PageQuery(ctx context.Context, p *entity.PageQuery, status pb.TriggerStatus) (res []*entity.CronTriggerTemplate,
 		count int64, err error)
 
 	// Insert create a cron template
@@ -65,7 +65,7 @@ func (dao *CronTemplate) FindByID(ctx context.Context, id uint) (*entity.CronTri
 
 }
 
-func (dao *CronTemplate) PageQuery(ctx context.Context, offset, limit int, status pb.TriggerStatus) (
+func (dao *CronTemplate) PageQuery(ctx context.Context, p *entity.PageQuery, status pb.TriggerStatus) (
 	[]*entity.CronTriggerTemplate, int64, error) {
 
 	var res []*po.CronTriggerTemplate
@@ -73,9 +73,9 @@ func (dao *CronTemplate) PageQuery(ctx context.Context, offset, limit int, statu
 	var err error
 	if status > pb.TriggerStatus_UNKNOWN_UNSPECIFIED && status <= pb.TriggerStatus_MAX_AGE {
 		res, count, err = sql.CronTriggerTemplate.WithContext(ctx).
-			Where(sql.CronTriggerTemplate.Status.Eq(int32(status))).FindByPage(offset, limit)
+			Where(sql.CronTriggerTemplate.Status.Eq(int32(status))).FindByPage(p.Offset, p.Limit)
 	} else {
-		res, count, err = sql.CronTriggerTemplate.WithContext(ctx).FindByPage(offset, limit)
+		res, count, err = sql.CronTriggerTemplate.WithContext(ctx).FindByPage(p.Offset, p.Limit)
 	}
 
 	if err != nil {

@@ -64,6 +64,7 @@ message FindOneByIDResponse {
 message PageQueryRequest {
   uint64 offset = 1;
   uint64 limit = 2;
+  TriggerStatus status = 3;
 }
 
 message PageQueryResponse {
