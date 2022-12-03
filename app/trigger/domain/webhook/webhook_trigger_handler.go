@@ -53,9 +53,7 @@ func (h *Handler) FindOneByID(ctx context.Context, req *pb.FindOneByIDRequest) (
 	}, nil
 }
 
-func (h *Handler) PageQueryTemplate(ctx context.Context,
-	req *pb.PageQueryTemplateRequest) (*pb.WebhookPageQueryResponse, error) {
-
+func (h *Handler) PageQueryTemplate(ctx context.Context, req *pb.PageQueryTemplateRequest) (*pb.WebhookPageQueryResponse, error) {
 	p := entity.PageQuery{
 		Offset: int(req.Offset),
 		Limit:  int(req.Limit),
