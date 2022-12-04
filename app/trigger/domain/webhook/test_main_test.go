@@ -15,6 +15,8 @@ import (
 
 var testTrigger *Trigger
 
+const testHTTPDomain = "https://example.com"
+
 func TestMain(m *testing.M) {
 
 	// newMySQLServer()
@@ -22,8 +24,9 @@ func TestMain(m *testing.M) {
 	createTable(db)
 
 	testTrigger = &Trigger{
-		repo:      repo.NewWebhookTemplate(db),
-		wallClock: clock.NewFakeClock(time.Date(2022, 1, 1, 0, 0, 0, 0, time.UTC)),
+		webhookPrefix: testHTTPDomain,
+		repo:          repo.NewWebhookTemplate(db),
+		wallClock:     clock.NewFakeClock(time.Date(2022, 1, 1, 0, 0, 0, 0, time.UTC)),
 	}
 
 	code := m.Run()
