@@ -91,8 +91,7 @@ func (h *Handler) Register(ctx context.Context,
 		})
 	}
 	return &pb.WebhookRegisterResponse{
-		// TODO: implement auto generate webhook url
-		Url: "",
+		Url: h.t.genWebhookURL(e.ID),
 	}, nil
 }
 

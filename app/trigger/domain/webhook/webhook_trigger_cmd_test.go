@@ -157,3 +157,22 @@ func TestTrigger_UpdateStatus(t1 *testing.T) {
 		})
 	}
 }
+
+func TestTrigger_genWebhookURL(t1 *testing.T) {
+	type args struct {
+		id uint
+	}
+	tests := []struct {
+		name string
+		args args
+		want string
+	}{
+		{"normal", args{1}, testHTTPDomain + "/pudding/trigger/webhook/v1/call/" + "1"},
+		{"normal", args{2}, testHTTPDomain + "/pudding/trigger/webhook/v1/call/" + "2"},
+	}
+	for _, tt := range tests {
+		t1.Run(tt.name, func(t1 *testing.T) {
+			assert.Equalf(t1, tt.want, testTrigger.genWebhookURL(tt.args.id), "genWebhookURL(%v)", tt.args.id)
+		})
+	}
+}

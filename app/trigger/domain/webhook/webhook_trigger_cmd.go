@@ -20,8 +20,11 @@ var (
 	errWebhookTemplatePayloadNotFound = errors.New("webhook template topic payload not found")
 )
 
+const webhookURL = "%s/pudding/trigger/webhook/v1/call/%d"
+
 type Trigger struct {
-	repo repo.WebhookTemplate
+	webhookPrefix string
+	repo          repo.WebhookTemplate
 	// wallClock is the clock used to get current time
 	wallClock clock.Clock
 }
@@ -124,4 +127,9 @@ func (t *Trigger) UpdateStatus(ctx context.Context, id uint, status pb.TriggerSt
 	}
 
 	return rowsAffected, nil
+}
+
+// genWebhookURL generate webhook URL by trigger template id
+func (t *Trigger) genWebhookURL(id uint) string {
+	return fmt.Sprintf(webhookURL, t.webhookPrefix, id)
 }
