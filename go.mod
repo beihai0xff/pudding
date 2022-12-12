@@ -16,7 +16,7 @@ require (
 	github.com/grpc-ecosystem/grpc-gateway/v2 v2.14.0
 	github.com/hashicorp/consul/api v1.18.0
 	github.com/jinzhu/copier v0.3.6-0.20221021060712-6a4be2a76157
-	github.com/klauspost/compress v1.15.12
+	github.com/klauspost/compress v1.15.13
 	github.com/spf13/viper v1.14.0
 	github.com/stretchr/testify v1.8.1
 	github.com/vmihailenco/msgpack/v5 v5.3.5
