@@ -39,3 +39,11 @@ func WithMySQLDSN(dsn string) OptionFunc {
 		}
 	}
 }
+
+func WithWebhookPrefix(webhookPrefix string) OptionFunc {
+	return func(config *Config) {
+		if webhookPrefix != "" {
+			config.WebhookPrefix = webhookPrefix
+		}
+	}
+}

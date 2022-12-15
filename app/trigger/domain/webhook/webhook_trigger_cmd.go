@@ -5,8 +5,12 @@ import (
 	"errors"
 	"fmt"
 
+	"github.com/google/uuid"
+
+	"github.com/beihai0xff/pudding/api/gen/pudding/scheduler/v1"
 	pb "github.com/beihai0xff/pudding/api/gen/pudding/trigger/v1"
 	"github.com/beihai0xff/pudding/app/trigger/entity"
+	"github.com/beihai0xff/pudding/app/trigger/pkg/configs"
 	"github.com/beihai0xff/pudding/app/trigger/repo"
 	"github.com/beihai0xff/pudding/pkg/clock"
 	"github.com/beihai0xff/pudding/pkg/db/mysql"
@@ -24,15 +28,19 @@ const webhookURL = "%s/pudding/trigger/webhook/v1/call/%d"
 
 type Trigger struct {
 	webhookPrefix string
-	repo          repo.WebhookTemplate
+
+	schedulerClient scheduler.SchedulerServiceClient
+	repo            repo.WebhookTemplate
 	// wallClock is the clock used to get current time
 	wallClock clock.Clock
 }
 
-func NewTrigger(db *mysql.Client) *Trigger {
+func NewTrigger(db *mysql.Client, client scheduler.SchedulerServiceClient) *Trigger {
 	return &Trigger{
-		repo:      repo.NewWebhookTemplate(db),
-		wallClock: clock.New(),
+		webhookPrefix:   configs.GetWebhookPrefix(),
+		schedulerClient: client,
+		repo:            repo.NewWebhookTemplate(db),
+		wallClock:       clock.New(),
 	}
 }
 
@@ -132,4 +140,23 @@ func (t *Trigger) UpdateStatus(ctx context.Context, id uint, status pb.TriggerSt
 // genWebhookURL generate webhook URL by trigger template id
 func (t *Trigger) genWebhookURL(id uint) string {
 	return fmt.Sprintf(webhookURL, t.webhookPrefix, id)
+}
+
+// Hook trigger a webhook by id
+func (t *Trigger) Hook(ctx context.Context, id uint) (string, error) {
+	template, err := t.FindByID(ctx, id)
+	if err != nil {
+		return "", fmt.Errorf("failed to find webhook template, caused by %w", err)
+	}
+	uuid := uuid.NewString()
+	if _, err := t.schedulerClient.SendDelayMessage(ctx, &scheduler.SendDelayMessageRequest{
+		Topic:        template.Topic,
+		Key:          uuid,
+		Payload:      template.Payload,
+		DeliverAfter: template.DeliverAfter,
+	}); err != nil {
+		return "", fmt.Errorf("failed to send delay message, caused by %w", err)
+	}
+
+	return uuid, nil
 }

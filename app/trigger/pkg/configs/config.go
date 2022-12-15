@@ -13,8 +13,9 @@ type Config struct {
 	MySQL *conf.MySQLConfig `json:"mysql_config" yaml:"mysql_config" mapstructure:"mysql_config"`
 
 	// Logger log config for output config message, do not use it
-	Logger    map[string]*conf.LogConfig `json:"log_config" yaml:"log_config" mapstructure:"log_config"`
-	ConsulURL string                     `json:"consul_url" yaml:"consul_url" mapstructure:"consul_url"`
+	Logger        map[string]*conf.LogConfig `json:"log_config" yaml:"log_config" mapstructure:"log_config"`
+	ConsulURL     string                     `json:"consul_url" yaml:"consul_url" mapstructure:"consul_url"`
+	WebhookPrefix string                     `json:"webhook_prefix" yaml:"webhook_prefix" mapstructure:"webhook_prefix"`
 }
 
 // GetMySQLConfig returns the MySQL config.
@@ -25,4 +26,9 @@ func GetMySQLConfig() *conf.MySQLConfig {
 // GetConsulURL returns the consul url.
 func GetConsulURL() string {
 	return c.ConsulURL
+}
+
+// GetWebhookPrefix returns the webhook prefix.
+func GetWebhookPrefix() string {
+	return c.WebhookPrefix
 }

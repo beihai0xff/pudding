@@ -29,6 +29,7 @@ func TestWebhookTemplate_Insert(t *testing.T) {
 				e: &entity.WebhookTriggerTemplate{
 					Topic:             "test",
 					Payload:           []byte("hello"),
+					DeliverAfter:      10,
 					ExceptedEndTime:   time.Date(2025, 1, 1, 0, 0, 0, 0, time.UTC),
 					ExceptedLoopTimes: 1,
 					LoopedTimes:       1,
@@ -53,6 +54,7 @@ func TestWebhookTemplate_Update(t *testing.T) {
 	e := &entity.WebhookTriggerTemplate{
 		Topic:             "test",
 		Payload:           []byte("hello"),
+		DeliverAfter:      10,
 		ExceptedEndTime:   time.Date(2025, 1, 1, 0, 0, 0, 0, time.UTC),
 		ExceptedLoopTimes: 1,
 		LoopedTimes:       1,

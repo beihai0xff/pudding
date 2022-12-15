@@ -13,6 +13,8 @@ type WebhookTriggerTemplate struct {
 	Topic string `validate:"required"`
 	// Payload the message payload
 	Payload []byte `validate:"required"`
+	// Message DeliverAfter time (Seconds)
+	DeliverAfter int64 `json:"deliver_after" validate:"required"`
 
 	// LoopedTimes already loop times
 	LoopedTimes uint64 `json:"looped_times"`
