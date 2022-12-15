@@ -146,7 +146,7 @@ func (t *Trigger) genWebhookURL(id uint) string {
 func (t *Trigger) Hook(ctx context.Context, id uint) (string, error) {
 	template, err := t.FindByID(ctx, id)
 	if err != nil {
-		return "", fmt.Errorf("failed to find webhook template, caused by %v", err)
+		return "", fmt.Errorf("failed to find webhook template, caused by %w", err)
 	}
 	uuid := uuid.NewString()
 	if _, err := t.schedulerClient.SendDelayMessage(ctx, &scheduler.SendDelayMessageRequest{
@@ -155,7 +155,7 @@ func (t *Trigger) Hook(ctx context.Context, id uint) (string, error) {
 		Payload:      template.Payload,
 		DeliverAfter: template.DeliverAfter,
 	}); err != nil {
-		return "", fmt.Errorf("failed to send delay message, caused by %v", err)
+		return "", fmt.Errorf("failed to send delay message, caused by %w", err)
 	}
 
 	return uuid, nil
