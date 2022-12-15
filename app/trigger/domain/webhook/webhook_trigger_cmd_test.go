@@ -29,6 +29,7 @@ func TestTrigger_Register(t1 *testing.T) {
 					ID:                0,
 					Topic:             "test",
 					Payload:           []byte("hello"),
+					DeliverAfter:      10,
 					LoopedTimes:       0,
 					ExceptedLoopTimes: 10,
 				},
@@ -60,13 +61,15 @@ func TestTrigger_checkRegisterParams(t1 *testing.T) {
 			name: "normal",
 			args: args{
 				&entity.WebhookTriggerTemplate{
-					Topic:   "test",
-					Payload: []byte("hello"),
+					Topic:        "test",
+					Payload:      []byte("hello"),
+					DeliverAfter: 10,
 				},
 			},
 			want: &entity.WebhookTriggerTemplate{
 				Topic:             "test",
 				Payload:           []byte("hello"),
+				DeliverAfter:      10,
 				ExceptedEndTime:   testTrigger.wallClock.Now().Add(entity.DefaultTemplateActiveDuration),
 				ExceptedLoopTimes: entity.DefaultMaximumLoopTimes,
 				Status:            pb.TriggerStatus_DISABLED,
@@ -112,6 +115,7 @@ func TestTrigger_UpdateStatus(t1 *testing.T) {
 		ID:                0,
 		Topic:             "test",
 		Payload:           []byte("hello"),
+		DeliverAfter:      10,
 		LoopedTimes:       0,
 		ExceptedEndTime:   testTrigger.wallClock.Now().AddDate(1, 1, 0),
 		ExceptedLoopTimes: 10,

@@ -1,4 +1,5 @@
 name: pudding
+webhook_prefix: http://127.0.0.1:8081
 consul_url: http://127.0.0.1:8500
 mysql_config:
   dsn: root:my-secret-pw@tcp(localhost:3306)/test?charset=utf8mb4&parseTime=True&loc=Local

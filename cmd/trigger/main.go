@@ -24,12 +24,14 @@ var (
 
 	confPath = flag.String("config", "./config.yaml", "The server config file path")
 	mysqlDSN = flag.String("mysql", "", "The server mysql dsn")
+
+	webhookPrefix = flag.String("webhook_prefix", "", "The server webhook prefix")
 )
 
 func main() {
 	flag.Parse()
 
-	configs.Init(*confPath, configs.WithMySQLDSN(*mysqlDSN))
+	configs.Init(*confPath, configs.WithMySQLDSN(*mysqlDSN), configs.WithWebhookPrefix(*webhookPrefix))
 	registerLogger()
 
 	interrupt := make(chan os.Signal, 1)
