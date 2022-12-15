@@ -20,6 +20,8 @@ type WebhookTriggerTemplate struct {
 	Topic string `gorm:"column:topic;type:varchar(255);not null;default:'unknown';comment:'message topic'" copier:"must,nopanic"`
 	// Payload the message payload
 	Payload []byte `gorm:"column:payload;type:TEXT;not null;comment:'message content'" copier:"must,nopanic"`
+	// Message DeliverAfter time (Seconds)
+	DeliverAfter int64 `gorm:"column:deliver_after;type:int;not null;comment:'message deliver after seconds'" copier:"must,nopanic"`
 
 	// LoopedTimes already loop times
 	LoopedTimes uint64 `gorm:"column:looped_times;type:int unsigned;not null;default:0;comment:'already loop times'" copier:"must,nopanic"`
