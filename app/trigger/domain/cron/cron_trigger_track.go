@@ -6,15 +6,14 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/beihai0xff/pudding/api/gen/pudding/scheduler/v1"
 	pb "github.com/beihai0xff/pudding/api/gen/pudding/trigger/v1"
-	"github.com/beihai0xff/pudding/app/scheduler"
 	"github.com/beihai0xff/pudding/app/trigger/entity"
 	"github.com/beihai0xff/pudding/app/trigger/repo"
 	"github.com/beihai0xff/pudding/pkg/clock"
 	"github.com/beihai0xff/pudding/pkg/cronexpr"
 	"github.com/beihai0xff/pudding/pkg/db/mysql"
 	"github.com/beihai0xff/pudding/pkg/log"
-	"github.com/beihai0xff/pudding/types"
 )
 
 const (
@@ -40,17 +39,17 @@ var (
 )
 
 type Trigger struct {
-	s    scheduler.Scheduler
-	repo repo.CronTemplateDAO
+	schedulerClient scheduler.SchedulerServiceClient
+	repo            repo.CronTemplateDAO
 	// wallClock is the clock used to get current time
 	wallClock clock.Clock
 }
 
-func NewTrigger(db *mysql.Client, s scheduler.Scheduler) *Trigger {
+func NewTrigger(db *mysql.Client, client scheduler.SchedulerServiceClient) *Trigger {
 	return &Trigger{
-		s:         s,
-		repo:      repo.NewCronTemplate(db),
-		wallClock: clock.New(),
+		schedulerClient: client,
+		repo:            repo.NewCronTemplate(db),
+		wallClock:       clock.New(),
 	}
 }
 
@@ -91,15 +90,15 @@ func (t *Trigger) Tracking(temp *entity.CronTriggerTemplate) error {
 	}
 
 	// produce the message
-	msg := &types.Message{
+	msg := &scheduler.SendDelayMessageRequest{
 		Topic:     temp.Topic,
 		Key:       t.formatMessageKey(temp),
 		Payload:   temp.Payload,
 		DeliverAt: nextTime.Unix(),
 	}
 
-	if err = t.s.Produce(context.Background(), msg); err != nil {
-		log.Errorf("failed to produce message, caused by %v", err)
+	if _, err = t.schedulerClient.SendDelayMessage(context.Background(), msg); err != nil {
+		log.Errorf("failed to send DelayMessage, caused by %v", err)
 		return err
 	}
 
