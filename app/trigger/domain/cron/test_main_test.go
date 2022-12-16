@@ -11,20 +11,20 @@ import (
 	"github.com/beihai0xff/pudding/pkg/clock"
 	"github.com/beihai0xff/pudding/pkg/db/mysql"
 	"github.com/beihai0xff/pudding/pkg/log"
+	"github.com/beihai0xff/pudding/test/mock/api/gen/pudding/scheduler/v1"
 )
 
 var testTrigger *Trigger
 
 func TestMain(m *testing.M) {
-
 	// newMySQLServer()
 	db := newMySQLClient()
 	createTable(db)
 
 	testTrigger = &Trigger{
-		s:         nil,
-		repo:      repo.NewCronTemplate(db),
-		wallClock: clock.NewFakeClock(time.Date(2022, 1, 1, 0, 0, 0, 0, time.UTC)),
+		schedulerClient: mock.NewMockSchedulerServiceClient(),
+		repo:            repo.NewCronTemplate(db),
+		wallClock:       clock.NewFakeClock(time.Date(2022, 1, 1, 0, 0, 0, 0, time.UTC)),
 	}
 
 	code := m.Run()
