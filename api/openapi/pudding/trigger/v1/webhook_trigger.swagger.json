@@ -359,6 +359,18 @@
         "payload": {
           "type": "string",
           "format": "byte"
+        },
+        "deliverAfter": {
+          "type": "string",
+          "format": "int64"
+        },
+        "exceptedEndTime": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "exceptedLoopTimes": {
+          "type": "string",
+          "format": "uint64"
         }
       }
     },
@@ -375,6 +387,10 @@
         "payload": {
           "type": "string",
           "format": "byte"
+        },
+        "deliverAfter": {
+          "type": "string",
+          "format": "int64"
         },
         "lastExecutionTime": {
           "type": "string",

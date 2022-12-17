@@ -23,11 +23,12 @@ message WebhookTriggerTemplate {
   uint64 id = 1;
   string topic = 2;
   bytes payload = 3;
-  google.protobuf.Timestamp last_execution_time = 4;
-  uint64 looped_times = 5;
-  google.protobuf.Timestamp excepted_end_time = 6;
-  uint64 excepted_loop_times = 7;
-  TriggerStatus status = 8;
+  int64 deliver_after = 4;
+  google.protobuf.Timestamp last_execution_time = 5;
+  uint64 looped_times = 6;
+  google.protobuf.Timestamp excepted_end_time = 7;
+  uint64 excepted_loop_times = 8;
+  TriggerStatus status = 9;
 }
 
 // buf:lint:ignore ENUM_VALUE_PREFIX
