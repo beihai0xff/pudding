@@ -84,7 +84,7 @@ message WebhookTriggerServiceCallRequest{
 
 message WebhookTriggerServiceCallResponse{
   // message_id delay message id
-  string message_id = 1;
+  string message_key = 1;
 }
 
 

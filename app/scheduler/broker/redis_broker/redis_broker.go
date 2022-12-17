@@ -88,7 +88,7 @@ func (q *DelayQueue) Consume(ctx context.Context, now, batchSize int64,
 			// 处理消息
 			err = fn(ctx, &msg)
 			if err != nil {
-				log.Errorf("failed to handle message: %+v, caused by: %v", msg, err)
+				log.Errorf("failed to handle message: %s, caused by: %v", msg.String(), err)
 				continue
 			}
 
@@ -133,13 +133,13 @@ func (q *DelayQueue) getFromZSetByScore(timeSlice string, now, batchSize int64) 
 			log.Errorf("failed to get message body from hashTable: %v", err)
 			continue
 		}
-		msg := &types.Message{}
-		if err := msgpack.Decode(body, msg); err != nil {
+		msg := types.Message{}
+		if err := msgpack.Decode(body, &msg); err != nil {
 			log.Errorf("failed to decode message body: %v", err)
 			continue
 		}
-		log.Debugf("get message from zset: %+v", msg)
-		res = append(res, *msg)
+		log.Debugf("get message from zset: %s", msg.String())
+		res = append(res, msg)
 	}
 	return res, nil
 }
