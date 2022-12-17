@@ -47,6 +47,14 @@ service WebhookTriggerService {
     };
   }
 
+  // Call call a webhook trigger
+  rpc Call (WebhookTriggerServiceCallRequest) returns (WebhookTriggerServiceCallResponse) {
+    option (google.api.http) = {
+      put: "/pudding/trigger/webhook/v1/call/{id}"
+      body: "*"
+    };
+  }
+
 }
 
 // WebhookFindOneByIDRequest The FindOneByID Response message.
@@ -65,7 +73,18 @@ message WebhookTriggerServiceRegisterRequest{
 }
 
 message WebhookRegisterResponse{
+  // url is webhook url
   string url = 1;
+}
+
+message WebhookTriggerServiceCallRequest{
+  // trigger template ID
+  uint64 id = 1;
+}
+
+message WebhookTriggerServiceCallResponse{
+  // message_id delay message id
+  string message_id = 1;
 }
 
 

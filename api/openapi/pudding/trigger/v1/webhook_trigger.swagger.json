@@ -16,6 +16,47 @@
     "application/json"
   ],
   "paths": {
+    "/pudding/trigger/webhook/v1/call/{id}": {
+      "put": {
+        "summary": "Call call a webhook trigger",
+        "operationId": "WebhookTriggerService_Call",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v1WebhookTriggerServiceCallResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "id",
+            "description": "trigger template ID",
+            "in": "path",
+            "required": true,
+            "type": "string",
+            "format": "uint64"
+          },
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "type": "object"
+            }
+          }
+        ],
+        "tags": [
+          "WebhookTriggerService"
+        ]
+      }
+    },
     "/pudding/trigger/webhook/v1/find_one/{id}": {
       "get": {
         "summary": "FindOneByID find webhook trigger by id",
@@ -295,7 +336,17 @@
       "type": "object",
       "properties": {
         "url": {
-          "type": "string"
+          "type": "string",
+          "title": "url is webhook url"
+        }
+      }
+    },
+    "v1WebhookTriggerServiceCallResponse": {
+      "type": "object",
+      "properties": {
+        "messageId": {
+          "type": "string",
+          "title": "message_id delay message id"
         }
       }
     },

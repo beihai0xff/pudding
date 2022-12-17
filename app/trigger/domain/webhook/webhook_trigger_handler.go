@@ -124,6 +124,21 @@ func (h *Handler) UpdateStatus(ctx context.Context, req *pb.UpdateStatusRequest)
 	return &pb.UpdateStatusResponse{RowsAffected: rowsAffected}, nil
 }
 
+func (h *Handler) Call(ctx context.Context, req *pb.WebhookTriggerServiceCallRequest) (
+	*pb.WebhookTriggerServiceCallResponse, error) {
+
+	messageID, err := h.t.Call(ctx, uint(req.GetId()))
+	if err != nil {
+		return nil, errno.InternalError("can not call webhook", &errdetails.ErrorInfo{
+			Reason:   err.Error(),
+			Domain:   webhookTriggerDomain,
+			Metadata: map[string]string{"id": strconv.FormatUint(req.Id, 10)},
+		})
+	}
+
+	return &pb.WebhookTriggerServiceCallResponse{MessageId: messageID}, nil
+}
+
 func (h *Handler) convertTemplateEntityToPb(e *entity.WebhookTriggerTemplate) *pb.WebhookTriggerTemplate {
 	return &pb.WebhookTriggerTemplate{
 		Id:                uint64(e.ID),
