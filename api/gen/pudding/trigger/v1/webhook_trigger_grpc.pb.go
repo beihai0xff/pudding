@@ -30,6 +30,8 @@ type WebhookTriggerServiceClient interface {
 	Register(ctx context.Context, in *WebhookTriggerServiceRegisterRequest, opts ...grpc.CallOption) (*WebhookRegisterResponse, error)
 	// UpdateStatus update webhook trigger status
 	UpdateStatus(ctx context.Context, in *UpdateStatusRequest, opts ...grpc.CallOption) (*UpdateStatusResponse, error)
+	// Call call a webhook trigger
+	Call(ctx context.Context, in *WebhookTriggerServiceCallRequest, opts ...grpc.CallOption) (*WebhookTriggerServiceCallResponse, error)
 }
 
 type webhookTriggerServiceClient struct {
@@ -85,6 +87,15 @@ func (c *webhookTriggerServiceClient) UpdateStatus(ctx context.Context, in *Upda
 	return out, nil
 }
 
+func (c *webhookTriggerServiceClient) Call(ctx context.Context, in *WebhookTriggerServiceCallRequest, opts ...grpc.CallOption) (*WebhookTriggerServiceCallResponse, error) {
+	out := new(WebhookTriggerServiceCallResponse)
+	err := c.cc.Invoke(ctx, "/pudding.trigger.v1.WebhookTriggerService/Call", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // WebhookTriggerServiceServer is the server API for WebhookTriggerService service.
 // All implementations must embed UnimplementedWebhookTriggerServiceServer
 // for forward compatibility
@@ -99,6 +110,8 @@ type WebhookTriggerServiceServer interface {
 	Register(context.Context, *WebhookTriggerServiceRegisterRequest) (*WebhookRegisterResponse, error)
 	// UpdateStatus update webhook trigger status
 	UpdateStatus(context.Context, *UpdateStatusRequest) (*UpdateStatusResponse, error)
+	// Call call a webhook trigger
+	Call(context.Context, *WebhookTriggerServiceCallRequest) (*WebhookTriggerServiceCallResponse, error)
 	mustEmbedUnimplementedWebhookTriggerServiceServer()
 }
 
@@ -120,6 +133,9 @@ func (UnimplementedWebhookTriggerServiceServer) Register(context.Context, *Webho
 }
 func (UnimplementedWebhookTriggerServiceServer) UpdateStatus(context.Context, *UpdateStatusRequest) (*UpdateStatusResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method UpdateStatus not implemented")
+}
+func (UnimplementedWebhookTriggerServiceServer) Call(context.Context, *WebhookTriggerServiceCallRequest) (*WebhookTriggerServiceCallResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method Call not implemented")
 }
 func (UnimplementedWebhookTriggerServiceServer) mustEmbedUnimplementedWebhookTriggerServiceServer() {}
 
@@ -224,6 +240,24 @@ func _WebhookTriggerService_UpdateStatus_Handler(srv interface{}, ctx context.Co
 	return interceptor(ctx, in, info, handler)
 }
 
+func _WebhookTriggerService_Call_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(WebhookTriggerServiceCallRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(WebhookTriggerServiceServer).Call(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/pudding.trigger.v1.WebhookTriggerService/Call",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(WebhookTriggerServiceServer).Call(ctx, req.(*WebhookTriggerServiceCallRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // WebhookTriggerService_ServiceDesc is the grpc.ServiceDesc for WebhookTriggerService service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -250,6 +284,10 @@ var WebhookTriggerService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "UpdateStatus",
 			Handler:    _WebhookTriggerService_UpdateStatus_Handler,
+		},
+		{
+			MethodName: "Call",
+			Handler:    _WebhookTriggerService_Call_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

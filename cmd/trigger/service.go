@@ -19,8 +19,12 @@ import (
 	"google.golang.org/grpc/keepalive"
 	"google.golang.org/grpc/reflection"
 
+	_ "github.com/mbobakov/grpc-consul-resolver" // It's important
+
+	"github.com/beihai0xff/pudding/api/gen/pudding/scheduler/v1"
 	pb "github.com/beihai0xff/pudding/api/gen/pudding/trigger/v1"
 	"github.com/beihai0xff/pudding/app/trigger/domain/cron"
+	"github.com/beihai0xff/pudding/app/trigger/domain/webhook"
 	"github.com/beihai0xff/pudding/app/trigger/pkg/configs"
 	"github.com/beihai0xff/pudding/pkg/db/mysql"
 	"github.com/beihai0xff/pudding/pkg/log"
@@ -61,8 +65,22 @@ func startGrpcService(lis net.Listener) (*grpc.Server, *health.Server) {
 
 	// register Trigger server
 	db := mysql.New(configs.GetMySQLConfig())
-	handler := cron.NewHandler(cron.NewTrigger(db, nil))
-	pb.RegisterCronTriggerServiceServer(server, handler)
+	// create grpc dail
+	conn, err := grpc.Dial(
+		configs.GetSchedulerConsulURL(),
+		grpc.WithTransportCredentials(insecure.NewCredentials()),
+		grpc.WithDefaultServiceConfig(`{"loadBalancingPolicy": "round_robin"}`),
+	)
+	if err != nil {
+		log.Fatalf("grpc Dial err: %v", err)
+	}
+	defer conn.Close()
+	// create scheduler service client
+	schedulerClient := scheduler.NewSchedulerServiceClient(conn)
+	cronHandler := cron.NewHandler(cron.NewTrigger(db, schedulerClient))
+	pb.RegisterCronTriggerServiceServer(server, cronHandler)
+	webhookHandler := webhook.NewHandler(webhook.NewTrigger(db, schedulerClient))
+	pb.RegisterWebhookTriggerServiceServer(server, webhookHandler)
 	// register health check server
 	healthcheck := health.NewServer()
 	pbhealth.RegisterHealthServer(server, healthcheck)

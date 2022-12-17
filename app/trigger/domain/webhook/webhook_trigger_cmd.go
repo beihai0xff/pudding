@@ -142,21 +142,21 @@ func (t *Trigger) genWebhookURL(id uint) string {
 	return fmt.Sprintf(webhookURL, t.webhookPrefix, id)
 }
 
-// Hook trigger a webhook by id
-func (t *Trigger) Hook(ctx context.Context, id uint) (string, error) {
+// Call trigger a webhook by id
+func (t *Trigger) Call(ctx context.Context, id uint) (string, error) {
 	template, err := t.FindByID(ctx, id)
 	if err != nil {
 		return "", fmt.Errorf("failed to find webhook template, caused by %w", err)
 	}
-	uuid := uuid.NewString()
+	messageID := uuid.NewString()
 	if _, err := t.schedulerClient.SendDelayMessage(ctx, &scheduler.SendDelayMessageRequest{
 		Topic:        template.Topic,
-		Key:          uuid,
+		Key:          messageID,
 		Payload:      template.Payload,
 		DeliverAfter: template.DeliverAfter,
 	}); err != nil {
 		return "", fmt.Errorf("failed to send delay message, caused by %w", err)
 	}
 
-	return uuid, nil
+	return messageID, nil
 }
