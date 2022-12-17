@@ -148,15 +148,15 @@ func (t *Trigger) Call(ctx context.Context, id uint) (string, error) {
 	if err != nil {
 		return "", fmt.Errorf("failed to find webhook template, caused by %w", err)
 	}
-	messageID := uuid.NewString()
+	messageKey := uuid.NewString()
 	if _, err := t.schedulerClient.SendDelayMessage(ctx, &scheduler.SendDelayMessageRequest{
 		Topic:        template.Topic,
-		Key:          messageID,
+		Key:          messageKey,
 		Payload:      template.Payload,
 		DeliverAfter: template.DeliverAfter,
 	}); err != nil {
 		return "", fmt.Errorf("failed to send delay message, caused by %w", err)
 	}
 
-	return messageID, nil
+	return messageKey, nil
 }

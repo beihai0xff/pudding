@@ -344,7 +344,7 @@
     "v1WebhookTriggerServiceCallResponse": {
       "type": "object",
       "properties": {
-        "messageId": {
+        "messageKey": {
           "type": "string",
           "title": "message_id delay message id"
         }

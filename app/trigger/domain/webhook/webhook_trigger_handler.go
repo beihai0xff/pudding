@@ -127,7 +127,7 @@ func (h *Handler) UpdateStatus(ctx context.Context, req *pb.UpdateStatusRequest)
 func (h *Handler) Call(ctx context.Context, req *pb.WebhookTriggerServiceCallRequest) (
 	*pb.WebhookTriggerServiceCallResponse, error) {
 
-	messageID, err := h.t.Call(ctx, uint(req.GetId()))
+	messageKey, err := h.t.Call(ctx, uint(req.GetId()))
 	if err != nil {
 		return nil, errno.InternalError("can not call webhook", &errdetails.ErrorInfo{
 			Reason:   err.Error(),
@@ -136,7 +136,7 @@ func (h *Handler) Call(ctx context.Context, req *pb.WebhookTriggerServiceCallReq
 		})
 	}
 
-	return &pb.WebhookTriggerServiceCallResponse{MessageId: messageID}, nil
+	return &pb.WebhookTriggerServiceCallResponse{MessageKey: messageKey}, nil
 }
 
 func (h *Handler) convertTemplateEntityToPb(e *entity.WebhookTriggerTemplate) *pb.WebhookTriggerTemplate {
