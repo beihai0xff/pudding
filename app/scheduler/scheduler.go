@@ -8,13 +8,14 @@ import (
 
 	"github.com/google/uuid"
 
+	"github.com/beihai0xff/pudding/api/gen/pudding/types/v1"
 	"github.com/beihai0xff/pudding/app/scheduler/broker"
 	"github.com/beihai0xff/pudding/app/scheduler/connector"
 	"github.com/beihai0xff/pudding/configs"
 	"github.com/beihai0xff/pudding/pkg/clock"
 	"github.com/beihai0xff/pudding/pkg/lock"
 	"github.com/beihai0xff/pudding/pkg/log"
-	"github.com/beihai0xff/pudding/types"
+	type2 "github.com/beihai0xff/pudding/types"
 )
 
 var (
@@ -38,7 +39,7 @@ type Scheduler interface {
 	// Produce produce a Message to DelayBroker
 	Produce(ctx context.Context, msg *types.Message) error
 	// NewConsumer consume Messages from the RealTime Connector queue
-	NewConsumer(topic, group string, batchSize int, fn types.HandleMessage) error
+	NewConsumer(topic, group string, batchSize int, fn type2.HandleMessage) error
 }
 
 type scheduler struct {
@@ -190,7 +191,7 @@ func (s *scheduler) produceRealTime(ctx context.Context, msg *types.Message) err
 	return err
 }
 
-func (s *scheduler) NewConsumer(topic, group string, batchSize int, fn types.HandleMessage) error {
+func (s *scheduler) NewConsumer(topic, group string, batchSize int, fn type2.HandleMessage) error {
 	return s.connector.NewConsumer(topic, group, batchSize, fn)
 }
 

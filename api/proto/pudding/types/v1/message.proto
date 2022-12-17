@@ -1,0 +1,18 @@
+syntax = "proto3";
+package pudding.types.v1;
+
+option go_package = "github.com/beihai0xff/pudding/api/gen/pudding/types/v1;types";
+
+// Message The delay message .
+message Message {
+  // Message Topic
+  string topic = 1;
+  // Message Key
+  string key = 2;
+  // Message Payload
+  bytes payload  = 3;
+  // Message Delay Time (Seconds)
+  int64 deliver_after = 4;
+  // Message Ready Time（now + delay, Unix Timestamp, Seconds）
+  int64 deliver_at  = 5;
+}

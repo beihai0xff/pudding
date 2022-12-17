@@ -8,7 +8,8 @@ import (
 	context "context"
 	reflect "reflect"
 
-	types "github.com/beihai0xff/pudding/types"
+	types "github.com/beihai0xff/pudding/api/gen/pudding/types/v1"
+	types0 "github.com/beihai0xff/pudding/types"
 	gomock "github.com/golang/mock/gomock"
 )
 
@@ -36,7 +37,7 @@ func (m *MockScheduler) EXPECT() *MockSchedulerMockRecorder {
 }
 
 // NewConsumer mocks base method.
-func (m *MockScheduler) NewConsumer(topic, group string, batchSize int, fn types.HandleMessage) error {
+func (m *MockScheduler) NewConsumer(topic, group string, batchSize int, fn types0.HandleMessage) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "NewConsumer", topic, group, batchSize, fn)
 	ret0, _ := ret[0].(error)

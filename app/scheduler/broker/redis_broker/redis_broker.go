@@ -7,11 +7,12 @@ import (
 
 	"github.com/go-redis/redis/v9"
 
+	"github.com/beihai0xff/pudding/api/gen/pudding/types/v1"
 	"github.com/beihai0xff/pudding/pkg/errno"
 	"github.com/beihai0xff/pudding/pkg/log"
 	"github.com/beihai0xff/pudding/pkg/msgpack"
 	rdb "github.com/beihai0xff/pudding/pkg/redis"
-	"github.com/beihai0xff/pudding/types"
+	type2 "github.com/beihai0xff/pudding/types"
 )
 
 const (
@@ -65,7 +66,7 @@ func (q *DelayQueue) pushToZSet(ctx context.Context, timeSlice string, msg *type
 }
 
 func (q *DelayQueue) Consume(ctx context.Context, now, batchSize int64,
-	fn types.HandleMessage) error {
+	fn type2.HandleMessage) error {
 
 	timeSlice := q.getTimeSlice(now)
 	for {

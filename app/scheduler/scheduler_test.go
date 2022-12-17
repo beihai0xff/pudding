@@ -10,11 +10,12 @@ import (
 	"github.com/stretchr/testify/assert"
 	"golang.org/x/net/context"
 
+	"github.com/beihai0xff/pudding/api/gen/pudding/types/v1"
 	"github.com/beihai0xff/pudding/app/scheduler/broker/redis_broker"
 	"github.com/beihai0xff/pudding/pkg/clock"
 	rdb "github.com/beihai0xff/pudding/pkg/redis"
 	"github.com/beihai0xff/pudding/test/mock"
-	"github.com/beihai0xff/pudding/types"
+	. "github.com/beihai0xff/pudding/types"
 )
 
 var s *scheduler
@@ -23,8 +24,8 @@ func TestMain(m *testing.M) {
 
 	s = &scheduler{
 		delay:        redis_broker.NewDelayQueue(rdb.NewMockRdb(), 60),
-		messageTopic: types.DefaultTopic,
-		tokenTopic:   types.TokenTopic,
+		messageTopic: DefaultTopic,
+		tokenTopic:   TokenTopic,
 		wallClock:    clock.NewFakeClock(time.Date(2022, 1, 1, 0, 0, 0, 0, time.UTC)),
 	}
 
@@ -75,7 +76,7 @@ func TestSchedule_checkParams(t *testing.T) {
 	// test DeliverAt
 	assert.Equal(t, int64(60000000000), msg.DeliverAt)
 	// test no topic set
-	assert.Equalf(t, types.DefaultTopic, msg.Topic, "msg.topic: %s", msg.Topic)
+	assert.Equalf(t, DefaultTopic, msg.Topic, "msg.topic: %s", msg.Topic)
 	// test no uuid set
 	assert.NotEqualf(t, "", msg.Key, "msg.key: %s", msg.Key)
 
@@ -118,7 +119,7 @@ func TestSchedule_Produce(t *testing.T) {
 	// test DeliverAt
 	assert.Equal(t, int64(60000000000), msg.DeliverAt)
 	// test no topic set
-	assert.Equalf(t, types.DefaultTopic, msg.Topic, "msg.topic: %s", msg.Topic)
+	assert.Equalf(t, DefaultTopic, msg.Topic, "msg.topic: %s", msg.Topic)
 	// test no uuid set
 	assert.NotEqualf(t, "", msg.Key, "msg.key: %s", msg.Key)
 

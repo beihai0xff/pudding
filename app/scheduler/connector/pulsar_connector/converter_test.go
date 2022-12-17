@@ -6,7 +6,7 @@ import (
 	"github.com/apache/pulsar-client-go/pulsar"
 	"github.com/stretchr/testify/assert"
 
-	"github.com/beihai0xff/pudding/types"
+	"github.com/beihai0xff/pudding/api/gen/pudding/types/v1"
 )
 
 func Test_convertToPulsarProducerMessage(t *testing.T) {
