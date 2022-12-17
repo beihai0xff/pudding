@@ -8,9 +8,8 @@ import (
 	"google.golang.org/protobuf/types/known/emptypb"
 
 	pb "github.com/beihai0xff/pudding/api/gen/pudding/scheduler/v1"
-	res "github.com/beihai0xff/pudding/api/gen/pudding/types/v1"
+	"github.com/beihai0xff/pudding/api/gen/pudding/types/v1"
 	"github.com/beihai0xff/pudding/pkg/errno"
-	"github.com/beihai0xff/pudding/types"
 )
 
 const puddingScheduler = "pudding.scheduler"
@@ -24,8 +23,8 @@ func NewHandler(s Scheduler) *Handler {
 	return &Handler{s: s, UnimplementedSchedulerServiceServer: pb.UnimplementedSchedulerServiceServer{}}
 }
 
-func (s *Handler) Ping(context.Context, *emptypb.Empty) (*res.PingResponse, error) {
-	return &res.PingResponse{Message: "pong"}, nil
+func (s *Handler) Ping(context.Context, *emptypb.Empty) (*types.PingResponse, error) {
+	return &types.PingResponse{Message: "pong"}, nil
 }
 
 func (s *Handler) SendDelayMessage(ctx context.Context, req *pb.SendDelayMessageRequest) (*emptypb.Empty, error) {

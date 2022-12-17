@@ -60,7 +60,9 @@ func startGrpcService(lis net.Listener) (*grpc.Server, *health.Server) {
 	// register scheduler server
 	schedulerConfig := configs.GetSchedulerConfig()
 	delay, realtime := newQueue(schedulerConfig)
-	handler := scheduler.NewHandler(scheduler.New(schedulerConfig, delay, realtime))
+	s := scheduler.New(schedulerConfig, delay, realtime)
+	s.Run()
+	handler := scheduler.NewHandler(s)
 	pb.RegisterSchedulerServiceServer(server, handler)
 	// register health check server
 	healthcheck := health.NewServer()

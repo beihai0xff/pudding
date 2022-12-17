@@ -8,8 +8,8 @@ import (
 	"github.com/google/uuid"
 	"github.com/stretchr/testify/assert"
 
+	"github.com/beihai0xff/pudding/api/gen/pudding/types/v1"
 	rdb "github.com/beihai0xff/pudding/pkg/redis"
-	"github.com/beihai0xff/pudding/types"
 )
 
 var q *DelayQueue

@@ -8,9 +8,10 @@ import (
 	"strings"
 	"time"
 
+	"github.com/beihai0xff/pudding/api/gen/pudding/types/v1"
 	"github.com/beihai0xff/pudding/pkg/lock"
 	"github.com/beihai0xff/pudding/pkg/log"
-	"github.com/beihai0xff/pudding/types"
+	type2 "github.com/beihai0xff/pudding/types"
 )
 
 // token is the time of the token bucket
@@ -77,7 +78,7 @@ func (s *scheduler) tryProduceToken() {
 // try to consume token and send to token channel
 func (s *scheduler) getToken() {
 	log.Infof("start consume token")
-	if err := s.connector.NewConsumer(types.TokenTopic, types.TokenGroup, 1,
+	if err := s.connector.NewConsumer(type2.TokenTopic, type2.TokenGroup, 1,
 		func(ctx context.Context, msg *types.Message) error {
 			log.Debugf("get token: %s", string(msg.Payload))
 

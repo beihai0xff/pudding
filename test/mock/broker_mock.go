@@ -8,7 +8,8 @@ import (
 	context "context"
 	reflect "reflect"
 
-	types "github.com/beihai0xff/pudding/types"
+	types "github.com/beihai0xff/pudding/api/gen/pudding/types/v1"
+	types0 "github.com/beihai0xff/pudding/types"
 	gomock "github.com/golang/mock/gomock"
 )
 
@@ -50,7 +51,7 @@ func (mr *MockDelayBrokerMockRecorder) Close() *gomock.Call {
 }
 
 // Consume mocks base method.
-func (m *MockDelayBroker) Consume(ctx context.Context, now, batchSize int64, fn types.HandleMessage) error {
+func (m *MockDelayBroker) Consume(ctx context.Context, now, batchSize int64, fn types0.HandleMessage) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Consume", ctx, now, batchSize, fn)
 	ret0, _ := ret[0].(error)
