@@ -80,8 +80,11 @@ func (h *Handler) Register(ctx context.Context,
 	req *pb.WebhookTriggerServiceRegisterRequest) (*pb.WebhookRegisterResponse, error) {
 
 	e := &entity.WebhookTriggerTemplate{
-		Topic:   req.Topic,
-		Payload: req.Payload,
+		Topic:             req.Topic,
+		Payload:           req.Payload,
+		DeliverAfter:      req.DeliverAfter,
+		ExceptedEndTime:   req.ExceptedEndTime.AsTime(),
+		ExceptedLoopTimes: req.ExceptedLoopTimes,
 	}
 	if err := h.t.Register(ctx, e); err != nil {
 		return nil, errno.InternalError("can not register trigger", &errdetails.ErrorInfo{

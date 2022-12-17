@@ -76,9 +76,11 @@ func (h *Handler) PageQuery(ctx context.Context, req *pb.PageQueryTemplateReques
 
 func (h *Handler) Register(ctx context.Context, req *pb.CronTriggerServiceRegisterRequest) (*emptypb.Empty, error) {
 	e := &entity.CronTriggerTemplate{
-		CronExpr: req.CronExpr,
-		Topic:    req.Topic,
-		Payload:  req.Payload,
+		CronExpr:          req.CronExpr,
+		Topic:             req.Topic,
+		Payload:           req.Payload,
+		ExceptedEndTime:   req.ExceptedEndTime.AsTime(),
+		ExceptedLoopTimes: req.ExceptedLoopTimes,
 	}
 	if err := h.t.Register(ctx, e); err != nil {
 		return nil, errno.InternalError("can not register trigger", &errdetails.ErrorInfo{
