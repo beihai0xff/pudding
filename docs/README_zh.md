@@ -4,7 +4,13 @@
 
 ```bash
 git clone git@github.com:beihai0xff/pudding.git
-cd pudding && make docker-build
+cd pudding && make docker-build app=scheduler
+```
+
+##### Docker 编译 Trigger
+
+```bash
+cd pudding && make docker-build app=trigger
 ```
 
 
@@ -30,7 +36,7 @@ cd pudding && make docker-build
    docker run --name some-redis -d -it \
        -p 6379:6379 \
        redis:latest
-   ```
+  ```
 
 3. 运行 Scheduler 模块：
 
