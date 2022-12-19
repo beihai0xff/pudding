@@ -15,9 +15,9 @@ do
     esac
 done
 
-#输出信息
+# output message
 echo "start build ${app}"
 
-	go build -v -o ../build/bin/${binary_name} ../cmd/${app}/
+	go build -v -o build/bin/${binary_name} cmd/${app}/
 
 echo "build ${app}"

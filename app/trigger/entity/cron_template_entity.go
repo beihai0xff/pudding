@@ -8,9 +8,9 @@ import (
 
 type CronTriggerTemplate struct {
 	ID uint
+
 	// CronExpr is the cron expression.
 	CronExpr string `json:"cron_expr" validate:"required"`
-
 	// Topic the message topic
 	Topic string `validate:"required"`
 	// Payload the message payload

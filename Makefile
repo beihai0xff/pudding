@@ -4,34 +4,41 @@ GOLANG_IMAGE = golang:$(GO_VERSION)
 app = ""
 IMAGE_NAME = pudding.${app}:latest
 
+# lint
 lint:
 	cd api/proto && buf mod update && buf lint
 	golangci-lint run
 	go test ./...
 
 
-.PHONY: build
-build: gen
+# build
+# build binary app
+build: gen_proto gen_struct_tag gen_mock
 	echo ${app}
-	cd scripts && sh -x ./build.sh -a ${app}
+	sh -x scripts/docker-build.sh -a ${app}
 
-
-.PHONY: gen
-gen:
-	cd api && rm -rf gen && rm -rf openapi
-	cd api/proto && buf mod update
-	buf generate
-	cd scripts/gen && make gen_struct_tag && make gen_mock
-
-
-.PHONY: docker-build
+# build docker image
 docker-build: clean
 	DOCKER_BUILDKIT=0 docker build -t pudding.${app}:${IMAGE_VERSION} -f ./build/Dockerfile . --build-arg app=${app}
 
-.PHONY:docker-clean
+
+# gen
+gen_proto:
+	sh -x scripts/gen_proto.sh
+
+gen_struct_tag:
+	sh -x scripts/gen_configs_struct_tag.sh
+
+gen_mock:
+	sh -x scripts/gen_mock.sh
+
+
+# clean
 docker-clean:
 	docker image prune
 
-.PHONY: clean
 clean:
 	rm -rf ./build/bin
+
+
+.PHONY: build docker-build  gen_proto gen_struct_tag gen_mock  docker-clean clean

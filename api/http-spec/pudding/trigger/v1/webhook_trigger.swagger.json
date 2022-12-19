@@ -379,37 +379,41 @@
       "properties": {
         "id": {
           "type": "string",
-          "format": "uint64"
+          "format": "uint64",
+          "title": "id is the unique id of the trigger template"
         },
         "topic": {
-          "type": "string"
+          "type": "string",
+          "title": "topic the message topic"
         },
         "payload": {
           "type": "string",
-          "format": "byte"
+          "format": "byte",
+          "title": "payload the message payload"
         },
         "deliverAfter": {
           "type": "string",
-          "format": "int64"
-        },
-        "lastExecutionTime": {
-          "type": "string",
-          "format": "date-time"
+          "format": "int64",
+          "title": "deliver_after Message DeliverAfter time (Seconds)"
         },
         "loopedTimes": {
           "type": "string",
-          "format": "uint64"
+          "format": "uint64",
+          "title": "looped_times already loop times"
         },
         "exceptedEndTime": {
           "type": "string",
-          "format": "date-time"
+          "format": "date-time",
+          "description": "excepted_end_time Excepted Trigger end time, if it is 0, it means that it will not end."
         },
         "exceptedLoopTimes": {
           "type": "string",
-          "format": "uint64"
+          "format": "uint64",
+          "title": "excepted_loop_times except loop times"
         },
         "status": {
-          "$ref": "#/definitions/v1TriggerStatus"
+          "$ref": "#/definitions/v1TriggerStatus",
+          "title": "status the trigger template status: enable offline"
         }
       },
       "title": "WebhookTriggerTemplate defines the webhook trigger template"

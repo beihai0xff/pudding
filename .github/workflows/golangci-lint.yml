@@ -50,4 +50,4 @@ jobs:
       # Run lint only in the `proto` sub-directory
       - uses: bufbuild/buf-lint-action@v1
         with:
-          input: api/proto
+          input: api/protobuf-spec
