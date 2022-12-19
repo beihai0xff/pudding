@@ -90,12 +90,14 @@ type CronTriggerTemplate struct {
 	unknownFields protoimpl.UnknownFields
 
 	// id is the unique id of the trigger template
-	Id       uint64 `protobuf:"varint,1,opt,name=id,proto3" json:"id,omitempty"`
+	Id uint64 `protobuf:"varint,1,opt,name=id,proto3" json:"id,omitempty"`
+	// cron_expr is the cron expression.
 	CronExpr string `protobuf:"bytes,2,opt,name=cron_expr,json=cronExpr,proto3" json:"cron_expr,omitempty"`
 	// topic the message topic
 	Topic string `protobuf:"bytes,3,opt,name=topic,proto3" json:"topic,omitempty"`
 	// payload the message payload
-	Payload           []byte                 `protobuf:"bytes,4,opt,name=payload,proto3" json:"payload,omitempty"`
+	Payload []byte `protobuf:"bytes,4,opt,name=payload,proto3" json:"payload,omitempty"`
+	// last_execution_time last time to schedule the message
 	LastExecutionTime *timestamppb.Timestamp `protobuf:"bytes,5,opt,name=last_execution_time,json=lastExecutionTime,proto3" json:"last_execution_time,omitempty"`
 	// looped_times already loop times
 	LoopedTimes uint64 `protobuf:"varint,6,opt,name=looped_times,json=loopedTimes,proto3" json:"looped_times,omitempty"`

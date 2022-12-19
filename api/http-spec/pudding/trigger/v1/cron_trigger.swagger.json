@@ -280,7 +280,8 @@
           "title": "id is the unique id of the trigger template"
         },
         "cronExpr": {
-          "type": "string"
+          "type": "string",
+          "description": "cron_expr is the cron expression."
         },
         "topic": {
           "type": "string",
@@ -293,7 +294,8 @@
         },
         "lastExecutionTime": {
           "type": "string",
-          "format": "date-time"
+          "format": "date-time",
+          "title": "last_execution_time last time to schedule the message"
         },
         "loopedTimes": {
           "type": "string",
