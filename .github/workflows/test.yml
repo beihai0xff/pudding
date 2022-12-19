@@ -22,7 +22,7 @@ jobs:
           root-password: 'my-secret-pw'
       - run: mysql -u root -h 127.0.0.1 -p'my-secret-pw' -e 'create database test;'
       - name: Install Go
-        uses: actions/setup-go@v3.4.0
+        uses: actions/setup-go@v3.5.0
         with:
           go-version: ${{ matrix.go-version }}
       - name: Checkout code
