@@ -276,17 +276,20 @@
       "properties": {
         "id": {
           "type": "string",
-          "format": "uint64"
+          "format": "uint64",
+          "title": "id is the unique id of the trigger template"
         },
         "cronExpr": {
           "type": "string"
         },
         "topic": {
-          "type": "string"
+          "type": "string",
+          "title": "topic the message topic"
         },
         "payload": {
           "type": "string",
-          "format": "byte"
+          "format": "byte",
+          "title": "payload the message payload"
         },
         "lastExecutionTime": {
           "type": "string",
@@ -294,18 +297,22 @@
         },
         "loopedTimes": {
           "type": "string",
-          "format": "uint64"
+          "format": "uint64",
+          "title": "looped_times already loop times"
         },
         "exceptedEndTime": {
           "type": "string",
-          "format": "date-time"
+          "format": "date-time",
+          "description": "excepted_end_time Excepted Trigger end time, if it is 0, it means that it will not end."
         },
         "exceptedLoopTimes": {
           "type": "string",
-          "format": "uint64"
+          "format": "uint64",
+          "title": "excepted_loop_times except loop times"
         },
         "status": {
-          "$ref": "#/definitions/v1TriggerStatus"
+          "$ref": "#/definitions/v1TriggerStatus",
+          "title": "status the trigger template status: enable offline"
         }
       },
       "title": "CronTriggerTemplate defines the cron trigger template"

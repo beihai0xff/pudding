@@ -6,29 +6,53 @@ import "google/protobuf/timestamp.proto";
 
 // CronTriggerTemplate defines the cron trigger template
 message CronTriggerTemplate {
+  // id is the unique id of the trigger template
   uint64 id = 1;
+
+  // cron_expr is the cron expression.
   string cron_expr = 2;
+  // topic the message topic
   string topic = 3;
+  // payload the message payload
   bytes payload = 4;
+
+  // last_execution_time last time to schedule the message
   google.protobuf.Timestamp last_execution_time = 5;
+  // looped_times already loop times
   uint64 looped_times = 6;
+
+  // excepted_end_time Excepted Trigger end time, if it is 0, it means that it will not end.
   google.protobuf.Timestamp excepted_end_time = 7;
+  // excepted_loop_times except loop times
   uint64 excepted_loop_times = 8;
+
+  // status the trigger template status: enable offline
   TriggerStatus status = 9;
 }
 
 
 // WebhookTriggerTemplate defines the webhook trigger template
 message WebhookTriggerTemplate {
+  // id is the unique id of the trigger template
   uint64 id = 1;
+
+  // topic the message topic
   string topic = 2;
+  // payload the message payload
   bytes payload = 3;
+  // deliver_after Message DeliverAfter time (Seconds)
   int64 deliver_after = 4;
-  google.protobuf.Timestamp last_execution_time = 5;
-  uint64 looped_times = 6;
-  google.protobuf.Timestamp excepted_end_time = 7;
-  uint64 excepted_loop_times = 8;
-  TriggerStatus status = 9;
+
+  // looped_times already loop times
+  uint64 looped_times = 5;
+
+  // excepted_end_time Excepted Trigger end time, if it is 0, it means that it will not end.
+  google.protobuf.Timestamp excepted_end_time = 6;
+  // excepted_loop_times except loop times
+  uint64 excepted_loop_times = 7;
+
+  // status the trigger template status: enable offline
+  TriggerStatus status = 8;
 }
 
 // buf:lint:ignore ENUM_VALUE_PREFIX

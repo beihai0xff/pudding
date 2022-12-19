@@ -18,11 +18,11 @@ build: gen
 
 .PHONY: gen
 gen:
-	cd api && rm -rf gen && rm -rf openapi
-	cd api/proto && buf mod update
+	cd api && rm -rf gen && rm -rf http-spec
+	cd api/protobuf-spec && buf mod update
 	buf generate
-	cd scripts/gen && make gen_struct_tag && make gen_mock
-
+	sh -x scripts/gen_configs_struct_tag.sh
+	sh -x scripts/gen_mock.sh
 
 .PHONY: docker-build
 docker-build: clean
