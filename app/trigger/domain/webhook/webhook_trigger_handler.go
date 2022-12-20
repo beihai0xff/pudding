@@ -6,11 +6,10 @@ import (
 	"strconv"
 
 	"google.golang.org/genproto/googleapis/rpc/errdetails"
-	"google.golang.org/protobuf/types/known/emptypb"
 	"google.golang.org/protobuf/types/known/timestamppb"
 
 	pb "github.com/beihai0xff/pudding/api/gen/pudding/trigger/v1"
-	"github.com/beihai0xff/pudding/api/gen/pudding/types/v1"
+
 	"github.com/beihai0xff/pudding/app/trigger/entity"
 	"github.com/beihai0xff/pudding/pkg/errno"
 )
@@ -27,10 +26,6 @@ func NewHandler(t *Trigger) *Handler {
 		t:                                        t,
 		UnimplementedWebhookTriggerServiceServer: pb.UnimplementedWebhookTriggerServiceServer{},
 	}
-}
-
-func (h *Handler) Ping(context.Context, *emptypb.Empty) (*types.PingResponse, error) {
-	return &types.PingResponse{Message: "pong"}, nil
 }
 
 func (h *Handler) FindOneByID(ctx context.Context, req *pb.FindOneByIDRequest) (*pb.WebhookFindOneByIDResponse, error) {

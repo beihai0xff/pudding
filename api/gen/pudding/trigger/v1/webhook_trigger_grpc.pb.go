@@ -4,11 +4,9 @@ package trigger
 
 import (
 	context "context"
-	v1 "github.com/beihai0xff/pudding/api/gen/pudding/types/v1"
 	grpc "google.golang.org/grpc"
 	codes "google.golang.org/grpc/codes"
 	status "google.golang.org/grpc/status"
-	emptypb "google.golang.org/protobuf/types/known/emptypb"
 )
 
 // This is a compile-time assertion to ensure that this generated file
@@ -20,8 +18,6 @@ const _ = grpc.SupportPackageIsVersion7
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type WebhookTriggerServiceClient interface {
-	// Sends a Ping
-	Ping(ctx context.Context, in *emptypb.Empty, opts ...grpc.CallOption) (*v1.PingResponse, error)
 	// FindOneByID find webhook trigger by id
 	FindOneByID(ctx context.Context, in *FindOneByIDRequest, opts ...grpc.CallOption) (*WebhookFindOneByIDResponse, error)
 	// PageQueryTemplate page query webhook trigger template
@@ -40,15 +36,6 @@ type webhookTriggerServiceClient struct {
 
 func NewWebhookTriggerServiceClient(cc grpc.ClientConnInterface) WebhookTriggerServiceClient {
 	return &webhookTriggerServiceClient{cc}
-}
-
-func (c *webhookTriggerServiceClient) Ping(ctx context.Context, in *emptypb.Empty, opts ...grpc.CallOption) (*v1.PingResponse, error) {
-	out := new(v1.PingResponse)
-	err := c.cc.Invoke(ctx, "/pudding.trigger.v1.WebhookTriggerService/Ping", in, out, opts...)
-	if err != nil {
-		return nil, err
-	}
-	return out, nil
 }
 
 func (c *webhookTriggerServiceClient) FindOneByID(ctx context.Context, in *FindOneByIDRequest, opts ...grpc.CallOption) (*WebhookFindOneByIDResponse, error) {
@@ -100,8 +87,6 @@ func (c *webhookTriggerServiceClient) Call(ctx context.Context, in *WebhookTrigg
 // All implementations must embed UnimplementedWebhookTriggerServiceServer
 // for forward compatibility
 type WebhookTriggerServiceServer interface {
-	// Sends a Ping
-	Ping(context.Context, *emptypb.Empty) (*v1.PingResponse, error)
 	// FindOneByID find webhook trigger by id
 	FindOneByID(context.Context, *FindOneByIDRequest) (*WebhookFindOneByIDResponse, error)
 	// PageQueryTemplate page query webhook trigger template
@@ -119,9 +104,6 @@ type WebhookTriggerServiceServer interface {
 type UnimplementedWebhookTriggerServiceServer struct {
 }
 
-func (UnimplementedWebhookTriggerServiceServer) Ping(context.Context, *emptypb.Empty) (*v1.PingResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method Ping not implemented")
-}
 func (UnimplementedWebhookTriggerServiceServer) FindOneByID(context.Context, *FindOneByIDRequest) (*WebhookFindOneByIDResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method FindOneByID not implemented")
 }
@@ -148,24 +130,6 @@ type UnsafeWebhookTriggerServiceServer interface {
 
 func RegisterWebhookTriggerServiceServer(s grpc.ServiceRegistrar, srv WebhookTriggerServiceServer) {
 	s.RegisterService(&WebhookTriggerService_ServiceDesc, srv)
-}
-
-func _WebhookTriggerService_Ping_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(emptypb.Empty)
-	if err := dec(in); err != nil {
-		return nil, err
-	}
-	if interceptor == nil {
-		return srv.(WebhookTriggerServiceServer).Ping(ctx, in)
-	}
-	info := &grpc.UnaryServerInfo{
-		Server:     srv,
-		FullMethod: "/pudding.trigger.v1.WebhookTriggerService/Ping",
-	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(WebhookTriggerServiceServer).Ping(ctx, req.(*emptypb.Empty))
-	}
-	return interceptor(ctx, in, info, handler)
 }
 
 func _WebhookTriggerService_FindOneByID_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
@@ -265,10 +229,6 @@ var WebhookTriggerService_ServiceDesc = grpc.ServiceDesc{
 	ServiceName: "pudding.trigger.v1.WebhookTriggerService",
 	HandlerType: (*WebhookTriggerServiceServer)(nil),
 	Methods: []grpc.MethodDesc{
-		{
-			MethodName: "Ping",
-			Handler:    _WebhookTriggerService_Ping_Handler,
-		},
 		{
 			MethodName: "FindOneByID",
 			Handler:    _WebhookTriggerService_FindOneByID_Handler,

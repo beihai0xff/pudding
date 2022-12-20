@@ -101,29 +101,6 @@
         ]
       }
     },
-    "/pudding/trigger/cron/v1/ping": {
-      "get": {
-        "summary": "Sends a Ping",
-        "operationId": "CronTriggerService_Ping",
-        "responses": {
-          "200": {
-            "description": "A successful response.",
-            "schema": {
-              "$ref": "#/definitions/v1PingResponse"
-            }
-          },
-          "default": {
-            "description": "An unexpected error response.",
-            "schema": {
-              "$ref": "#/definitions/rpcStatus"
-            }
-          }
-        },
-        "tags": [
-          "CronTriggerService"
-        ]
-      }
-    },
     "/pudding/trigger/cron/v1/register": {
       "put": {
         "summary": "Register create a cron trigger",
@@ -318,15 +295,6 @@
         }
       },
       "title": "CronTriggerTemplate defines the cron trigger template"
-    },
-    "v1PingResponse": {
-      "type": "object",
-      "properties": {
-        "message": {
-          "type": "string"
-        }
-      },
-      "title": "The Ping response message"
     },
     "v1TriggerStatus": {
       "type": "string",

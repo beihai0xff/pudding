@@ -6,7 +6,7 @@ IMAGE_NAME = pudding.${app}:latest
 
 # lint
 lint:
-	cd api/proto && buf mod update && buf lint
+	cd api/protobuf-spec && buf mod update && buf lint
 	golangci-lint run
 	go test ./...
 

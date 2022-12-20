@@ -16,30 +16,6 @@
     "application/json"
   ],
   "paths": {
-    "/pudding/scheduler/v1/ping": {
-      "get": {
-        "summary": "Sends a Ping",
-        "description": "option type is http",
-        "operationId": "SchedulerService_Ping",
-        "responses": {
-          "200": {
-            "description": "A successful response.",
-            "schema": {
-              "$ref": "#/definitions/v1PingResponse"
-            }
-          },
-          "default": {
-            "description": "An unexpected error response.",
-            "schema": {
-              "$ref": "#/definitions/rpcStatus"
-            }
-          }
-        },
-        "tags": [
-          "SchedulerService"
-        ]
-      }
-    },
     "/pudding/scheduler/v1/sendDelayMessage": {
       "post": {
         "summary": "Sends a Delay Message",
@@ -103,15 +79,6 @@
           }
         }
       }
-    },
-    "v1PingResponse": {
-      "type": "object",
-      "properties": {
-        "message": {
-          "type": "string"
-        }
-      },
-      "title": "The Ping response message"
     },
     "v1SendDelayMessageRequest": {
       "type": "object",

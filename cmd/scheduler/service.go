@@ -40,7 +40,7 @@ func startServer() (*grpc.Server, *health.Server, *http.Server) {
 }
 
 func startGrpcService(lis net.Listener) (*grpc.Server, *health.Server) {
-	log.Info("start grpc server ...")
+	log.Info("starting grpc server ...")
 	// register server
 	server := grpc.NewServer(
 		grpc.KeepaliveParams(keepalive.ServerParameters{
@@ -83,8 +83,7 @@ func startGrpcService(lis net.Listener) (*grpc.Server, *health.Server) {
 }
 
 func startHTTPService(grpcLis, httpLis net.Listener) *http.Server {
-	log.Info("start http server ...")
-	log.Infof(grpcLis.Addr().String())
+	log.Info("starting http server ...")
 	conn, err := grpc.DialContext(
 		context.Background(),
 		fmt.Sprintf("127.0.0.1:%d", grpcLis.Addr().(*net.TCPAddr).Port),
@@ -96,7 +95,7 @@ func startHTTPService(grpcLis, httpLis net.Listener) *http.Server {
 	}
 
 	// gRPC-Gateway httpServer
-	gwmux := runtime.NewServeMux()
+	gwmux := runtime.NewServeMux(runtime.WithHealthzEndpoint(pbhealth.NewHealthClient(conn)))
 	err = pb.RegisterSchedulerServiceHandler(context.Background(), gwmux, conn)
 	if err != nil {
 		log.Fatalf("Failed to register gateway: %v", err)

@@ -5,19 +5,8 @@ option go_package = "github.com/beihai0xff/pudding/api/gen/pudding/scheduler/v1;
 import "google/api/annotations.proto";
 import "google/protobuf/empty.proto";
 
-import "pudding/types/v1/response.proto";
-
 // The Pudding service definition.
 service SchedulerService {
-  // Sends a Ping
-  rpc Ping (google.protobuf.Empty) returns (types.v1.PingResponse) {
-    // option type is http
-
-    option (google.api.http) = {
-      get: "/pudding/scheduler/v1/ping"
-    };
-  }
-
   // Sends a Delay Message
   rpc SendDelayMessage (SendDelayMessageRequest) returns (google.protobuf.Empty) {
     option (google.api.http) = {

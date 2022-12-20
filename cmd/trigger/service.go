@@ -74,7 +74,9 @@ func startGrpcService(lis net.Listener) (*grpc.Server, *health.Server) {
 	if err != nil {
 		log.Fatalf("grpc Dial err: %v", err)
 	}
-	defer conn.Close()
+	// TODO: close conn
+	// defer conn.Close()
+
 	// create scheduler service client
 	schedulerClient := scheduler.NewSchedulerServiceClient(conn)
 	cronHandler := cron.NewHandler(cron.NewTrigger(db, schedulerClient))
@@ -113,7 +115,7 @@ func startHTTPService(grpcLis, httpLis net.Listener) *http.Server {
 	}
 
 	// gRPC-Gateway httpServer
-	gwmux := runtime.NewServeMux()
+	gwmux := runtime.NewServeMux(runtime.WithHealthzEndpoint(pbhealth.NewHealthClient(conn)))
 	err = pb.RegisterCronTriggerServiceHandler(context.Background(), gwmux, conn)
 	if err != nil {
 		log.Fatalf("Failed to register gateway: %v", err)

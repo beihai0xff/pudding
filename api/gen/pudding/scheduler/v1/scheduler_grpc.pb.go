@@ -4,7 +4,6 @@ package scheduler
 
 import (
 	context "context"
-	v1 "github.com/beihai0xff/pudding/api/gen/pudding/types/v1"
 	grpc "google.golang.org/grpc"
 	codes "google.golang.org/grpc/codes"
 	status "google.golang.org/grpc/status"
@@ -20,8 +19,6 @@ const _ = grpc.SupportPackageIsVersion7
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type SchedulerServiceClient interface {
-	// Sends a Ping
-	Ping(ctx context.Context, in *emptypb.Empty, opts ...grpc.CallOption) (*v1.PingResponse, error)
 	// Sends a Delay Message
 	SendDelayMessage(ctx context.Context, in *SendDelayMessageRequest, opts ...grpc.CallOption) (*emptypb.Empty, error)
 }
@@ -32,15 +29,6 @@ type schedulerServiceClient struct {
 
 func NewSchedulerServiceClient(cc grpc.ClientConnInterface) SchedulerServiceClient {
 	return &schedulerServiceClient{cc}
-}
-
-func (c *schedulerServiceClient) Ping(ctx context.Context, in *emptypb.Empty, opts ...grpc.CallOption) (*v1.PingResponse, error) {
-	out := new(v1.PingResponse)
-	err := c.cc.Invoke(ctx, "/pudding.scheduler.v1.SchedulerService/Ping", in, out, opts...)
-	if err != nil {
-		return nil, err
-	}
-	return out, nil
 }
 
 func (c *schedulerServiceClient) SendDelayMessage(ctx context.Context, in *SendDelayMessageRequest, opts ...grpc.CallOption) (*emptypb.Empty, error) {
@@ -56,8 +44,6 @@ func (c *schedulerServiceClient) SendDelayMessage(ctx context.Context, in *SendD
 // All implementations must embed UnimplementedSchedulerServiceServer
 // for forward compatibility
 type SchedulerServiceServer interface {
-	// Sends a Ping
-	Ping(context.Context, *emptypb.Empty) (*v1.PingResponse, error)
 	// Sends a Delay Message
 	SendDelayMessage(context.Context, *SendDelayMessageRequest) (*emptypb.Empty, error)
 	mustEmbedUnimplementedSchedulerServiceServer()
@@ -67,9 +53,6 @@ type SchedulerServiceServer interface {
 type UnimplementedSchedulerServiceServer struct {
 }
 
-func (UnimplementedSchedulerServiceServer) Ping(context.Context, *emptypb.Empty) (*v1.PingResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method Ping not implemented")
-}
 func (UnimplementedSchedulerServiceServer) SendDelayMessage(context.Context, *SendDelayMessageRequest) (*emptypb.Empty, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method SendDelayMessage not implemented")
 }
@@ -84,24 +67,6 @@ type UnsafeSchedulerServiceServer interface {
 
 func RegisterSchedulerServiceServer(s grpc.ServiceRegistrar, srv SchedulerServiceServer) {
 	s.RegisterService(&SchedulerService_ServiceDesc, srv)
-}
-
-func _SchedulerService_Ping_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(emptypb.Empty)
-	if err := dec(in); err != nil {
-		return nil, err
-	}
-	if interceptor == nil {
-		return srv.(SchedulerServiceServer).Ping(ctx, in)
-	}
-	info := &grpc.UnaryServerInfo{
-		Server:     srv,
-		FullMethod: "/pudding.scheduler.v1.SchedulerService/Ping",
-	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(SchedulerServiceServer).Ping(ctx, req.(*emptypb.Empty))
-	}
-	return interceptor(ctx, in, info, handler)
 }
 
 func _SchedulerService_SendDelayMessage_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
@@ -129,10 +94,6 @@ var SchedulerService_ServiceDesc = grpc.ServiceDesc{
 	ServiceName: "pudding.scheduler.v1.SchedulerService",
 	HandlerType: (*SchedulerServiceServer)(nil),
 	Methods: []grpc.MethodDesc{
-		{
-			MethodName: "Ping",
-			Handler:    _SchedulerService_Ping_Handler,
-		},
 		{
 			MethodName: "SendDelayMessage",
 			Handler:    _SchedulerService_SendDelayMessage_Handler,
