@@ -142,29 +142,6 @@
         ]
       }
     },
-    "/pudding/trigger/webhook/v1/ping": {
-      "get": {
-        "summary": "Sends a Ping",
-        "operationId": "WebhookTriggerService_Ping",
-        "responses": {
-          "200": {
-            "description": "A successful response.",
-            "schema": {
-              "$ref": "#/definitions/v1PingResponse"
-            }
-          },
-          "default": {
-            "description": "An unexpected error response.",
-            "schema": {
-              "$ref": "#/definitions/rpcStatus"
-            }
-          }
-        },
-        "tags": [
-          "WebhookTriggerService"
-        ]
-      }
-    },
     "/pudding/trigger/webhook/v1/register": {
       "put": {
         "summary": "Register create a webhook trigger",
@@ -260,15 +237,6 @@
           }
         }
       }
-    },
-    "v1PingResponse": {
-      "type": "object",
-      "properties": {
-        "message": {
-          "type": "string"
-        }
-      },
-      "title": "The Ping response message"
     },
     "v1TriggerStatus": {
       "type": "string",

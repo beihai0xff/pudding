@@ -6,19 +6,10 @@ import "google/api/annotations.proto";
 import "google/protobuf/empty.proto";
 import "google/protobuf/timestamp.proto";
 
-import "pudding/types/v1/response.proto";
 import "pudding/trigger/v1/types.proto";
 
 // The Pudding WebhookTrigger service definition.
 service WebhookTriggerService {
-  // Sends a Ping
-  rpc Ping (google.protobuf.Empty) returns (types.v1.PingResponse) {
-    // option type is http
-    option (google.api.http) = {
-      get: "/pudding/trigger/webhook/v1/ping"
-    };
-  }
-
   // FindOneByID find webhook trigger by id
   rpc FindOneByID (FindOneByIDRequest) returns (WebhookFindOneByIDResponse) {
     option (google.api.http) = {

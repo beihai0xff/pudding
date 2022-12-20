@@ -23,10 +23,6 @@ func NewHandler(s Scheduler) *Handler {
 	return &Handler{s: s, UnimplementedSchedulerServiceServer: pb.UnimplementedSchedulerServiceServer{}}
 }
 
-func (s *Handler) Ping(context.Context, *emptypb.Empty) (*types.PingResponse, error) {
-	return &types.PingResponse{Message: "pong"}, nil
-}
-
 func (s *Handler) SendDelayMessage(ctx context.Context, req *pb.SendDelayMessageRequest) (*emptypb.Empty, error) {
 	msg := s.convPBToMessage(req)
 	if msg.DeliverAt <= 0 && msg.DeliverAfter <= 0 {

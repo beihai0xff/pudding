@@ -76,10 +76,8 @@ func New(config *configs.SchedulerConfig, delay broker.DelayBroker, realtime con
 func (s *scheduler) Run() {
 	go s.tryProduceToken()
 	s.getToken()
-	if err := s.startSchedule(); err != nil {
-		log.Errorf("start scheduler failed: %v", err)
-		panic(err)
-	}
+	go s.startSchedule()
+
 }
 
 /*
@@ -135,8 +133,8 @@ func (s *scheduler) checkParams(msg *types.Message) error {
 
 // startSchedule start a scheduler to consume DelayBroker
 // and move delayed messages to RealTimeConnector
-func (s *scheduler) startSchedule() error {
-	log.Infof("start Scheduler")
+func (s *scheduler) startSchedule() {
+	log.Infof("start Scheduling")
 
 	for {
 		select {

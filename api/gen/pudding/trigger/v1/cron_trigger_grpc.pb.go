@@ -4,7 +4,6 @@ package trigger
 
 import (
 	context "context"
-	v1 "github.com/beihai0xff/pudding/api/gen/pudding/types/v1"
 	grpc "google.golang.org/grpc"
 	codes "google.golang.org/grpc/codes"
 	status "google.golang.org/grpc/status"
@@ -20,8 +19,6 @@ const _ = grpc.SupportPackageIsVersion7
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type CronTriggerServiceClient interface {
-	// Sends a Ping
-	Ping(ctx context.Context, in *emptypb.Empty, opts ...grpc.CallOption) (*v1.PingResponse, error)
 	// FindOneByID find cron trigger by id
 	FindOneByID(ctx context.Context, in *FindOneByIDRequest, opts ...grpc.CallOption) (*CronFindOneByIDResponse, error)
 	// PageQueryTemplate page query cron trigger template
@@ -38,15 +35,6 @@ type cronTriggerServiceClient struct {
 
 func NewCronTriggerServiceClient(cc grpc.ClientConnInterface) CronTriggerServiceClient {
 	return &cronTriggerServiceClient{cc}
-}
-
-func (c *cronTriggerServiceClient) Ping(ctx context.Context, in *emptypb.Empty, opts ...grpc.CallOption) (*v1.PingResponse, error) {
-	out := new(v1.PingResponse)
-	err := c.cc.Invoke(ctx, "/pudding.trigger.v1.CronTriggerService/Ping", in, out, opts...)
-	if err != nil {
-		return nil, err
-	}
-	return out, nil
 }
 
 func (c *cronTriggerServiceClient) FindOneByID(ctx context.Context, in *FindOneByIDRequest, opts ...grpc.CallOption) (*CronFindOneByIDResponse, error) {
@@ -89,8 +77,6 @@ func (c *cronTriggerServiceClient) UpdateStatus(ctx context.Context, in *UpdateS
 // All implementations must embed UnimplementedCronTriggerServiceServer
 // for forward compatibility
 type CronTriggerServiceServer interface {
-	// Sends a Ping
-	Ping(context.Context, *emptypb.Empty) (*v1.PingResponse, error)
 	// FindOneByID find cron trigger by id
 	FindOneByID(context.Context, *FindOneByIDRequest) (*CronFindOneByIDResponse, error)
 	// PageQueryTemplate page query cron trigger template
@@ -106,9 +92,6 @@ type CronTriggerServiceServer interface {
 type UnimplementedCronTriggerServiceServer struct {
 }
 
-func (UnimplementedCronTriggerServiceServer) Ping(context.Context, *emptypb.Empty) (*v1.PingResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method Ping not implemented")
-}
 func (UnimplementedCronTriggerServiceServer) FindOneByID(context.Context, *FindOneByIDRequest) (*CronFindOneByIDResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method FindOneByID not implemented")
 }
@@ -132,24 +115,6 @@ type UnsafeCronTriggerServiceServer interface {
 
 func RegisterCronTriggerServiceServer(s grpc.ServiceRegistrar, srv CronTriggerServiceServer) {
 	s.RegisterService(&CronTriggerService_ServiceDesc, srv)
-}
-
-func _CronTriggerService_Ping_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(emptypb.Empty)
-	if err := dec(in); err != nil {
-		return nil, err
-	}
-	if interceptor == nil {
-		return srv.(CronTriggerServiceServer).Ping(ctx, in)
-	}
-	info := &grpc.UnaryServerInfo{
-		Server:     srv,
-		FullMethod: "/pudding.trigger.v1.CronTriggerService/Ping",
-	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(CronTriggerServiceServer).Ping(ctx, req.(*emptypb.Empty))
-	}
-	return interceptor(ctx, in, info, handler)
 }
 
 func _CronTriggerService_FindOneByID_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
@@ -231,10 +196,6 @@ var CronTriggerService_ServiceDesc = grpc.ServiceDesc{
 	ServiceName: "pudding.trigger.v1.CronTriggerService",
 	HandlerType: (*CronTriggerServiceServer)(nil),
 	Methods: []grpc.MethodDesc{
-		{
-			MethodName: "Ping",
-			Handler:    _CronTriggerService_Ping_Handler,
-		},
 		{
 			MethodName: "FindOneByID",
 			Handler:    _CronTriggerService_FindOneByID_Handler,
