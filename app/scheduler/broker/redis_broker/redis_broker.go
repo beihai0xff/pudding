@@ -38,7 +38,7 @@ func NewDelayQueue(rdb *rdb.Client, interval int64) *DelayQueue {
 
 func (q *DelayQueue) Produce(ctx context.Context, msg *types.Message) error {
 	// member := &redis.Z{Score: float64(msg.DeliverAt.Unix()), Member: msg.Key}
-	log.Debugf("produce message: %+v", msg)
+
 	timeSlice := q.getTimeSlice(msg.DeliverAt)
 	return q.pushToZSet(ctx, timeSlice, msg)
 }
