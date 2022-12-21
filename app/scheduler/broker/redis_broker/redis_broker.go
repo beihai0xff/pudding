@@ -89,7 +89,6 @@ func (q *DelayQueue) Consume(ctx context.Context, now, batchSize int64,
 			err = fn(ctx, &msg)
 			if err != nil {
 				log.Errorf("failed to handle message: %s, caused by: %v", msg.String(), err)
-				continue
 			}
 
 			// delete message from zset and hash table

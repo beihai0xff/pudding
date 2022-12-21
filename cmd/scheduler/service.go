@@ -22,6 +22,7 @@ import (
 	"github.com/beihai0xff/pudding/app/scheduler"
 	"github.com/beihai0xff/pudding/app/scheduler/pkg/configs"
 	"github.com/beihai0xff/pudding/pkg/log"
+	"github.com/beihai0xff/pudding/pkg/swagger"
 )
 
 func startServer() (*grpc.Server, *health.Server, *http.Server) {
@@ -96,10 +97,13 @@ func startHTTPService(grpcLis, httpLis net.Listener) *http.Server {
 
 	// gRPC-Gateway httpServer
 	gwmux := runtime.NewServeMux(runtime.WithHealthzEndpoint(pbhealth.NewHealthClient(conn)))
+
 	err = pb.RegisterSchedulerServiceHandler(context.Background(), gwmux, conn)
 	if err != nil {
 		log.Fatalf("Failed to register gateway: %v", err)
 	}
+
+	swagger.RegisterHandler(gwmux, "/pudding/broker/swagger")
 
 	// 定义HTTP server配置
 	httpServer := &http.Server{
