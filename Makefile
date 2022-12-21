@@ -4,6 +4,8 @@ GOLANG_IMAGE = golang:$(GO_VERSION)
 app = ""
 IMAGE_NAME = pudding.${app}:latest
 
+SWAGGER_UI_VERSION:=v4.15.5
+
 # lint
 lint:
 	cd api/protobuf-spec && buf mod update && buf lint
@@ -32,6 +34,8 @@ gen_struct_tag:
 gen_mock:
 	sh -x scripts/gen_mock.sh
 
+gen_swagger-ui:
+	SWAGGER_UI_VERSION=$(SWAGGER_UI_VERSION) sh -x ./scripts/gen_swagger-ui.sh
 
 # clean
 docker-clean:

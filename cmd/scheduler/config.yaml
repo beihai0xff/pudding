@@ -1,5 +1,5 @@
 name: pudding
-consul_url: http://localhost:8500
+consul_url: http://192.168.10.220:8500
 scheduler_config:
   broker: redis
   connector: pulsar
@@ -10,7 +10,7 @@ redis_config:
   url: redis://default:default@localhost:6379/11
   dial_timeout: 20
 pulsar_config:
-  url: pulsar://localhost:6650
+  url: pulsar://192.168.10.220:6650
   connection_timeout: 10
   producers_config:
     - topic: token
@@ -30,7 +30,7 @@ pulsar_config:
 
 log_config:
   default:
-    level: debug
+    level: info
     writers:
       - console
       - file
