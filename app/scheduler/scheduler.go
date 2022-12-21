@@ -96,6 +96,7 @@ func (s *scheduler) Produce(ctx context.Context, msg *types.Message) error {
 	for i := 0; i < 3; i++ {
 		err = s.delay.Produce(ctx, msg)
 		if err == nil {
+			log.Infof("success produce message: %s", msg.String())
 			break
 		}
 		// if produce failed, retry in three times
