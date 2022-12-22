@@ -8,7 +8,7 @@ import (
 	"syscall"
 	"time"
 
-	configs2 "github.com/beihai0xff/pudding/app/broker/pkg/configs"
+	"github.com/beihai0xff/pudding/app/broker/pkg/configs"
 	"github.com/beihai0xff/pudding/pkg/lock"
 	"github.com/beihai0xff/pudding/pkg/log"
 	"github.com/beihai0xff/pudding/pkg/log/logger"
@@ -32,7 +32,7 @@ var (
 func main() {
 	flag.Parse()
 
-	configs2.Init(*confPath, configs2.WithRedisURL(*redisURL), configs2.WithPulsarURL(*pulsarURL))
+	configs.Init(*confPath, configs.WithRedisURL(*redisURL), configs.WithPulsarURL(*pulsarURL))
 	registerLogger()
 
 	interrupt := make(chan os.Signal, 1)
@@ -59,7 +59,7 @@ func main() {
 }
 
 func serviceRegistration() (resolver.Resolver, string) {
-	rsv, err := resolver.NewConsulResolver(configs2.GetConsulURL())
+	rsv, err := resolver.NewConsulResolver(configs.GetConsulURL())
 	if err != nil {
 		log.Fatalf("failed to create rsv: %v", err)
 	}
@@ -75,6 +75,6 @@ func registerLogger() {
 	log.RegisterLogger(logger.PulsarLoggerName, log.WithCallerSkip(1))
 	log.RegisterLogger(logger.GRPCLoggerName, log.WithCallerSkip(1))
 	logger.GetGRPCLogger()
-	rdb := redis.New(configs2.GetRedisConfig())
+	rdb := redis.New(configs.GetRedisConfig())
 	lock.Init(rdb)
 }
