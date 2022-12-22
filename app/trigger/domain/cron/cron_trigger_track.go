@@ -6,7 +6,7 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/beihai0xff/pudding/api/gen/pudding/scheduler/v1"
+	"github.com/beihai0xff/pudding/api/gen/pudding/broker/v1"
 	pb "github.com/beihai0xff/pudding/api/gen/pudding/trigger/v1"
 	"github.com/beihai0xff/pudding/app/trigger/entity"
 	"github.com/beihai0xff/pudding/app/trigger/repo"
@@ -39,13 +39,13 @@ var (
 )
 
 type Trigger struct {
-	schedulerClient scheduler.SchedulerServiceClient
+	schedulerClient broker.SchedulerServiceClient
 	repo            repo.CronTemplateDAO
 	// wallClock is the clock used to get current time
 	wallClock clock.Clock
 }
 
-func NewTrigger(db *mysql.Client, client scheduler.SchedulerServiceClient) *Trigger {
+func NewTrigger(db *mysql.Client, client broker.SchedulerServiceClient) *Trigger {
 	return &Trigger{
 		schedulerClient: client,
 		repo:            repo.NewCronTemplate(db),
@@ -90,7 +90,7 @@ func (t *Trigger) Tracking(temp *entity.CronTriggerTemplate) error {
 	}
 
 	// produce the message
-	msg := &scheduler.SendDelayMessageRequest{
+	msg := &broker.SendDelayMessageRequest{
 		Topic:     temp.Topic,
 		Key:       t.formatMessageKey(temp),
 		Payload:   temp.Payload,

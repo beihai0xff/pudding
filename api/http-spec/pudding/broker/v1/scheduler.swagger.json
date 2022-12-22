@@ -1,7 +1,7 @@
 {
   "swagger": "2.0",
   "info": {
-    "title": "pudding/scheduler/v1/scheduler.proto",
+    "title": "pudding/broker/v1/scheduler.proto",
     "version": "version not set"
   },
   "tags": [
@@ -16,7 +16,7 @@
     "application/json"
   ],
   "paths": {
-    "/pudding/scheduler/v1/sendDelayMessage": {
+    "/pudding/broker/v1/sendDelayMessage": {
       "post": {
         "summary": "Sends a Delay Message",
         "operationId": "SchedulerService_SendDelayMessage",

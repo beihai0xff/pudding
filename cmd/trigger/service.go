@@ -21,7 +21,7 @@ import (
 
 	_ "github.com/mbobakov/grpc-consul-resolver" // It's important
 
-	"github.com/beihai0xff/pudding/api/gen/pudding/scheduler/v1"
+	"github.com/beihai0xff/pudding/api/gen/pudding/broker/v1"
 	pb "github.com/beihai0xff/pudding/api/gen/pudding/trigger/v1"
 	"github.com/beihai0xff/pudding/app/trigger/domain/cron"
 	"github.com/beihai0xff/pudding/app/trigger/domain/webhook"
@@ -78,7 +78,7 @@ func startGrpcService(lis net.Listener) (*grpc.Server, *health.Server) {
 	// defer conn.Close()
 
 	// create scheduler service client
-	schedulerClient := scheduler.NewSchedulerServiceClient(conn)
+	schedulerClient := broker.NewSchedulerServiceClient(conn)
 	cronHandler := cron.NewHandler(cron.NewTrigger(db, schedulerClient))
 	pb.RegisterCronTriggerServiceServer(server, cronHandler)
 	webhookHandler := webhook.NewHandler(webhook.NewTrigger(db, schedulerClient))

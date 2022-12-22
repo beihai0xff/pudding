@@ -3,23 +3,23 @@ package main
 import (
 	"time"
 
-	"github.com/beihai0xff/pudding/app/scheduler/broker"
-	"github.com/beihai0xff/pudding/app/scheduler/broker/redis_broker"
-	"github.com/beihai0xff/pudding/app/scheduler/connector"
-	"github.com/beihai0xff/pudding/app/scheduler/connector/pulsar_connector"
-	"github.com/beihai0xff/pudding/app/scheduler/pkg/configs"
+	"github.com/beihai0xff/pudding/app/broker/connector"
+	"github.com/beihai0xff/pudding/app/broker/connector/pulsar_connector"
+	"github.com/beihai0xff/pudding/app/broker/pkg/configs"
+	"github.com/beihai0xff/pudding/app/broker/storage"
+	"github.com/beihai0xff/pudding/app/broker/storage/redis_storage"
 	conf "github.com/beihai0xff/pudding/configs"
 	"github.com/beihai0xff/pudding/pkg/log"
 	"github.com/beihai0xff/pudding/pkg/mq/pulsar"
 	rdb "github.com/beihai0xff/pudding/pkg/redis"
 )
 
-func newQueue(config *conf.SchedulerConfig) (broker.DelayBroker, connector.RealTimeConnector) {
-	return newDelayBroker(config.Broker), newConnector(config.Connector)
+func newQueue(config *conf.SchedulerConfig) (storage.DelayStorage, connector.RealTimeConnector) {
+	return newDelayStorage(config.Broker), newConnector(config.Connector)
 }
 
-// NewDelayBroker create a new DelayBroker
-func newDelayBroker(broker string) broker.DelayBroker {
+// NewDelayBroker create a new DelayStorage
+func newDelayStorage(broker string) storage.DelayStorage {
 	switch broker {
 	case "redis":
 		// parse Polling delay queue interval
@@ -29,7 +29,7 @@ func newDelayBroker(broker string) broker.DelayBroker {
 			log.Fatalf("failed to parse '%s' to time.Duration: %v", interval, err)
 		}
 		log.Infof("timeSlice interval is: %d seconds", t.Seconds())
-		return redis_broker.NewDelayQueue(rdb.New(configs.GetRedisConfig()), int64(t.Seconds()))
+		return redis_storage.NewDelayQueue(rdb.New(configs.GetRedisConfig()), int64(t.Seconds()))
 	default:
 		log.Fatalf("unknown broker type: [%s]", broker)
 	}

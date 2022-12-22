@@ -1,4 +1,4 @@
-package scheduler
+package broker
 
 import (
 	"context"
@@ -7,7 +7,7 @@ import (
 	"google.golang.org/genproto/googleapis/rpc/errdetails"
 	"google.golang.org/protobuf/types/known/emptypb"
 
-	pb "github.com/beihai0xff/pudding/api/gen/pudding/scheduler/v1"
+	pb "github.com/beihai0xff/pudding/api/gen/pudding/broker/v1"
 	"github.com/beihai0xff/pudding/api/gen/pudding/types/v1"
 	"github.com/beihai0xff/pudding/pkg/errno"
 )

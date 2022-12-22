@@ -7,7 +7,7 @@ import (
 
 	"github.com/google/uuid"
 
-	"github.com/beihai0xff/pudding/api/gen/pudding/scheduler/v1"
+	"github.com/beihai0xff/pudding/api/gen/pudding/broker/v1"
 	pb "github.com/beihai0xff/pudding/api/gen/pudding/trigger/v1"
 	"github.com/beihai0xff/pudding/app/trigger/entity"
 	"github.com/beihai0xff/pudding/app/trigger/pkg/configs"
@@ -29,13 +29,13 @@ const webhookURL = "%s/pudding/trigger/webhook/v1/call/%d"
 type Trigger struct {
 	webhookPrefix string
 
-	schedulerClient scheduler.SchedulerServiceClient
+	schedulerClient broker.SchedulerServiceClient
 	repo            repo.WebhookTemplate
 	// wallClock is the clock used to get current time
 	wallClock clock.Clock
 }
 
-func NewTrigger(db *mysql.Client, client scheduler.SchedulerServiceClient) *Trigger {
+func NewTrigger(db *mysql.Client, client broker.SchedulerServiceClient) *Trigger {
 	return &Trigger{
 		webhookPrefix:   configs.GetWebhookPrefix(),
 		schedulerClient: client,
@@ -149,7 +149,7 @@ func (t *Trigger) Call(ctx context.Context, id uint) (string, error) {
 		return "", fmt.Errorf("failed to find webhook template, caused by %w", err)
 	}
 	messageKey := uuid.NewString()
-	if _, err := t.schedulerClient.SendDelayMessage(ctx, &scheduler.SendDelayMessageRequest{
+	if _, err := t.schedulerClient.SendDelayMessage(ctx, &broker.SendDelayMessageRequest{
 		Topic:        template.Topic,
 		Key:          messageKey,
 		Payload:      template.Payload,

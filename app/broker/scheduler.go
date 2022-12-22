@@ -1,4 +1,4 @@
-package scheduler
+package broker
 
 import (
 	"context"
@@ -9,8 +9,8 @@ import (
 	"github.com/google/uuid"
 
 	"github.com/beihai0xff/pudding/api/gen/pudding/types/v1"
-	"github.com/beihai0xff/pudding/app/scheduler/broker"
-	"github.com/beihai0xff/pudding/app/scheduler/connector"
+	"github.com/beihai0xff/pudding/app/broker/connector"
+	"github.com/beihai0xff/pudding/app/broker/storage"
 	"github.com/beihai0xff/pudding/configs"
 	"github.com/beihai0xff/pudding/pkg/clock"
 	"github.com/beihai0xff/pudding/pkg/lock"
@@ -36,14 +36,14 @@ const (
 type Scheduler interface {
 	// Run start the scheduler
 	Run()
-	// Produce produce a Message to DelayBroker
+	// Produce produce a Message to DelayStorage
 	Produce(ctx context.Context, msg *types.Message) error
 	// NewConsumer consume Messages from the RealTime Connector queue
 	NewConsumer(topic, group string, batchSize int, fn type2.HandleMessage) error
 }
 
 type scheduler struct {
-	delay     broker.DelayBroker
+	delay     storage.DelayStorage
 	connector connector.RealTimeConnector
 	// wallClock wall wallClock time
 	wallClock clock.Clock
@@ -59,7 +59,7 @@ type scheduler struct {
 	quit chan int64
 }
 
-func New(config *configs.SchedulerConfig, delay broker.DelayBroker, realtime connector.RealTimeConnector) Scheduler {
+func New(config *configs.SchedulerConfig, delay storage.DelayStorage, realtime connector.RealTimeConnector) Scheduler {
 	q := &scheduler{
 		delay:        delay,
 		connector:    realtime,
@@ -100,7 +100,7 @@ func (s *scheduler) Produce(ctx context.Context, msg *types.Message) error {
 			break
 		}
 		// if produce failed, retry in three times
-		log.Errorf("DelayBroker: failed to produce message: %v, retry in [%d] times", err, i)
+		log.Errorf("DelayStorage: failed to produce message: %v, retry in [%d] times", err, i)
 	}
 	return err
 }
@@ -132,7 +132,7 @@ func (s *scheduler) checkParams(msg *types.Message) error {
 	return nil
 }
 
-// startSchedule start a scheduler to consume DelayBroker
+// startSchedule start a scheduler to consume DelayStorage
 // and move delayed messages to RealTimeConnector
 func (s *scheduler) startSchedule() {
 	log.Infof("start Scheduling")

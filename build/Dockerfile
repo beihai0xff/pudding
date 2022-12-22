@@ -1,7 +1,7 @@
 FROM golang:latest AS builder
 LABEL stage=gobuilder
 
-ARG app="scheduler"
+ARG app="broker"
 ENV GOPROXY https://goproxy.cn,direct
 RUN go install github.com/bufbuild/buf/cmd/buf@v1.9.0 && \
     go install github.com/fatih/gomodifytags@latest && \
@@ -16,7 +16,7 @@ RUN cp ./cmd/${app}/config.yaml /build/bin/config.yaml
 
 FROM alpine
 
-ARG app=scheduler
+ARG app="broker"
 RUN apk update --no-cache
 RUN apk add --no-cache ca-certificates
 WORKDIR /app/${app}
@@ -26,4 +26,4 @@ EXPOSE 8081 50051
 ENTRYPOINT ["./server"]
 
 HEALTHCHECK --interval=10s --timeout=3s \
-  CMD curl -fs http://127.0.0.1:8081/pudding/${app}/v1/ping || exit 1
+  CMD curl -fs http://127.0.0.1:8081/healthz || exit 1
