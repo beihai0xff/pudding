@@ -2,6 +2,7 @@ package resolver
 
 import (
 	"fmt"
+	"log"
 
 	"github.com/hashicorp/consul/api"
 )
@@ -11,15 +12,17 @@ type consulResolver struct {
 	client *api.Client
 }
 
-// NewConsulResolver new
-func NewConsulResolver(addr string) (Resolver, error) {
+// WithConsulResolver new
+func WithConsulResolver(addr string) OptionResolver {
 	cfg := api.DefaultConfig()
 	cfg.Address = addr
 	c, err := api.NewClient(cfg)
 	if err != nil {
-		return nil, err
+		log.Fatalf("failed to create consul client: %v", err)
 	}
-	return &consulResolver{c}, nil
+	return func() Resolver {
+		return &consulResolver{c}
+	}
 }
 
 // Register register gRPC service to consul

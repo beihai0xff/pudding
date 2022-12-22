@@ -16,7 +16,6 @@ import (
 	"github.com/beihai0xff/pudding/pkg/redis"
 	"github.com/beihai0xff/pudding/pkg/resolver"
 	"github.com/beihai0xff/pudding/pkg/shutdown"
-	"github.com/beihai0xff/pudding/pkg/utils"
 )
 
 const serviceName = "pudding.broker"
@@ -43,7 +42,8 @@ func main() {
 	// start server
 	grpcServer, healthcheck, httpServer := startServer()
 	// register service to consul
-	rsv, serviceID := serviceRegistration()
+	rsv, serviceID := resolver.GRPCRegistration(pb.SchedulerService_ServiceDesc.ServiceName,
+		*grpcPort, resolver.WithConsulResolver(configs.GetConsulURL()))
 
 	// block until a signal is received.
 	sign := <-interrupt
@@ -57,18 +57,6 @@ func main() {
 		shutdown.GRPCServerShutdown(grpcServer),
 		shutdown.LogSync(),
 	)
-}
-
-func serviceRegistration() (resolver.Resolver, string) {
-	rsv, err := resolver.NewConsulResolver(configs.GetConsulURL())
-	if err != nil {
-		log.Fatalf("failed to create rsv: %v", err)
-	}
-	serviceID, err := rsv.Register(pb.SchedulerService_ServiceDesc.ServiceName, utils.GetOutBoundIP(), *grpcPort)
-	if err != nil {
-		log.Fatalf("failed to register service: %v", err)
-	}
-	return rsv, serviceID
 }
 
 func registerLogger() {

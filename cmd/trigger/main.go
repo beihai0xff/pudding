@@ -8,15 +8,13 @@ import (
 	"syscall"
 	"time"
 
+	pb "github.com/beihai0xff/pudding/api/gen/pudding/trigger/v1"
 	"github.com/beihai0xff/pudding/app/trigger/pkg/configs"
 	"github.com/beihai0xff/pudding/pkg/log"
 	"github.com/beihai0xff/pudding/pkg/log/logger"
 	"github.com/beihai0xff/pudding/pkg/resolver"
 	"github.com/beihai0xff/pudding/pkg/shutdown"
-	"github.com/beihai0xff/pudding/pkg/utils"
 )
-
-const serviceName = "pudding.trigger"
 
 var (
 	grpcPort = flag.Int("grpcPort", 50051, "The grpc server port")
@@ -40,8 +38,11 @@ func main() {
 
 	// start server
 	grpcServer, healthcheck, httpServer := startServer()
-	// register service to consul
-	rsv, serviceID := serviceRegistration()
+	// register grpc service to consul
+	cronRsv, cronServiceID := resolver.GRPCRegistration(pb.CronTriggerService_ServiceDesc.ServiceName,
+		*grpcPort, resolver.WithConsulResolver(configs.GetConsulURL()))
+	webhookRsv, webhookServiceID := resolver.GRPCRegistration(pb.WebhookTriggerService_ServiceDesc.ServiceName,
+		*grpcPort, resolver.WithConsulResolver(configs.GetConsulURL()))
 
 	// block until a signal is received.
 	sign := <-interrupt
@@ -49,24 +50,13 @@ func main() {
 
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
-	shutdown.GracefulShutdown(ctx, shutdown.ResolverDeregister(rsv, serviceID),
+	shutdown.GracefulShutdown(ctx, shutdown.ResolverDeregister(cronRsv, cronServiceID),
+		shutdown.ResolverDeregister(webhookRsv, webhookServiceID),
 		shutdown.HealthcheckServerShutdown(healthcheck),
 		shutdown.HTTPServerShutdown(httpServer),
 		shutdown.GRPCServerShutdown(grpcServer),
 		shutdown.LogSync(),
 	)
-}
-
-func serviceRegistration() (resolver.Resolver, string) {
-	rsv, err := resolver.NewConsulResolver(configs.GetConsulURL())
-	if err != nil {
-		log.Fatalf("failed to create rsv: %v", err)
-	}
-	serviceID, err := rsv.Register(serviceName, utils.GetOutBoundIP(), *grpcPort)
-	if err != nil {
-		log.Fatalf("failed to register service: %v", err)
-	}
-	return rsv, serviceID
 }
 
 func registerLogger() {
