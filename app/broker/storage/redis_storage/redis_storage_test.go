@@ -1,4 +1,4 @@
-package redis_broker
+package redis_storage
 
 import (
 	"context"

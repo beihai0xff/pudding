@@ -18,9 +18,9 @@ import (
 	"google.golang.org/grpc/keepalive"
 	"google.golang.org/grpc/reflection"
 
-	pb "github.com/beihai0xff/pudding/api/gen/pudding/scheduler/v1"
-	"github.com/beihai0xff/pudding/app/scheduler"
-	"github.com/beihai0xff/pudding/app/scheduler/pkg/configs"
+	pb "github.com/beihai0xff/pudding/api/gen/pudding/broker/v1"
+	"github.com/beihai0xff/pudding/app/broker"
+	"github.com/beihai0xff/pudding/app/broker/pkg/configs"
 	"github.com/beihai0xff/pudding/pkg/log"
 	"github.com/beihai0xff/pudding/pkg/swagger"
 )
@@ -61,9 +61,9 @@ func startGrpcService(lis net.Listener) (*grpc.Server, *health.Server) {
 	// register scheduler server
 	schedulerConfig := configs.GetSchedulerConfig()
 	delay, realtime := newQueue(schedulerConfig)
-	s := scheduler.New(schedulerConfig, delay, realtime)
+	s := broker.New(schedulerConfig, delay, realtime)
 	s.Run()
-	handler := scheduler.NewHandler(s)
+	handler := broker.NewHandler(s)
 	pb.RegisterSchedulerServiceServer(server, handler)
 	// register health check server
 	healthcheck := health.NewServer()

@@ -1,4 +1,4 @@
-package scheduler
+package broker
 
 import (
 	"errors"
@@ -11,10 +11,10 @@ import (
 	"golang.org/x/net/context"
 
 	"github.com/beihai0xff/pudding/api/gen/pudding/types/v1"
-	"github.com/beihai0xff/pudding/app/scheduler/broker/redis_broker"
+	"github.com/beihai0xff/pudding/app/broker/storage/redis_storage"
 	"github.com/beihai0xff/pudding/pkg/clock"
 	rdb "github.com/beihai0xff/pudding/pkg/redis"
-	"github.com/beihai0xff/pudding/test/mock"
+	mock "github.com/beihai0xff/pudding/test/mock/app/broker/connector"
 	. "github.com/beihai0xff/pudding/types"
 )
 
@@ -23,7 +23,7 @@ var s *scheduler
 func TestMain(m *testing.M) {
 
 	s = &scheduler{
-		delay:        redis_broker.NewDelayQueue(rdb.NewMockRdb(), 60),
+		delay:        redis_storage.NewDelayQueue(rdb.NewMockRdb(), 60),
 		messageTopic: DefaultTopic,
 		tokenTopic:   TokenTopic,
 		wallClock:    clock.NewFakeClock(time.Date(2022, 1, 1, 0, 0, 0, 0, time.UTC)),

@@ -8,7 +8,8 @@ import (
 	"syscall"
 	"time"
 
-	"github.com/beihai0xff/pudding/app/scheduler/pkg/configs"
+	pb "github.com/beihai0xff/pudding/api/gen/pudding/broker/v1"
+	"github.com/beihai0xff/pudding/app/broker/pkg/configs"
 	"github.com/beihai0xff/pudding/pkg/lock"
 	"github.com/beihai0xff/pudding/pkg/log"
 	"github.com/beihai0xff/pudding/pkg/log/logger"
@@ -18,7 +19,7 @@ import (
 	"github.com/beihai0xff/pudding/pkg/utils"
 )
 
-const serviceName = "pudding.scheduler"
+const serviceName = "pudding.broker"
 
 var (
 	grpcPort = flag.Int("grpcPort", 50051, "The grpc server grpcPort")
@@ -63,7 +64,7 @@ func serviceRegistration() (resolver.Resolver, string) {
 	if err != nil {
 		log.Fatalf("failed to create rsv: %v", err)
 	}
-	serviceID, err := rsv.Register(serviceName, utils.GetOutBoundIP(), *grpcPort)
+	serviceID, err := rsv.Register(pb.SchedulerService_ServiceDesc.ServiceName, utils.GetOutBoundIP(), *grpcPort)
 	if err != nil {
 		log.Fatalf("failed to register service: %v", err)
 	}

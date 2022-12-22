@@ -1,6 +1,6 @@
 syntax = "proto3";
-package pudding.scheduler.v1;
-option go_package = "github.com/beihai0xff/pudding/api/gen/pudding/scheduler/v1;scheduler";
+package pudding.broker.v1;
+option go_package = "github.com/beihai0xff/pudding/api/gen/pudding/broker/v1;broker";
 
 import "google/api/annotations.proto";
 import "google/protobuf/empty.proto";
@@ -10,7 +10,7 @@ service SchedulerService {
   // Sends a Delay Message
   rpc SendDelayMessage (SendDelayMessageRequest) returns (google.protobuf.Empty) {
     option (google.api.http) = {
-      post: "/pudding/scheduler/v1/sendDelayMessage"
+      post: "/pudding/broker/v1/sendDelayMessage"
       body: "*"
     };
   }
