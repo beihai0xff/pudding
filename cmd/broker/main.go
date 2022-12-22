@@ -8,8 +8,7 @@ import (
 	"syscall"
 	"time"
 
-	pb "github.com/beihai0xff/pudding/api/gen/pudding/broker/v1"
-	"github.com/beihai0xff/pudding/app/broker/pkg/configs"
+	configs2 "github.com/beihai0xff/pudding/app/broker/pkg/configs"
 	"github.com/beihai0xff/pudding/pkg/lock"
 	"github.com/beihai0xff/pudding/pkg/log"
 	"github.com/beihai0xff/pudding/pkg/log/logger"
@@ -19,7 +18,7 @@ import (
 	"github.com/beihai0xff/pudding/pkg/utils"
 )
 
-const serviceName = "pudding.broker"
+const serviceName = "pudding.scheduler"
 
 var (
 	grpcPort = flag.Int("grpcPort", 50051, "The grpc server grpcPort")
@@ -33,7 +32,7 @@ var (
 func main() {
 	flag.Parse()
 
-	configs.Init(*confPath, configs.WithRedisURL(*redisURL), configs.WithPulsarURL(*pulsarURL))
+	configs2.Init(*confPath, configs2.WithRedisURL(*redisURL), configs2.WithPulsarURL(*pulsarURL))
 	registerLogger()
 
 	interrupt := make(chan os.Signal, 1)
@@ -60,11 +59,11 @@ func main() {
 }
 
 func serviceRegistration() (resolver.Resolver, string) {
-	rsv, err := resolver.NewConsulResolver(configs.GetConsulURL())
+	rsv, err := resolver.NewConsulResolver(configs2.GetConsulURL())
 	if err != nil {
 		log.Fatalf("failed to create rsv: %v", err)
 	}
-	serviceID, err := rsv.Register(pb.SchedulerService_ServiceDesc.ServiceName, utils.GetOutBoundIP(), *grpcPort)
+	serviceID, err := rsv.Register(serviceName, utils.GetOutBoundIP(), *grpcPort)
 	if err != nil {
 		log.Fatalf("failed to register service: %v", err)
 	}
@@ -76,6 +75,6 @@ func registerLogger() {
 	log.RegisterLogger(logger.PulsarLoggerName, log.WithCallerSkip(1))
 	log.RegisterLogger(logger.GRPCLoggerName, log.WithCallerSkip(1))
 	logger.GetGRPCLogger()
-	rdb := redis.New(configs.GetRedisConfig())
+	rdb := redis.New(configs2.GetRedisConfig())
 	lock.Init(rdb)
 }
