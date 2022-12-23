@@ -14,7 +14,7 @@ type Resolver interface {
 type OptionResolver func() Resolver
 
 type Pair struct {
-	R         Resolver
+	Resolver  Resolver
 	ServiceID string
 }
 

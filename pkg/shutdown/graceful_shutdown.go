@@ -20,7 +20,7 @@ type OptionFunc func(ctx context.Context) error
 func ResolverDeregister(pairs ...*resolver.Pair) OptionFunc {
 	return func(ctx context.Context) error {
 		for _, p := range pairs {
-			if err := p.R.Deregister(p.ServiceID); err != nil {
+			if err := p.Resolver.Deregister(p.ServiceID); err != nil {
 				log.Errorf("failed to deregister service: %v", err)
 				return err
 			}
