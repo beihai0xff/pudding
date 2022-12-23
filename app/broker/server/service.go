@@ -5,6 +5,7 @@ import (
 	"net"
 	"net/http"
 
+	_ "github.com/mbobakov/grpc-consul-resolver" // It's important
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/health"
 
