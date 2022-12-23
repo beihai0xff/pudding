@@ -27,6 +27,7 @@ cd pudding && make docker-build app=trigger
       -p 8080:8080 \
       -v pulsardata:/pulsar/data \
       -v pulsarconf:/pulsar/conf \
+      --restart=always \
       apachepulsar/pulsar:2.10.2 \
       bin/pulsar standalone
 
@@ -35,7 +36,10 @@ cd pudding && make docker-build app=trigger
    ```bash
    docker run --name some-redis -d -it \
        -p 6379:6379 \
-       redis:latest
+       --restart=always \
+       redis:latest redis-server \
+       --appendonly yes \
+       --requirepass "default"
   ```
 
 3. 运行 Scheduler 模块：

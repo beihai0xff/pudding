@@ -43,6 +43,8 @@ func main() {
 		*grpcPort, resolver.WithConsulResolver(configs.GetConsulURL()))
 	webhookRsv, webhookServiceID := resolver.GRPCRegistration(pb.WebhookTriggerService_ServiceDesc.ServiceName,
 		*grpcPort, resolver.WithConsulResolver(configs.GetConsulURL()))
+	httpRsv, httpServiceID := resolver.HTTPRegistration(healthEndpointPath,
+		*httpPort, resolver.WithConsulResolver(configs.GetConsulURL()))
 
 	// block until a signal is received.
 	sign := <-interrupt
@@ -50,8 +52,12 @@ func main() {
 
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
-	shutdown.GracefulShutdown(ctx, shutdown.ResolverDeregister(cronRsv, cronServiceID),
-		shutdown.ResolverDeregister(webhookRsv, webhookServiceID),
+	shutdown.GracefulShutdown(ctx,
+		shutdown.ResolverDeregister(
+			shutdown.ResolverPair{R: cronRsv, ServiceID: cronServiceID},
+			shutdown.ResolverPair{R: webhookRsv, ServiceID: webhookServiceID},
+			shutdown.ResolverPair{R: httpRsv, ServiceID: httpServiceID},
+		),
 		shutdown.HealthcheckServerShutdown(healthcheck),
 		shutdown.HTTPServerShutdown(httpServer),
 		shutdown.GRPCServerShutdown(grpcServer),

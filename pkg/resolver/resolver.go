@@ -6,7 +6,8 @@ import (
 )
 
 type Resolver interface {
-	Register(serviceName string, ip string, port int) (string, error)
+	RegisterGRPC(serviceName, ip string, port int) (string, error)
+	RegisterHTTP(path, ip string, port int) (string, error)
 	Deregister(serviceID string) error
 }
 
@@ -14,7 +15,16 @@ type OptionResolver func() Resolver
 
 func GRPCRegistration(serviceName string, port int, opt OptionResolver) (Resolver, string) {
 	rsv := opt()
-	serviceID, err := rsv.Register(serviceName, utils.GetOutBoundIP(), port)
+	serviceID, err := rsv.RegisterGRPC(serviceName, utils.GetOutBoundIP(), port)
+	if err != nil {
+		log.Fatalf("failed to register service: %v", err)
+	}
+	return rsv, serviceID
+}
+
+func HTTPRegistration(path string, port int, opt OptionResolver) (Resolver, string) {
+	rsv := opt()
+	serviceID, err := rsv.RegisterHTTP(path, utils.GetOutBoundIP(), port)
 	if err != nil {
 		log.Fatalf("failed to register service: %v", err)
 	}

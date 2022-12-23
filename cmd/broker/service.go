@@ -25,6 +25,12 @@ import (
 	"github.com/beihai0xff/pudding/pkg/swagger"
 )
 
+const (
+	httpPrefix          = "/pudding/broker"
+	healthEndpointPath  = httpPrefix + "/healthz"
+	swaggerEndpointPath = httpPrefix + "/swagger"
+)
+
 func startServer() (*grpc.Server, *health.Server, *http.Server) {
 	grpcLis, err := net.Listen("tcp", fmt.Sprintf(":%d", *grpcPort))
 	if err != nil {
@@ -68,7 +74,7 @@ func startGrpcService(lis net.Listener) (*grpc.Server, *health.Server) {
 	// register health check server
 	healthcheck := health.NewServer()
 	pbhealth.RegisterHealthServer(server, healthcheck)
-	// Register reflection service on gRPC server.
+	// RegisterGRPC reflection service on gRPC server.
 	reflection.Register(server)
 
 	go func() {
@@ -96,14 +102,13 @@ func startHTTPService(grpcLis, httpLis net.Listener) *http.Server {
 	}
 
 	// gRPC-Gateway httpServer
-	gwmux := runtime.NewServeMux(runtime.WithHealthzEndpoint(pbhealth.NewHealthClient(conn)))
+	gwmux := runtime.NewServeMux(runtime.WithHealthEndpointAt(pbhealth.NewHealthClient(conn), healthEndpointPath))
+	swagger.RegisterHandler(gwmux, swaggerEndpointPath)
 
 	err = pb.RegisterSchedulerServiceHandler(context.Background(), gwmux, conn)
 	if err != nil {
 		log.Fatalf("Failed to register gateway: %v", err)
 	}
-
-	swagger.RegisterHandler(gwmux, "/pudding/broker/swagger")
 
 	// 定义HTTP server配置
 	httpServer := &http.Server{

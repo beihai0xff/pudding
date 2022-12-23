@@ -28,6 +28,13 @@ import (
 	"github.com/beihai0xff/pudding/app/trigger/pkg/configs"
 	"github.com/beihai0xff/pudding/pkg/db/mysql"
 	"github.com/beihai0xff/pudding/pkg/log"
+	"github.com/beihai0xff/pudding/pkg/swagger"
+)
+
+const (
+	httpPrefix          = "/pudding/trigger"
+	healthEndpointPath  = httpPrefix + "/healthz"
+	swaggerEndpointPath = httpPrefix + "/swagger"
 )
 
 func startServer() (*grpc.Server, *health.Server, *http.Server) {
@@ -86,7 +93,7 @@ func startGrpcService(lis net.Listener) (*grpc.Server, *health.Server) {
 	// register health check server
 	healthcheck := health.NewServer()
 	pbhealth.RegisterHealthServer(server, healthcheck)
-	// Register reflection service on gRPC server.
+	// RegisterGRPC reflection service on gRPC server.
 	reflection.Register(server)
 
 	go func() {
@@ -115,7 +122,9 @@ func startHTTPService(grpcLis, httpLis net.Listener) *http.Server {
 	}
 
 	// gRPC-Gateway httpServer
-	gwmux := runtime.NewServeMux(runtime.WithHealthzEndpoint(pbhealth.NewHealthClient(conn)))
+	gwmux := runtime.NewServeMux(runtime.WithHealthEndpointAt(pbhealth.NewHealthClient(conn), healthEndpointPath))
+	swagger.RegisterHandler(gwmux, swaggerEndpointPath)
+
 	err = pb.RegisterCronTriggerServiceHandler(context.Background(), gwmux, conn)
 	if err != nil {
 		log.Fatalf("Failed to register gateway: %v", err)
