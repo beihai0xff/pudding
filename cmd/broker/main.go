@@ -18,8 +18,6 @@ import (
 	"github.com/beihai0xff/pudding/pkg/shutdown"
 )
 
-const serviceName = "pudding.broker"
-
 var (
 	grpcPort = flag.Int("grpcPort", 50051, "The grpc server grpcPort")
 	httpPort = flag.Int("httpPort", 8081, "The http server grpcPort")
@@ -44,6 +42,8 @@ func main() {
 	// register service to consul
 	rsv, serviceID := resolver.GRPCRegistration(pb.SchedulerService_ServiceDesc.ServiceName,
 		*grpcPort, resolver.WithConsulResolver(configs.GetConsulURL()))
+	httpRsv, httpServiceID := resolver.HTTPRegistration(healthEndpointPath,
+		*httpPort, resolver.WithConsulResolver(configs.GetConsulURL()))
 
 	// block until a signal is received.
 	sign := <-interrupt
@@ -51,7 +51,11 @@ func main() {
 
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
-	shutdown.GracefulShutdown(ctx, shutdown.ResolverDeregister(rsv, serviceID),
+	shutdown.GracefulShutdown(ctx,
+		shutdown.ResolverDeregister(
+			shutdown.ResolverPair{R: rsv, ServiceID: serviceID},
+			shutdown.ResolverPair{R: httpRsv, ServiceID: httpServiceID},
+		),
 		shutdown.HealthcheckServerShutdown(healthcheck),
 		shutdown.HTTPServerShutdown(httpServer),
 		shutdown.GRPCServerShutdown(grpcServer),

@@ -16,10 +16,21 @@ import (
 // OptionFunc is a function that can be used to configure a graceful shutdown.
 type OptionFunc func(ctx context.Context) error
 
+type ResolverPair struct {
+	R         resolver.Resolver
+	ServiceID string
+}
+
 // ResolverDeregister deregister the service from the resolver.
-func ResolverDeregister(r resolver.Resolver, serviceID string) OptionFunc {
+func ResolverDeregister(pairs ...ResolverPair) OptionFunc {
 	return func(ctx context.Context) error {
-		return r.Deregister(serviceID)
+		for _, p := range pairs {
+			if err := p.R.Deregister(p.ServiceID); err != nil {
+				log.Errorf("failed to deregister service: %v", err)
+				return err
+			}
+		}
+		return nil
 	}
 }
 

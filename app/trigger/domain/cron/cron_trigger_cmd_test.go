@@ -40,7 +40,7 @@ func TestTrigger_Register(t1 *testing.T) {
 	}
 	for _, tt := range tests {
 		t1.Run(tt.name, func(t1 *testing.T) {
-			tt.wantErr(t1, testTrigger.Register(tt.args.ctx, tt.args.temp), fmt.Sprintf("Register(%+v, %+v)", tt.args.ctx, tt.args.temp))
+			tt.wantErr(t1, testTrigger.Register(tt.args.ctx, tt.args.temp), fmt.Sprintf("RegisterGRPC(%+v, %+v)", tt.args.ctx, tt.args.temp))
 			e, err := testTrigger.repo.FindByID(tt.args.ctx, tt.args.temp.ID)
 			assert.NoError(t1, err)
 			assert.Equal(t1, tt.args.temp, e)
