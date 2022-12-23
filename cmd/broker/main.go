@@ -8,13 +8,9 @@ import (
 	"syscall"
 	"time"
 
-	pb "github.com/beihai0xff/pudding/api/gen/pudding/broker/v1"
 	"github.com/beihai0xff/pudding/app/broker/pkg/configs"
-	"github.com/beihai0xff/pudding/pkg/lock"
+	"github.com/beihai0xff/pudding/app/broker/server"
 	"github.com/beihai0xff/pudding/pkg/log"
-	"github.com/beihai0xff/pudding/pkg/log/logger"
-	"github.com/beihai0xff/pudding/pkg/redis"
-	"github.com/beihai0xff/pudding/pkg/resolver"
 	"github.com/beihai0xff/pudding/pkg/shutdown"
 )
 
@@ -31,19 +27,16 @@ func main() {
 	flag.Parse()
 
 	configs.Init(*confPath, configs.WithRedisURL(*redisURL), configs.WithPulsarURL(*pulsarURL))
-	registerLogger()
+	server.RegisterLogger()
 
 	interrupt := make(chan os.Signal, 1)
 	signal.Notify(interrupt, syscall.SIGINT, syscall.SIGTERM)
 	defer signal.Stop(interrupt)
 
 	// start server
-	grpcServer, healthcheck, httpServer := startServer()
+	grpcServer, healthcheck, httpServer := server.StartServer(*grpcPort, *httpPort)
 	// register service to consul
-	rsv, serviceID := resolver.GRPCRegistration(pb.SchedulerService_ServiceDesc.ServiceName,
-		*grpcPort, resolver.WithConsulResolver(configs.GetConsulURL()))
-	httpRsv, httpServiceID := resolver.HTTPRegistration(healthEndpointPath,
-		*httpPort, resolver.WithConsulResolver(configs.GetConsulURL()))
+	resolverPairs := server.RegisterResolver(*grpcPort, *httpPort)
 
 	// block until a signal is received.
 	sign := <-interrupt
@@ -52,22 +45,10 @@ func main() {
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
 	shutdown.GracefulShutdown(ctx,
-		shutdown.ResolverDeregister(
-			shutdown.ResolverPair{R: rsv, ServiceID: serviceID},
-			shutdown.ResolverPair{R: httpRsv, ServiceID: httpServiceID},
-		),
+		shutdown.ResolverDeregister(resolverPairs...),
 		shutdown.HealthcheckServerShutdown(healthcheck),
 		shutdown.HTTPServerShutdown(httpServer),
 		shutdown.GRPCServerShutdown(grpcServer),
 		shutdown.LogSync(),
 	)
-}
-
-func registerLogger() {
-	log.RegisterLogger(log.DefaultLoggerName, log.WithCallerSkip(1))
-	log.RegisterLogger(logger.PulsarLoggerName, log.WithCallerSkip(1))
-	log.RegisterLogger(logger.GRPCLoggerName, log.WithCallerSkip(1))
-	logger.GetGRPCLogger()
-	rdb := redis.New(configs.GetRedisConfig())
-	lock.Init(rdb)
 }

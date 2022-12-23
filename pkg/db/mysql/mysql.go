@@ -7,6 +7,7 @@ import (
 	"gorm.io/gorm"
 
 	"github.com/beihai0xff/pudding/configs"
+	"github.com/beihai0xff/pudding/pkg/log"
 	"github.com/beihai0xff/pudding/pkg/log/logger"
 )
 
@@ -30,7 +31,7 @@ func New(c *configs.MySQLConfig) *Client {
 	})
 
 	if err != nil {
-		panic(err)
+		log.Fatalf("failed to connect MySQL database: %v", err)
 	}
 
 	setConnPool(db)
