@@ -1,4 +1,4 @@
-package main
+package launcher
 
 import (
 	"context"
@@ -19,36 +19,15 @@ import (
 	"google.golang.org/grpc/reflection"
 
 	pb "github.com/beihai0xff/pudding/api/gen/pudding/broker/v1"
-	"github.com/beihai0xff/pudding/app/broker"
-	"github.com/beihai0xff/pudding/app/broker/pkg/configs"
 	"github.com/beihai0xff/pudding/pkg/log"
 	"github.com/beihai0xff/pudding/pkg/swagger"
 )
 
-const (
-	httpPrefix          = "/pudding/broker"
-	healthEndpointPath  = httpPrefix + "/healthz"
-	swaggerEndpointPath = httpPrefix + "/swagger"
-)
+type StartServiceFunc func(server *grpc.Server, serviceName *string) error
 
-func startServer() (*grpc.Server, *health.Server, *http.Server) {
-	grpcLis, err := net.Listen("tcp", fmt.Sprintf(":%d", *grpcPort))
-	if err != nil {
-		log.Fatalf("failed to listen: %v", err)
-	}
-	httpLis, err := net.Listen("tcp", fmt.Sprintf(":%d", *httpPort))
-	if err != nil {
-		log.Fatalf("failed to listen: %v", err)
-	}
-
-	grpcServer, healthcheck := startGrpcService(grpcLis)
-	httpServer := startHTTPService(grpcLis, httpLis)
-	return grpcServer, healthcheck, httpServer
-}
-
-func startGrpcService(lis net.Listener) (*grpc.Server, *health.Server) {
+func StartGRPCService(grpcLis net.Listener, opts ...StartServiceFunc) (*grpc.Server, *health.Server) {
 	log.Info("starting grpc server ...")
-	// register server
+	// init grpc server
 	server := grpc.NewServer(
 		grpc.KeepaliveParams(keepalive.ServerParameters{
 			Time:    time.Minute,
@@ -64,32 +43,39 @@ func startGrpcService(lis net.Listener) (*grpc.Server, *health.Server) {
 		)),
 	)
 
-	// register scheduler server
-	schedulerConfig := configs.GetSchedulerConfig()
-	delay, realtime := newQueue(schedulerConfig)
-	s := broker.New(schedulerConfig, delay, realtime)
-	s.Run()
-	handler := broker.NewHandler(s)
-	pb.RegisterSchedulerServiceServer(server, handler)
 	// register health check server
-	healthcheck := health.NewServer()
-	pbhealth.RegisterHealthServer(server, healthcheck)
+	healthcheckServer := health.NewServer()
+	pbhealth.RegisterHealthServer(server, healthcheckServer)
+
+	for _, opt := range opts {
+		serviceName := ""
+		if err := opt(server, &serviceName); err != nil {
+			log.Fatalf("failed to start service ")
+		}
+		// asynchronously inspect dependencies and toggle serving status as needed
+		healthcheckServer.SetServingStatus(serviceName, pbhealth.HealthCheckResponse_SERVING)
+	}
+
 	// RegisterGRPC reflection service on gRPC server.
+	// 提供该服务器端上可公开使用的 gRPC 服务的信息，
+	// 服务反射向客户端提供了服务端注册的服务的信息，因此客户端不需要预编译服务定义就能与服务端交互
+	// 通过此方式支持 grpcCRUL
 	reflection.Register(server)
 
 	go func() {
-		// asynchronously inspect dependencies and toggle serving status as needed
-		healthcheck.SetServingStatus(pb.SchedulerService_ServiceDesc.ServiceName, pbhealth.HealthCheckResponse_SERVING)
-		log.Infof("grpc server listening at %v", lis.Addr())
-		if err := server.Serve(lis); err != nil {
+
+		log.Infof("grpc server listening at %v", grpcLis.Addr())
+		if err := server.Serve(grpcLis); err != nil {
 			log.Fatalf("failed to start grpc serve: %v", err)
 		}
 	}()
 
-	return server, healthcheck
+	return server, healthcheckServer
 }
 
-func startHTTPService(grpcLis, httpLis net.Listener) *http.Server {
+// StartHTTPService starts the HTTP service.
+// It serves the gRPC-gateway, gRPC-healthz and the swagger UI.
+func StartHTTPService(grpcLis, httpLis net.Listener, healthEndpointPath, swaggerEndpointPath string) *http.Server {
 	log.Info("starting http server ...")
 	conn, err := grpc.DialContext(
 		context.Background(),
@@ -110,13 +96,12 @@ func startHTTPService(grpcLis, httpLis net.Listener) *http.Server {
 		log.Fatalf("Failed to register gateway: %v", err)
 	}
 
-	// 定义HTTP server配置
+	// define HTTP server configuration
 	httpServer := &http.Server{
 		Handler: gwmux,
 	}
 
 	go func() {
-		time.Sleep(3 * time.Second)
 		log.Infof("http server listening at %v", httpLis.Addr())
 		if err = httpServer.Serve(httpLis); err != nil {
 			log.Fatalf("Failed to serve gRPC-Gateway: %v", err)

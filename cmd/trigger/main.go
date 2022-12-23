@@ -8,11 +8,9 @@ import (
 	"syscall"
 	"time"
 
-	pb "github.com/beihai0xff/pudding/api/gen/pudding/trigger/v1"
 	"github.com/beihai0xff/pudding/app/trigger/pkg/configs"
+	"github.com/beihai0xff/pudding/app/trigger/server"
 	"github.com/beihai0xff/pudding/pkg/log"
-	"github.com/beihai0xff/pudding/pkg/log/logger"
-	"github.com/beihai0xff/pudding/pkg/resolver"
 	"github.com/beihai0xff/pudding/pkg/shutdown"
 )
 
@@ -30,21 +28,16 @@ func main() {
 	flag.Parse()
 
 	configs.Init(*confPath, configs.WithMySQLDSN(*mysqlDSN), configs.WithWebhookPrefix(*webhookPrefix))
-	registerLogger()
+	server.RegisterLogger()
 
 	interrupt := make(chan os.Signal, 1)
 	signal.Notify(interrupt, syscall.SIGINT, syscall.SIGTERM)
 	defer signal.Stop(interrupt)
 
 	// start server
-	grpcServer, healthcheck, httpServer := startServer()
-	// register grpc service to consul
-	cronRsv, cronServiceID := resolver.GRPCRegistration(pb.CronTriggerService_ServiceDesc.ServiceName,
-		*grpcPort, resolver.WithConsulResolver(configs.GetConsulURL()))
-	webhookRsv, webhookServiceID := resolver.GRPCRegistration(pb.WebhookTriggerService_ServiceDesc.ServiceName,
-		*grpcPort, resolver.WithConsulResolver(configs.GetConsulURL()))
-	httpRsv, httpServiceID := resolver.HTTPRegistration(healthEndpointPath,
-		*httpPort, resolver.WithConsulResolver(configs.GetConsulURL()))
+	grpcServer, healthcheck, httpServer := server.StartServer(*grpcPort, *httpPort)
+	// register service to consul
+	resolverPairs := server.RegisterResolver(*grpcPort, *httpPort)
 
 	// block until a signal is received.
 	sign := <-interrupt
@@ -53,20 +46,10 @@ func main() {
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
 	shutdown.GracefulShutdown(ctx,
-		shutdown.ResolverDeregister(
-			shutdown.ResolverPair{R: cronRsv, ServiceID: cronServiceID},
-			shutdown.ResolverPair{R: webhookRsv, ServiceID: webhookServiceID},
-			shutdown.ResolverPair{R: httpRsv, ServiceID: httpServiceID},
-		),
+		shutdown.ResolverDeregister(resolverPairs...),
 		shutdown.HealthcheckServerShutdown(healthcheck),
 		shutdown.HTTPServerShutdown(httpServer),
 		shutdown.GRPCServerShutdown(grpcServer),
 		shutdown.LogSync(),
 	)
-}
-
-func registerLogger() {
-	log.RegisterLogger(log.DefaultLoggerName, log.WithCallerSkip(1))
-	log.RegisterLogger("gorm_log", log.WithCallerSkip(3))
-	logger.GetGRPCLogger()
 }

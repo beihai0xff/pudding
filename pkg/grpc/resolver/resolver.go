@@ -13,20 +13,25 @@ type Resolver interface {
 
 type OptionResolver func() Resolver
 
-func GRPCRegistration(serviceName string, port int, opt OptionResolver) (Resolver, string) {
+type Pair struct {
+	Resolver  Resolver
+	ServiceID string
+}
+
+func GRPCRegistration(serviceName string, port int, opt OptionResolver) *Pair {
 	rsv := opt()
 	serviceID, err := rsv.RegisterGRPC(serviceName, utils.GetOutBoundIP(), port)
 	if err != nil {
 		log.Fatalf("failed to register service: %v", err)
 	}
-	return rsv, serviceID
+	return &Pair{rsv, serviceID}
 }
 
-func HTTPRegistration(path string, port int, opt OptionResolver) (Resolver, string) {
+func HTTPRegistration(path string, port int, opt OptionResolver) *Pair {
 	rsv := opt()
 	serviceID, err := rsv.RegisterHTTP(path, utils.GetOutBoundIP(), port)
 	if err != nil {
 		log.Fatalf("failed to register service: %v", err)
 	}
-	return rsv, serviceID
+	return &Pair{rsv, serviceID}
 }
