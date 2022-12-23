@@ -9,8 +9,8 @@ import (
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/health"
 
+	"github.com/beihai0xff/pudding/pkg/grpc/resolver"
 	"github.com/beihai0xff/pudding/pkg/log"
-	"github.com/beihai0xff/pudding/pkg/resolver"
 )
 
 // OptionFunc is a function that can be used to configure a graceful shutdown.

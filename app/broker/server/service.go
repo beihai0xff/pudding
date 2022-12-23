@@ -12,11 +12,11 @@ import (
 	"github.com/beihai0xff/pudding/app/broker"
 	"github.com/beihai0xff/pudding/app/broker/pkg/configs"
 	"github.com/beihai0xff/pudding/pkg/grpc/launcher"
+	resolver2 "github.com/beihai0xff/pudding/pkg/grpc/resolver"
 	"github.com/beihai0xff/pudding/pkg/lock"
 	"github.com/beihai0xff/pudding/pkg/log"
 	"github.com/beihai0xff/pudding/pkg/log/logger"
 	"github.com/beihai0xff/pudding/pkg/redis"
-	"github.com/beihai0xff/pudding/pkg/resolver"
 )
 
 const (
@@ -36,13 +36,14 @@ func RegisterLogger() {
 }
 
 // RegisterResolver registers the service to the resolver.
-func RegisterResolver(grpcPort, httpPort int) []*resolver.Pair {
-	var pairs []*resolver.Pair
+func RegisterResolver(grpcPort, httpPort int) []*resolver2.Pair {
+	var pairs []*resolver2.Pair
 	consulURL := configs.GetConsulURL()
-	pairs = append(pairs, resolver.GRPCRegistration(pb.SchedulerService_ServiceDesc.ServiceName,
-		grpcPort, resolver.WithConsulResolver(consulURL)))
-	pairs = append(pairs, resolver.HTTPRegistration(healthEndpointPath,
-		httpPort, resolver.WithConsulResolver(consulURL)))
+
+	pairs = append(pairs, resolver2.GRPCRegistration(pb.SchedulerService_ServiceDesc.ServiceName,
+		grpcPort, resolver2.WithConsulResolver(consulURL)))
+	pairs = append(pairs, resolver2.HTTPRegistration(healthEndpointPath,
+		httpPort, resolver2.WithConsulResolver(consulURL)))
 	return pairs
 }
 
