@@ -8,6 +8,7 @@ import (
 	"github.com/hashicorp/consul/api"
 
 	"github.com/beihai0xff/pudding/pkg/log"
+	"github.com/beihai0xff/pudding/pkg/utils"
 )
 
 // consulResolver
@@ -52,9 +53,9 @@ func (c *consulResolver) RegisterGRPC(serviceName, ip string, port int) (string,
 	serviceID := fmt.Sprintf("%s-%s:%d", serviceName, ip, port)
 
 	srv := &api.AgentServiceRegistration{
-		ID:      serviceID,                   // service unique ID
-		Name:    "grpc." + serviceName,       // service name
-		Tags:    []string{"pudding", "gRPC"}, // service tags
+		ID:      serviceID,                                   // service unique ID
+		Name:    "grpc." + serviceName,                       // service name
+		Tags:    []string{utils.GetEnv(), "pudding", "gRPC"}, // service tags
 		Address: ip,
 		Port:    port,
 		Check:   check,
@@ -85,9 +86,9 @@ func (c *consulResolver) RegisterHTTP(path, ip string, port int) (string, error)
 	serviceName := "http" + strings.ReplaceAll(strings.TrimSuffix(path, "/healthz"), "/", ".")
 	serviceID := fmt.Sprintf("%s-%s:%d", serviceName, ip, port)
 	srv := &api.AgentServiceRegistration{
-		ID:      serviceID,                   // service unique ID
-		Name:    serviceName,                 // service name
-		Tags:    []string{"pudding", "HTTP"}, // service tags
+		ID:      serviceID,                                   // service unique ID
+		Name:    serviceName,                                 // service name
+		Tags:    []string{utils.GetEnv(), "pudding", "HTTP"}, // service tags
 		Address: ip,
 		Port:    port,
 		Check:   check,

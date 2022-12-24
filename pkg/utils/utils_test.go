@@ -2,7 +2,10 @@ package utils
 
 import (
 	"fmt"
+	"os"
 	"testing"
+
+	"github.com/stretchr/testify/assert"
 )
 
 func TestGetOutBoundIP(t *testing.T) {
@@ -13,6 +16,7 @@ func TestGetOutBoundIP(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			assert.NotEqual(t, "", GetOutBoundIP())
 			println(GetOutBoundIP())
 		})
 	}
@@ -38,6 +42,64 @@ func TestGetRand(t *testing.T) {
 				}
 				fmt.Println(got)
 			}
+		})
+	}
+}
+
+func TestGetEnv(t *testing.T) {
+	tests := []struct {
+		name   string
+		setEnv string
+		want   string
+	}{
+		{"empty_env", "", "dev"},
+		{"dev_env", "dev", "dev"},
+		{"test_env", "test", "test"},
+		{"prod_env", "prod", "prod"},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			_ = os.Setenv("PUDDING_ENV", tt.setEnv)
+			assert.Equal(t, tt.want, GetEnv())
+		})
+	}
+	_ = os.Unsetenv("PUDDING_ENV")
+}
+
+func TestGetHealthEndpointPath(t *testing.T) {
+	type args struct {
+		prefix string
+	}
+	tests := []struct {
+		name string
+		args args
+		want string
+	}{
+		{"normal_test", args{"/api"}, "/api/healthz"},
+		{"empty_prefix", args{""}, "/healthz"},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			assert.Equalf(t, tt.want, GetHealthEndpointPath(tt.args.prefix), "GetHealthEndpointPath(%v)", tt.args.prefix)
+		})
+	}
+}
+
+func TestGetSwaggerEndpointPath(t *testing.T) {
+	type args struct {
+		prefix string
+	}
+	tests := []struct {
+		name string
+		args args
+		want string
+	}{
+		{"normal_test", args{"/api"}, "/api/swagger"},
+		{"empty_prefix", args{""}, "/swagger"},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			assert.Equalf(t, tt.want, GetSwaggerEndpointPath(tt.args.prefix), "GetSwaggerEndpointPath(%v)", tt.args.prefix)
 		})
 	}
 }

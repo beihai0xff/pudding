@@ -4,11 +4,27 @@ package utils
 import (
 	"math/rand"
 	"net"
+	"os"
 	"strings"
 	"time"
 
 	"github.com/beihai0xff/pudding/pkg/log"
 )
+
+const (
+	puddingEnv = "PUDDING_ENV"
+	defaultEnv = "dev"
+)
+
+// GetEnv get env environment variables.
+func GetEnv() string {
+	env := os.Getenv(puddingEnv)
+	if env == "" {
+		return defaultEnv
+	}
+
+	return env
+}
 
 // GetOutBoundIP get preferred outbound ip of this machine.
 func GetOutBoundIP() string {
