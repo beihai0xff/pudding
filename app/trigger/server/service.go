@@ -17,19 +17,26 @@ import (
 	"github.com/beihai0xff/pudding/app/trigger/pkg/configs"
 	"github.com/beihai0xff/pudding/pkg/db/mysql"
 	"github.com/beihai0xff/pudding/pkg/grpc/launcher"
-	resolver2 "github.com/beihai0xff/pudding/pkg/grpc/resolver"
+	"github.com/beihai0xff/pudding/pkg/grpc/resolver"
 	"github.com/beihai0xff/pudding/pkg/log"
 	"github.com/beihai0xff/pudding/pkg/log/logger"
+	"github.com/beihai0xff/pudding/pkg/utils"
 )
 
 const (
-	httpPrefix          = "/pudding/trigger"
-	healthEndpointPath  = httpPrefix + "/healthz"
-	swaggerEndpointPath = httpPrefix + "/swagger"
+	// custom http endpoint prifix path
+	httpPrefix = "/pudding/trigger"
 )
 
 var (
-	db              = mysql.New(configs.GetMySQLConfig())
+	// healthEndpointPath health check http endpoint path.
+	healthEndpointPath = utils.GetHealthEndpointPath(httpPrefix)
+	// swaggerEndpointPath Swagger ui http endpoint path.
+	swaggerEndpointPath = utils.GetSwaggerEndpointPath(httpPrefix)
+
+	// db is the MySQL database connection.
+	db = mysql.New(configs.GetMySQLConfig())
+	// schedulerClient is the scheduler grpc service client.
 	schedulerClient broker.SchedulerServiceClient
 )
 
@@ -59,16 +66,17 @@ func RegisterLogger() {
 }
 
 // RegisterResolver registers the service to the resolver.
-func RegisterResolver(grpcPort, httpPort int) []*resolver2.Pair {
-	var pairs []*resolver2.Pair
+func RegisterResolver(grpcPort, httpPort int) []*resolver.Pair {
 	consulURL := configs.GetConsulURL()
 
-	pairs = append(pairs, resolver2.GRPCRegistration(pb.CronTriggerService_ServiceDesc.ServiceName,
-		grpcPort, resolver2.WithConsulResolver(consulURL)))
-	pairs = append(pairs, resolver2.GRPCRegistration(pb.WebhookTriggerService_ServiceDesc.ServiceName,
-		grpcPort, resolver2.WithConsulResolver(consulURL)))
-	pairs = append(pairs, resolver2.HTTPRegistration(healthEndpointPath,
-		httpPort, resolver2.WithConsulResolver(consulURL)))
+	pairs := []*resolver.Pair{
+		resolver.GRPCRegistration(pb.CronTriggerService_ServiceDesc.ServiceName,
+			grpcPort, resolver.WithConsulResolver(consulURL)),
+		resolver.GRPCRegistration(pb.WebhookTriggerService_ServiceDesc.ServiceName,
+			grpcPort, resolver.WithConsulResolver(consulURL)),
+		resolver.HTTPRegistration(healthEndpointPath,
+			httpPort, resolver.WithConsulResolver(consulURL)),
+	}
 	return pairs
 }
 

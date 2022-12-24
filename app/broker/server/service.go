@@ -5,7 +5,6 @@ import (
 	"net"
 	"net/http"
 
-	_ "github.com/mbobakov/grpc-consul-resolver" // It's important
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/health"
 
@@ -18,12 +17,19 @@ import (
 	"github.com/beihai0xff/pudding/pkg/log"
 	"github.com/beihai0xff/pudding/pkg/log/logger"
 	"github.com/beihai0xff/pudding/pkg/redis"
+	"github.com/beihai0xff/pudding/pkg/utils"
 )
 
 const (
-	httpPrefix          = "/pudding/broker"
-	healthEndpointPath  = httpPrefix + "/healthz"
-	swaggerEndpointPath = httpPrefix + "/swagger"
+	// custom http endpoint prifix path
+	httpPrefix = "/pudding/broker"
+)
+
+var (
+	// healthEndpointPath health check http endpoint path.
+	healthEndpointPath = utils.GetHealthEndpointPath(httpPrefix)
+	// swaggerEndpointPath Swagger ui http endpoint path.
+	swaggerEndpointPath = utils.GetSwaggerEndpointPath(httpPrefix)
 )
 
 // RegisterLogger registers the logger to the resolver.
@@ -38,13 +44,14 @@ func RegisterLogger() {
 
 // RegisterResolver registers the service to the resolver.
 func RegisterResolver(grpcPort, httpPort int) []*resolver.Pair {
-	var pairs []*resolver.Pair
 	consulURL := configs.GetConsulURL()
 
-	pairs = append(pairs, resolver.GRPCRegistration(pb.SchedulerService_ServiceDesc.ServiceName,
-		grpcPort, resolver.WithConsulResolver(consulURL)))
-	pairs = append(pairs, resolver.HTTPRegistration(healthEndpointPath,
-		httpPort, resolver.WithConsulResolver(consulURL)))
+	pairs := []*resolver.Pair{
+		resolver.GRPCRegistration(pb.SchedulerService_ServiceDesc.ServiceName,
+			grpcPort, resolver.WithConsulResolver(consulURL)),
+		resolver.HTTPRegistration(healthEndpointPath,
+			httpPort, resolver.WithConsulResolver(consulURL)),
+	}
 	return pairs
 }
 
