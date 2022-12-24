@@ -53,22 +53,27 @@ func (c *consulResolver) RegisterGRPC(serviceName, ip string, port int) (string,
 
 	srv := &api.AgentServiceRegistration{
 		ID:      serviceID,                   // service unique ID
-		Name:    serviceName,                 // service name
+		Name:    "grpc." + serviceName,       // service name
 		Tags:    []string{"pudding", "gRPC"}, // service tags
 		Address: ip,
 		Port:    port,
 		Check:   check,
 	}
-	return serviceID, c.client.Agent().ServiceRegister(srv)
+
+	if err := c.client.Agent().ServiceRegister(srv); err != nil {
+		log.Errorf("register grpc service [%s] failed: %v", serviceID, err)
+		return "", err
+	}
+
+	log.Info("register grpc service [%s] successfully", serviceID)
+	return serviceID, nil
 }
 
 // RegisterHTTP register HTTP service to consul
 func (c *consulResolver) RegisterHTTP(path, ip string, port int) (string, error) {
-	url := fmt.Sprintf("http://%s:%d%s", ip, port, path)
-	log.Infof("register http service: %s", url)
 	// health check
 	check := &api.AgentServiceCheck{
-		HTTP:     url,
+		HTTP:     fmt.Sprintf("http://%s:%d%s", ip, port, path),
 		Method:   "GET",
 		Timeout:  "10s",
 		Interval: "10s",
@@ -77,15 +82,24 @@ func (c *consulResolver) RegisterHTTP(path, ip string, port int) (string, error)
 		DeregisterCriticalServiceAfter: "1m",
 	}
 
+	serviceName := "http" + strings.ReplaceAll(strings.TrimSuffix(path, "/healthz"), "/", ".")
+	serviceID := fmt.Sprintf("%s-%s:%d", serviceName, ip, port)
 	srv := &api.AgentServiceRegistration{
-		ID:      url,                                                                         // service unique ID
-		Name:    "http" + strings.ReplaceAll(strings.TrimSuffix(path, "/healthz"), "/", "."), // service name
-		Tags:    []string{"pudding", "HTTP"},                                                 // service tags
+		ID:      serviceID,                   // service unique ID
+		Name:    serviceName,                 // service name
+		Tags:    []string{"pudding", "HTTP"}, // service tags
 		Address: ip,
 		Port:    port,
 		Check:   check,
 	}
-	return url, c.client.Agent().ServiceRegister(srv)
+
+	if err := c.client.Agent().ServiceRegister(srv); err != nil {
+		log.Errorf("register http service [%s] failed: %v", serviceID, err)
+		return "", err
+	}
+
+	log.Info("register http service [%s] successfully", serviceID)
+	return serviceID, nil
 }
 
 func (c *consulResolver) Deregister(serviceID string) error {

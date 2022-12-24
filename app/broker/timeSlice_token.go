@@ -28,7 +28,7 @@ const (
 
 // try to produce token to bucket
 func (s *scheduler) tryProduceToken() {
-	log.Infof("start produce token")
+	log.Infof("start produce token goroutine")
 
 	now := s.wallClock.Now()
 	timer := time.NewTimer(time.Until(now) + time.Second)
@@ -62,7 +62,7 @@ func (s *scheduler) tryProduceToken() {
 				continue
 			}
 
-			log.Debugf("success produce token: %s", tokenName)
+			log.Infof("success produce token: %s", tokenName)
 
 			// extends the lock with a new TTL
 			if err := locker.Refresh(ctx, 3*time.Second); err != nil {
@@ -80,7 +80,7 @@ func (s *scheduler) getToken() {
 	log.Infof("start consume token")
 	if err := s.connector.NewConsumer(type2.TokenTopic, type2.TokenGroup, 1,
 		func(ctx context.Context, msg *types.Message) error {
-			log.Debugf("get token: %s", string(msg.Payload))
+			log.Infof("get token: %s", string(msg.Payload))
 
 			t := s.parseNowFromToken(string(msg.Payload))
 			if t <= 0 {

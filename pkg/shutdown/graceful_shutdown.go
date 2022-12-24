@@ -19,10 +19,15 @@ type OptionFunc func(ctx context.Context) error
 // ResolverDeregister deregister the service from the resolver.
 func ResolverDeregister(pairs ...*resolver.Pair) OptionFunc {
 	return func(ctx context.Context) error {
-		for _, p := range pairs {
+		// reverse the order of the pairs, so that to deregister is in the reverse order of the register
+		// to ensure that the service is no longer accepting new requests when deregistering
+		log.Infof("pairs: %+v", pairs)
+		for i := range pairs {
+			p := pairs[len(pairs)-i-1]
 			if err := p.Resolver.Deregister(p.ServiceID); err != nil {
-				log.Errorf("failed to deregister service: %v", err)
-				return err
+				log.Errorf("failed to deregister service %s: %v", p.ServiceID, err)
+			} else {
+				log.Infof("service %s deregistered", p.ServiceID)
 			}
 		}
 		return nil
@@ -33,6 +38,7 @@ func ResolverDeregister(pairs ...*resolver.Pair) OptionFunc {
 func HealthcheckServerShutdown(healthcheck *health.Server) OptionFunc {
 	return func(ctx context.Context) error {
 		healthcheck.Shutdown()
+		log.Infof("gRPC healthcheck server stopped")
 		return nil
 	}
 }
@@ -40,7 +46,12 @@ func HealthcheckServerShutdown(healthcheck *health.Server) OptionFunc {
 // HTTPServerShutdown shutdown the HTTP server.
 func HTTPServerShutdown(httpServer *http.Server) OptionFunc {
 	return func(ctx context.Context) error {
-		return httpServer.Shutdown(ctx)
+		if err := httpServer.Shutdown(ctx); err != nil {
+			log.Errorf("failed to shutdown HTTP server [%s]: %v", httpServer.Addr, err)
+			return err
+		}
+		log.Infof("HTTP server [%s] stopped", httpServer.Addr)
+		return nil
 	}
 }
 
@@ -48,6 +59,7 @@ func HTTPServerShutdown(httpServer *http.Server) OptionFunc {
 func GRPCServerShutdown(s *grpc.Server) OptionFunc {
 	return func(ctx context.Context) error {
 		s.GracefulStop()
+		log.Infof("gRPC server stopped")
 		return nil
 	}
 }
@@ -56,6 +68,7 @@ func GRPCServerShutdown(s *grpc.Server) OptionFunc {
 func LogSync() OptionFunc {
 	return func(ctx context.Context) error {
 		log.Sync()
+		log.Infof("server log flushed")
 		return nil
 	}
 
