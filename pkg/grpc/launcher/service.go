@@ -2,6 +2,7 @@ package launcher
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"net"
 	"net/http"
@@ -104,7 +105,7 @@ func StartHTTPService(grpcLis, httpLis net.Listener, healthEndpointPath, swagger
 	go func() {
 		log.Infof("http server listening at %v", httpLis.Addr())
 		if err = httpServer.Serve(httpLis); err != nil {
-			if err == http.ErrServerClosed {
+			if errors.Is(err, http.ErrServerClosed) {
 				log.Info("http server closed")
 				return
 			}
