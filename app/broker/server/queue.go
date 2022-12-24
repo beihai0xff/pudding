@@ -18,7 +18,7 @@ func newQueue(config *conf.SchedulerConfig) (storage.DelayStorage, connector.Rea
 	return newDelayStorage(config.Broker), newConnector(config.Connector)
 }
 
-// NewDelayBroker create a new DelayStorage
+// newDelayStorage create a new DelayStorage
 func newDelayStorage(broker string) storage.DelayStorage {
 	switch broker {
 	case "redis":
