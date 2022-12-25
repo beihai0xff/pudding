@@ -12,7 +12,7 @@ func TestInit(t *testing.T) {
 		name string
 		args args
 	}{
-		{"test", args{"../test/config.test.yaml"}},
+		{"test", args{"../test/data/config.test.yaml"}},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
