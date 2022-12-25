@@ -4,13 +4,13 @@
 
 ```bash
 git clone git@github.com:beihai0xff/pudding.git
-cd pudding && make docker-build app=broker
+cd pudding && make build/docker app=broker
 ```
 
 ##### Docker 编译 Trigger
 
 ```bash
-cd pudding && make docker-build app=trigger
+cd pudding && make build/docker app=trigger
 ```
 
 

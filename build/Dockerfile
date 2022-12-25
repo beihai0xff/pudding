@@ -9,7 +9,7 @@ RUN go install github.com/bufbuild/buf/cmd/buf@v1.9.0 && \
 WORKDIR /build/app/${app}
 COPY . .
 RUN go mod download -x
-RUN make build app=${app}
+RUN make build/binary app=${app}
 RUN mkdir /build/bin && cp ./build/bin/server /build/bin/
 RUN cp ./cmd/${app}/config.yaml /build/bin/config.yaml
 

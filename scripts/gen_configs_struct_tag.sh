@@ -8,6 +8,7 @@ gomodifytags -file configs/mysql_config.go -struct MySQLConfig -add-tags json,ya
 
 gomodifytags -file configs/pulsar_config.go -struct PulsarConfig -add-tags json,yaml,mapstructure -w
 gomodifytags -file configs/pulsar_config.go -struct ProducerConfig -add-tags json,yaml,mapstructure -w
+
 gomodifytags -file configs/redis_config.go -struct RedisConfig -add-tags json,yaml,mapstructure -w
 
 gomodifytags -file configs/scheduler_config.go -struct SchedulerConfig -add-tags json,yaml,mapstructure -w
