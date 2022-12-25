@@ -3,6 +3,9 @@
 set -e
 
 [[ -z "$SWAGGER_UI_VERSION" ]] && echo "missing \$SWAGGER_UI_VERSION" && exit 1
+[[ -z "$app" ]] && echo "missing \$app" && exit 1
+
+cp -r api/http-spec/pudding/${app}/v1/* third_party/OpenAPI/
 
 SWAGGER_UI_GIT="https://github.com/swagger-api/swagger-ui.git"
 CACHE_DIR="./.cache/swagger-ui/$SWAGGER_UI_VERSION"

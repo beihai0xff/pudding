@@ -10,39 +10,40 @@ SWAGGER_UI_VERSION:=v4.15.5
 lint:
 	cd api/protobuf-spec && buf mod update && buf lint
 	golangci-lint run
+
+test: gen/mock
 	go test ./...
 
 
-# build
 # build binary app
-build: gen_proto gen_struct_tag gen_mock
-	echo ${app}
+build/binary: gen/proto gen/struct_tag gen/swagger-ui
+	echo build ${app}
 	sh -x scripts/docker-build.sh -a ${app}
 
 # build docker image
-docker-build: clean
+build/docker: clean/build
 	DOCKER_BUILDKIT=0 docker build -t pudding.${app}:${IMAGE_VERSION} -f ./build/Dockerfile . --build-arg app=${app}
 
 
 # gen
-gen_proto:
+gen/proto:
 	sh -x scripts/gen_proto.sh
 
-gen_struct_tag:
+gen/struct_tag:
 	sh -x scripts/gen_configs_struct_tag.sh
 
-gen_mock:
+gen/mock:
 	sh -x scripts/gen_mock.sh
 
-gen_swagger-ui:
-	SWAGGER_UI_VERSION=$(SWAGGER_UI_VERSION) sh -x ./scripts/gen_swagger-ui.sh
+gen/swagger-ui:
+	SWAGGER_UI_VERSION=$(SWAGGER_UI_VERSION) app=$(app) sh -x ./scripts/gen_swagger-ui.sh
 
 # clean
-docker-clean:
+clean/docker:
 	docker image prune
 
-clean:
+clean/build:
 	rm -rf ./build/bin
 
 
-.PHONY: build docker-build  gen_proto gen_struct_tag gen_mock  docker-clean clean
+.PHONY: build/binary build/docker gen/proto gen/struct_tag gen/mock gen/swagger-ui  clean/build clean/docker lint test
