@@ -1,13 +1,25 @@
 //go:build tools
-// +build tools
 
-// This package imports things required by build scripts, to force `go mod` to see them as dependencies
+// Package tools ensures tool dependencies are kept in sync.  This is the
+// recommended way of doing this according to
+// https://github.com/golang/go/wiki/Modules#how-can-i-track-tool-dependencies-for-a-module
+// To install the following tools at the version used by this repo run:
+// $ make bootstrap
+// or
+// $ go generate -tags tools tools/tools.go
 package tools
+
+//go:generate go install github.com/golangci/golangci-lint/cmd/golangci-lint
+//go:generate go install github.com/bufbuild/buf/cmd/buf
+//go:generate go install github.com/fatih/gomodifytags
+//go:generate go install ggithub.com/golang/mock/mockgen
 
 import (
 	_ "github.com/golangci/golangci-lint/cmd/golangci-lint"
-	_ "github.com/grpc-ecosystem/grpc-gateway/v2/protoc-gen-grpc-gateway"
-	_ "github.com/grpc-ecosystem/grpc-gateway/v2/protoc-gen-openapiv2"
-	_ "google.golang.org/grpc/cmd/protoc-gen-go-grpc"
-	_ "google.golang.org/protobuf/cmd/protoc-gen-go"
+
+	_ "github.com/bufbuild/buf/cmd/buf"
+
+	_ "github.com/fatih/gomodifytags"
+
+	_ "github.com/golang/mock/mockgen"
 )

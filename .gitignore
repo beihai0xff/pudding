@@ -16,7 +16,7 @@
 .idea
 .cache
 /build/bin/
-/third_party/OpenAPI/swagger-initializer.js
+/third_party/OpenAPI/
 
 # Dependency directories (remove the comment below to include it)
 # vendor/

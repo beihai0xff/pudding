@@ -46,4 +46,13 @@ clean/build:
 	rm -rf ./build/bin
 
 
+# bootstrap
+
+dev: bootstrap
+
+# bootstrap the build by downloading additional tools that may be used by devs
+bootstrap:
+	go generate -tags tools tools/tools.go
+
 .PHONY: build/binary build/docker gen/proto gen/struct_tag gen/mock gen/swagger-ui  clean/build clean/docker lint test
+.PHONY: bootstrap
