@@ -3,9 +3,7 @@ LABEL stage=gobuilder
 
 ARG app="broker"
 ENV GOPROXY https://goproxy.cn,direct
-RUN go install github.com/bufbuild/buf/cmd/buf@v1.9.0 && \
-    go install github.com/fatih/gomodifytags@latest && \
-    go install github.com/golang/mock/mockgen@v1.6.0
+RUN make bootstrap
 WORKDIR /build/app/${app}
 COPY . .
 RUN go mod download -x
