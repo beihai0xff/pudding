@@ -18,13 +18,13 @@ const _ = grpc.SupportPackageIsVersion7
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type WebhookTriggerServiceClient interface {
-	// FindOneByID find webhook trigger by id
+	// FindOneByID find webhook trigger template by id
 	FindOneByID(ctx context.Context, in *FindOneByIDRequest, opts ...grpc.CallOption) (*WebhookFindOneByIDResponse, error)
 	// PageQueryTemplate page query webhook trigger template
 	PageQueryTemplate(ctx context.Context, in *PageQueryTemplateRequest, opts ...grpc.CallOption) (*WebhookPageQueryResponse, error)
-	// Register create a webhook trigger
+	// Register create a webhook trigger template
 	Register(ctx context.Context, in *WebhookTriggerServiceRegisterRequest, opts ...grpc.CallOption) (*WebhookRegisterResponse, error)
-	// UpdateStatus update webhook trigger status
+	// UpdateStatus update webhook trigger template status
 	UpdateStatus(ctx context.Context, in *UpdateStatusRequest, opts ...grpc.CallOption) (*UpdateStatusResponse, error)
 	// Call call a webhook trigger
 	Call(ctx context.Context, in *WebhookTriggerServiceCallRequest, opts ...grpc.CallOption) (*WebhookTriggerServiceCallResponse, error)
@@ -87,13 +87,13 @@ func (c *webhookTriggerServiceClient) Call(ctx context.Context, in *WebhookTrigg
 // All implementations must embed UnimplementedWebhookTriggerServiceServer
 // for forward compatibility
 type WebhookTriggerServiceServer interface {
-	// FindOneByID find webhook trigger by id
+	// FindOneByID find webhook trigger template by id
 	FindOneByID(context.Context, *FindOneByIDRequest) (*WebhookFindOneByIDResponse, error)
 	// PageQueryTemplate page query webhook trigger template
 	PageQueryTemplate(context.Context, *PageQueryTemplateRequest) (*WebhookPageQueryResponse, error)
-	// Register create a webhook trigger
+	// Register create a webhook trigger template
 	Register(context.Context, *WebhookTriggerServiceRegisterRequest) (*WebhookRegisterResponse, error)
-	// UpdateStatus update webhook trigger status
+	// UpdateStatus update webhook trigger template status
 	UpdateStatus(context.Context, *UpdateStatusRequest) (*UpdateStatusResponse, error)
 	// Call call a webhook trigger
 	Call(context.Context, *WebhookTriggerServiceCallRequest) (*WebhookTriggerServiceCallResponse, error)

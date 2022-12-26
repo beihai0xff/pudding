@@ -2,12 +2,15 @@
   "swagger": "2.0",
   "info": {
     "title": "pudding/trigger/v1/webhook_trigger.proto",
-    "version": "version not set"
+    "version": "1.0"
   },
   "tags": [
     {
       "name": "WebhookTriggerService"
     }
+  ],
+  "schemes": [
+    "http"
   ],
   "consumes": [
     "application/json"
@@ -18,7 +21,8 @@
   "paths": {
     "/pudding/trigger/webhook/v1/call/{id}": {
       "put": {
-        "summary": "Call call a webhook trigger",
+        "summary": "call a webhook trigger",
+        "description": "call a webhook trigger",
         "operationId": "WebhookTriggerService_Call",
         "responses": {
           "200": {
@@ -53,13 +57,14 @@
           }
         ],
         "tags": [
-          "WebhookTriggerService"
+          "webhook_trigger"
         ]
       }
     },
     "/pudding/trigger/webhook/v1/find_one/{id}": {
       "get": {
-        "summary": "FindOneByID find webhook trigger by id",
+        "summary": "find webhook trigger template by id",
+        "description": "find webhook trigger template by id",
         "operationId": "WebhookTriggerService_FindOneByID",
         "responses": {
           "200": {
@@ -86,13 +91,14 @@
           }
         ],
         "tags": [
-          "WebhookTriggerService"
+          "webhook_trigger"
         ]
       }
     },
     "/pudding/trigger/webhook/v1/page_query/template/{offset}/{limit}/{status}": {
       "get": {
-        "summary": "PageQueryTemplate page query webhook trigger template",
+        "summary": "page query webhook trigger templates",
+        "description": "page query webhook trigger templates",
         "operationId": "WebhookTriggerService_PageQueryTemplate",
         "responses": {
           "200": {
@@ -138,13 +144,14 @@
           }
         ],
         "tags": [
-          "WebhookTriggerService"
+          "webhook_trigger"
         ]
       }
     },
     "/pudding/trigger/webhook/v1/register": {
       "put": {
-        "summary": "Register create a webhook trigger",
+        "summary": "create a webhook trigger template",
+        "description": "create a webhook trigger template",
         "operationId": "WebhookTriggerService_Register",
         "responses": {
           "200": {
@@ -171,13 +178,14 @@
           }
         ],
         "tags": [
-          "WebhookTriggerService"
+          "webhook_trigger"
         ]
       }
     },
     "/pudding/trigger/webhook/v1/update_status": {
       "post": {
-        "summary": "UpdateStatus update webhook trigger status",
+        "summary": "update webhook trigger template status",
+        "description": "update webhook trigger template status",
         "operationId": "WebhookTriggerService_UpdateStatus",
         "responses": {
           "200": {
@@ -205,7 +213,7 @@
           }
         ],
         "tags": [
-          "WebhookTriggerService"
+          "webhook_trigger"
         ]
       }
     }

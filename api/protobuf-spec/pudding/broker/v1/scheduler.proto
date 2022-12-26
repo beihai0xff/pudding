@@ -3,15 +3,27 @@ package pudding.broker.v1;
 option go_package = "github.com/beihai0xff/pudding/api/gen/pudding/broker/v1;broker";
 
 import "google/api/annotations.proto";
+import "protoc-gen-openapiv2/options/annotations.proto";
 import "google/protobuf/empty.proto";
+
+// These annotations are used when generating the OpenAPI file.
+option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_swagger) = {
+  info: {version: "1.0"};
+  schemes: HTTP;
+};
 
 // The Pudding service definition.
 service SchedulerService {
-  // Sends a Delay Message
+  // Send a Delay Message
   rpc SendDelayMessage (SendDelayMessageRequest) returns (google.protobuf.Empty) {
     option (google.api.http) = {
       post: "/pudding/broker/v1/sendDelayMessage"
       body: "*"
+    };
+    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
+      summary: "Send a Delay Message"
+      description: "Sends a Delay Message to the broker."
+      tags: "DelayMessage"
     };
   }
 

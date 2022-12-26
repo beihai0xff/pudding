@@ -19,13 +19,13 @@ const _ = grpc.SupportPackageIsVersion7
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type CronTriggerServiceClient interface {
-	// FindOneByID find cron trigger by id
+	// FindOneByID find cron trigger template by id
 	FindOneByID(ctx context.Context, in *FindOneByIDRequest, opts ...grpc.CallOption) (*CronFindOneByIDResponse, error)
-	// PageQueryTemplate page query cron trigger template
+	// PageQueryTemplate page query cron trigger templates
 	PageQueryTemplate(ctx context.Context, in *PageQueryTemplateRequest, opts ...grpc.CallOption) (*CronPageQueryResponse, error)
-	// Register create a cron trigger
+	// Register create a cron trigger template
 	Register(ctx context.Context, in *CronTriggerServiceRegisterRequest, opts ...grpc.CallOption) (*emptypb.Empty, error)
-	// UpdateStatus update cron trigger status
+	// UpdateStatus update cron trigger template status
 	UpdateStatus(ctx context.Context, in *UpdateStatusRequest, opts ...grpc.CallOption) (*UpdateStatusResponse, error)
 }
 
@@ -77,13 +77,13 @@ func (c *cronTriggerServiceClient) UpdateStatus(ctx context.Context, in *UpdateS
 // All implementations must embed UnimplementedCronTriggerServiceServer
 // for forward compatibility
 type CronTriggerServiceServer interface {
-	// FindOneByID find cron trigger by id
+	// FindOneByID find cron trigger template by id
 	FindOneByID(context.Context, *FindOneByIDRequest) (*CronFindOneByIDResponse, error)
-	// PageQueryTemplate page query cron trigger template
+	// PageQueryTemplate page query cron trigger templates
 	PageQueryTemplate(context.Context, *PageQueryTemplateRequest) (*CronPageQueryResponse, error)
-	// Register create a cron trigger
+	// Register create a cron trigger template
 	Register(context.Context, *CronTriggerServiceRegisterRequest) (*emptypb.Empty, error)
-	// UpdateStatus update cron trigger status
+	// UpdateStatus update cron trigger template status
 	UpdateStatus(context.Context, *UpdateStatusRequest) (*UpdateStatusResponse, error)
 	mustEmbedUnimplementedCronTriggerServiceServer()
 }
