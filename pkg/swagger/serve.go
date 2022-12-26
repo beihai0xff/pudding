@@ -33,7 +33,7 @@ func getOpenAPIHandler(efs embed.FS) http.Handler {
 	}
 
 	// Use subdirectory in embedded files
-	subFS, err := fs.Sub(efs, "OpenAPI")
+	subFS, err := fs.Sub(efs, "swagger-ui")
 	if err != nil {
 		panic("couldn't create sub filesystem: " + err.Error())
 	}
