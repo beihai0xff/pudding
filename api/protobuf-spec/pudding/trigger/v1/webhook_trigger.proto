@@ -4,15 +4,28 @@ option go_package = "github.com/beihai0xff/pudding/api/gen/pudding/trigger/v1;tr
 
 import "google/api/annotations.proto";
 import "google/protobuf/timestamp.proto";
+import "protoc-gen-openapiv2/options/annotations.proto";
 
 import "pudding/trigger/v1/types.proto";
 
+// These annotations are used when generating the OpenAPI file.
+option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_swagger) = {
+  info: {version: "1.0"};
+  schemes: HTTP;
+};
+
+
 // The Pudding WebhookTrigger service definition.
 service WebhookTriggerService {
-  // FindOneByID find webhook trigger by id
+  // FindOneByID find webhook trigger template by id
   rpc FindOneByID (FindOneByIDRequest) returns (WebhookFindOneByIDResponse) {
     option (google.api.http) = {
       get: "/pudding/trigger/webhook/v1/find_one/{id}"
+    };
+    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
+      summary: "find webhook trigger template by id"
+      description: "find webhook trigger template by id"
+      tags: "webhook_trigger"
     };
   }
 
@@ -21,21 +34,36 @@ service WebhookTriggerService {
     option (google.api.http) = {
       get: "/pudding/trigger/webhook/v1/page_query/template/{offset}/{limit}/{status}"
     };
+    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
+      summary: "page query webhook trigger templates"
+      description: "page query webhook trigger templates"
+      tags: "webhook_trigger"
+    };
   }
 
-  // Register create a webhook trigger
+  // Register create a webhook trigger template
   rpc Register (WebhookTriggerServiceRegisterRequest) returns (WebhookRegisterResponse) {
     option (google.api.http) = {
       put: "/pudding/trigger/webhook/v1/register"
       body: "*"
     };
+    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
+      summary: "create a webhook trigger template"
+      description: "create a webhook trigger template"
+      tags: "webhook_trigger"
+    };
   }
 
-  // UpdateStatus update webhook trigger status
+  // UpdateStatus update webhook trigger template status
   rpc UpdateStatus (UpdateStatusRequest) returns (UpdateStatusResponse) {
     option (google.api.http) = {
       post: "/pudding/trigger/webhook/v1/update_status"
       body: "*"
+    };
+    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
+      summary: "update webhook trigger template status"
+      description: "update webhook trigger template status"
+      tags: "webhook_trigger"
     };
   }
 
@@ -44,6 +72,11 @@ service WebhookTriggerService {
     option (google.api.http) = {
       put: "/pudding/trigger/webhook/v1/call/{id}"
       body: "*"
+    };
+    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
+      summary: "call a webhook trigger"
+      description: "call a webhook trigger"
+      tags: "webhook_trigger"
     };
   }
 

@@ -5,38 +5,66 @@ option go_package = "github.com/beihai0xff/pudding/api/gen/pudding/trigger/v1;tr
 import "google/api/annotations.proto";
 import "google/protobuf/empty.proto";
 import "google/protobuf/timestamp.proto";
+import "protoc-gen-openapiv2/options/annotations.proto";
 
 import "pudding/trigger/v1/types.proto";
 
+// These annotations are used when generating the OpenAPI file.
+option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_swagger) = {
+  info: {version: "1.0"};
+  schemes: HTTP;
+};
+
+
 // The Pudding service definition.
 service CronTriggerService {
-  // FindOneByID find cron trigger by id
+  // FindOneByID find cron trigger template by id
   rpc FindOneByID (FindOneByIDRequest) returns (CronFindOneByIDResponse) {
     option (google.api.http) = {
       get: "/pudding/trigger/cron/v1/find_one/{id}"
     };
+    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
+      summary: "find cron trigger template by id"
+      description: "find cron trigger template by id"
+      tags: "cron_trigger"
+    };
   }
 
-  // PageQueryTemplate page query cron trigger template
+  // PageQueryTemplate page query cron trigger templates
   rpc PageQueryTemplate (PageQueryTemplateRequest) returns (CronPageQueryResponse) {
     option (google.api.http) = {
       get: "/pudding/trigger/cron/v1/page_query/template/{offset}/{limit}/{status}"
     };
+    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
+      summary: "page query cron trigger templates"
+      description: "page query cron trigger templates"
+      tags: "cron_trigger"
+    };
   }
 
-  // Register create a cron trigger
+  // Register create a cron trigger template
   rpc Register (CronTriggerServiceRegisterRequest) returns (google.protobuf.Empty) {
     option (google.api.http) = {
       put: "/pudding/trigger/cron/v1/register"
       body: "*"
     };
+    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
+      summary: "create a cron trigger template"
+      description: "create a cron trigger template"
+      tags: "cron_trigger"
+    };
   }
 
-  // UpdateStatus update cron trigger status
+  // UpdateStatus update cron trigger template status
   rpc UpdateStatus (UpdateStatusRequest) returns (UpdateStatusResponse) {
     option (google.api.http) = {
       post: "/pudding/trigger/cron/v1/update_status"
       body: "*"
+    };
+    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
+      summary: "update cron trigger template status"
+      description: "update cron trigger template status"
+      tags: "cron_trigger"
     };
   }
 

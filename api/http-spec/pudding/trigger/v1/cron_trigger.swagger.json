@@ -2,12 +2,15 @@
   "swagger": "2.0",
   "info": {
     "title": "pudding/trigger/v1/cron_trigger.proto",
-    "version": "version not set"
+    "version": "1.0"
   },
   "tags": [
     {
       "name": "CronTriggerService"
     }
+  ],
+  "schemes": [
+    "http"
   ],
   "consumes": [
     "application/json"
@@ -18,7 +21,8 @@
   "paths": {
     "/pudding/trigger/cron/v1/find_one/{id}": {
       "get": {
-        "summary": "FindOneByID find cron trigger by id",
+        "summary": "find cron trigger template by id",
+        "description": "find cron trigger template by id",
         "operationId": "CronTriggerService_FindOneByID",
         "responses": {
           "200": {
@@ -45,13 +49,14 @@
           }
         ],
         "tags": [
-          "CronTriggerService"
+          "cron_trigger"
         ]
       }
     },
     "/pudding/trigger/cron/v1/page_query/template/{offset}/{limit}/{status}": {
       "get": {
-        "summary": "PageQueryTemplate page query cron trigger template",
+        "summary": "page query cron trigger templates",
+        "description": "page query cron trigger templates",
         "operationId": "CronTriggerService_PageQueryTemplate",
         "responses": {
           "200": {
@@ -97,13 +102,14 @@
           }
         ],
         "tags": [
-          "CronTriggerService"
+          "cron_trigger"
         ]
       }
     },
     "/pudding/trigger/cron/v1/register": {
       "put": {
-        "summary": "Register create a cron trigger",
+        "summary": "create a cron trigger template",
+        "description": "create a cron trigger template",
         "operationId": "CronTriggerService_Register",
         "responses": {
           "200": {
@@ -132,13 +138,14 @@
           }
         ],
         "tags": [
-          "CronTriggerService"
+          "cron_trigger"
         ]
       }
     },
     "/pudding/trigger/cron/v1/update_status": {
       "post": {
-        "summary": "UpdateStatus update cron trigger status",
+        "summary": "update cron trigger template status",
+        "description": "update cron trigger template status",
         "operationId": "CronTriggerService_UpdateStatus",
         "responses": {
           "200": {
@@ -166,7 +173,7 @@
           }
         ],
         "tags": [
-          "CronTriggerService"
+          "cron_trigger"
         ]
       }
     }

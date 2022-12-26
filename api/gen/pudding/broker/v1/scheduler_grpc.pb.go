@@ -19,7 +19,7 @@ const _ = grpc.SupportPackageIsVersion7
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type SchedulerServiceClient interface {
-	// Sends a Delay Message
+	// Send a Delay Message
 	SendDelayMessage(ctx context.Context, in *SendDelayMessageRequest, opts ...grpc.CallOption) (*emptypb.Empty, error)
 }
 
@@ -44,7 +44,7 @@ func (c *schedulerServiceClient) SendDelayMessage(ctx context.Context, in *SendD
 // All implementations must embed UnimplementedSchedulerServiceServer
 // for forward compatibility
 type SchedulerServiceServer interface {
-	// Sends a Delay Message
+	// Send a Delay Message
 	SendDelayMessage(context.Context, *SendDelayMessageRequest) (*emptypb.Empty, error)
 	mustEmbedUnimplementedSchedulerServiceServer()
 }

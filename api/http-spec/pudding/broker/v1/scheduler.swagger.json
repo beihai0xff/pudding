@@ -2,12 +2,15 @@
   "swagger": "2.0",
   "info": {
     "title": "pudding/broker/v1/scheduler.proto",
-    "version": "version not set"
+    "version": "1.0"
   },
   "tags": [
     {
       "name": "SchedulerService"
     }
+  ],
+  "schemes": [
+    "http"
   ],
   "consumes": [
     "application/json"
@@ -18,7 +21,8 @@
   "paths": {
     "/pudding/broker/v1/sendDelayMessage": {
       "post": {
-        "summary": "Sends a Delay Message",
+        "summary": "Send a Delay Message",
+        "description": "Sends a Delay Message to the broker.",
         "operationId": "SchedulerService_SendDelayMessage",
         "responses": {
           "200": {
@@ -47,7 +51,7 @@
           }
         ],
         "tags": [
-          "SchedulerService"
+          "DelayMessage"
         ]
       }
     }
