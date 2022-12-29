@@ -38,6 +38,10 @@ gen/mock:
 gen/swagger-ui:
 	SWAGGER_UI_VERSION=$(SWAGGER_UI_VERSION) app=$(app) sh -x ./scripts/gen_swagger-ui.sh
 
+gen/certs:
+	sh -x scripts/gen_certs.sh
+
+.PHONY: build/binary build/docker gen/proto gen/struct_tag gen/mock gen/swagger-ui gen/certs
 # clean
 clean/docker:
 	docker image prune
@@ -54,5 +58,5 @@ dev: bootstrap
 bootstrap:
 	go generate -tags tools tools/tools.go
 
-.PHONY: build/binary build/docker gen/proto gen/struct_tag gen/mock gen/swagger-ui  clean/build clean/docker lint test
+.PHONY:   clean/build clean/docker lint test
 .PHONY: bootstrap

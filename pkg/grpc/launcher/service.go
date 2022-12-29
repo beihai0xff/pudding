@@ -2,10 +2,13 @@ package launcher
 
 import (
 	"context"
+	"crypto/tls"
+	"crypto/x509"
 	"errors"
 	"fmt"
 	"net"
 	"net/http"
+	"os"
 	"time"
 
 	grpc_middleware "github.com/grpc-ecosystem/go-grpc-middleware"
@@ -13,21 +16,46 @@ import (
 	grpc_validator "github.com/grpc-ecosystem/go-grpc-middleware/validator"
 	"github.com/grpc-ecosystem/grpc-gateway/v2/runtime"
 	"google.golang.org/grpc"
-	"google.golang.org/grpc/credentials/insecure"
+	"google.golang.org/grpc/credentials"
 	"google.golang.org/grpc/health"
 	pbhealth "google.golang.org/grpc/health/grpc_health_v1"
 	"google.golang.org/grpc/keepalive"
 	"google.golang.org/grpc/reflection"
 
 	pb "github.com/beihai0xff/pudding/api/gen/pudding/broker/v1"
+
 	"github.com/beihai0xff/pudding/pkg/log"
 	"github.com/beihai0xff/pudding/pkg/swagger"
 )
 
 type StartServiceFunc func(server *grpc.Server, serviceName *string) error
 
+func getCertsAndCertPool() (tls.Certificate, *x509.CertPool) {
+	cert, err := tls.LoadX509KeyPair("./certs/pudding.pem", "./certs/pudding-key.pem")
+	if err != nil {
+		log.Fatalf("Failed to load key pair: %v", err)
+	}
+	// 创建一组根证书
+	certPool := x509.NewCertPool()
+	ca, err := os.ReadFile("./certs/pudding.pem")
+	if err != nil {
+		log.Fatalf("Failed to read ca cert: %v", err)
+	}
+	// 解析证书
+	if ok := certPool.AppendCertsFromPEM(ca); !ok {
+		log.Fatalf("Failed to append ca certs")
+	}
+
+	return cert, certPool
+}
 func StartGRPCService(grpcLis net.Listener, opts ...StartServiceFunc) (*grpc.Server, *health.Server) {
 	log.Info("starting grpc server ...")
+	cert, certPool := getCertsAndCertPool()
+	cred := credentials.NewTLS(&tls.Config{
+		Certificates: []tls.Certificate{cert},
+		ClientAuth:   tls.VerifyClientCertIfGiven,
+		ClientCAs:    certPool,
+	})
 	// init grpc server
 	server := grpc.NewServer(
 		grpc.KeepaliveParams(keepalive.ServerParameters{
@@ -42,6 +70,7 @@ func StartGRPCService(grpcLis net.Listener, opts ...StartServiceFunc) (*grpc.Ser
 			grpc_recovery.UnaryServerInterceptor(),
 			grpc_validator.UnaryServerInterceptor(),
 		)),
+		grpc.Creds(cred),
 	)
 
 	// register health check server
@@ -78,11 +107,18 @@ func StartGRPCService(grpcLis net.Listener, opts ...StartServiceFunc) (*grpc.Ser
 // It serves the gRPC-gateway, gRPC-healthz and the swagger UI.
 func StartHTTPService(grpcLis, httpLis net.Listener, healthEndpointPath, swaggerEndpointPath string) *http.Server {
 	log.Info("starting http server ...")
+	cert, certPool := getCertsAndCertPool()
+	cred := credentials.NewTLS(&tls.Config{
+		Certificates: []tls.Certificate{cert},
+		ServerName:   "localhost",
+		RootCAs:      certPool,
+	})
 	conn, err := grpc.DialContext(
 		context.Background(),
-		fmt.Sprintf("127.0.0.1:%d", grpcLis.Addr().(*net.TCPAddr).Port),
+		// net.JoinHostPort("localhost", grpcLis.Addr().(*net.TCPAddr).Port),
+		fmt.Sprintf("localhost:%d", grpcLis.Addr().(*net.TCPAddr).Port),
 		grpc.WithBlock(),
-		grpc.WithTransportCredentials(insecure.NewCredentials()),
+		grpc.WithTransportCredentials(cred),
 	)
 	if err != nil {
 		log.Fatalf("Failed to dial server: %v", err)
@@ -100,11 +136,13 @@ func StartHTTPService(grpcLis, httpLis net.Listener, healthEndpointPath, swagger
 	// define HTTP server configuration
 	httpServer := &http.Server{
 		Handler: gwmux,
-	}
+		TLSConfig: &tls.Config{
+			Certificates: []tls.Certificate{cert},
+		}}
 
 	go func() {
 		log.Infof("http server listening at %v", httpLis.Addr())
-		if err = httpServer.Serve(httpLis); err != nil {
+		if err = httpServer.ServeTLS(httpLis, "./certs/pudding.pem", "./certs/pudding-key.pem"); err != nil {
 			if errors.Is(err, http.ErrServerClosed) {
 				log.Info("http server closed")
 				return

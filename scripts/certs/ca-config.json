@@ -1,0 +1,17 @@
+{
+    "signing": {
+        "default": {
+            "expiry": "24h"
+        },
+        "profiles": {
+            "pudding": {
+                "expiry": "168h",
+                "usages": [
+                    "signing",
+                    "key encipherment",
+                    "server auth"
+                ]
+            }
+        }
+    }
+}
