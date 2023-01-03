@@ -30,18 +30,22 @@ import (
 
 type StartServiceFunc func(server *grpc.Server, serviceName *string) error
 
+var (
+	certFile, keyFile = "./certs/pudding.pem", "./certs/pudding-key.pem"
+)
+
 func getCertsAndCertPool() (tls.Certificate, *x509.CertPool) {
-	cert, err := tls.LoadX509KeyPair("./certs/pudding.pem", "./certs/pudding-key.pem")
+	cert, err := tls.LoadX509KeyPair(certFile, keyFile)
 	if err != nil {
 		log.Fatalf("Failed to load key pair: %v", err)
 	}
-	// 创建一组根证书
+	// create a certificate pool from the certificate authority
 	certPool := x509.NewCertPool()
-	ca, err := os.ReadFile("./certs/pudding.pem")
+	ca, err := os.ReadFile(certFile)
 	if err != nil {
 		log.Fatalf("Failed to read ca cert: %v", err)
 	}
-	// 解析证书
+	// append the client certificates from the CA
 	if ok := certPool.AppendCertsFromPEM(ca); !ok {
 		log.Fatalf("Failed to append ca certs")
 	}
@@ -142,7 +146,7 @@ func StartHTTPService(grpcLis, httpLis net.Listener, healthEndpointPath, swagger
 
 	go func() {
 		log.Infof("http server listening at %v", httpLis.Addr())
-		if err = httpServer.ServeTLS(httpLis, "./certs/pudding.pem", "./certs/pudding-key.pem"); err != nil {
+		if err = httpServer.ServeTLS(httpLis, certFile, keyFile); err != nil {
 			if errors.Is(err, http.ErrServerClosed) {
 				log.Info("http server closed")
 				return

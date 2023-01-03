@@ -1,8 +1,8 @@
 IMAGE_VERSION = alpha-1
 GO_VERSION ?= 1.18
 GOLANG_IMAGE = golang:$(GO_VERSION)
-app = ""
-IMAGE_NAME = pudding.${app}:latest
+APP = ""
+IMAGE_NAME = pudding.${APP}:latest
 
 SWAGGER_UI_VERSION:=v4.15.5
 
@@ -17,12 +17,12 @@ test: gen/mock
 
 # build binary app
 build/binary: gen/proto gen/struct_tag gen/swagger-ui
-	echo build ${app}
-	sh -x scripts/docker-build.sh -a ${app}
+	echo build ${APP}
+	APP=$(APP)  sh -x scripts/build_binary.sh
 
 # build docker image
 build/docker: clean/build
-	DOCKER_BUILDKIT=0 docker build -t pudding.${app}:${IMAGE_VERSION} -f ./build/Dockerfile . --build-arg app=${app}
+	DOCKER_BUILDKIT=0 docker build -t pudding.${APP}:${IMAGE_VERSION} -f ./build/Dockerfile . --build-arg APP=${APP}
 
 
 # gen
@@ -36,7 +36,7 @@ gen/mock:
 	sh -x scripts/gen_mock.sh
 
 gen/swagger-ui:
-	SWAGGER_UI_VERSION=$(SWAGGER_UI_VERSION) app=$(app) sh -x ./scripts/gen_swagger-ui.sh
+	SWAGGER_UI_VERSION=$(SWAGGER_UI_VERSION) APP=$(APP) sh -x ./scripts/gen_swagger-ui.sh
 
 gen/certs:
 	sh -x scripts/gen_certs.sh
@@ -58,5 +58,5 @@ dev: bootstrap
 bootstrap:
 	go generate -tags tools tools/tools.go
 
-.PHONY:   clean/build clean/docker lint test
-.PHONY: bootstrap
+.PHONY: clean/build clean/docker lint test
+.PHONY: ootstrap
