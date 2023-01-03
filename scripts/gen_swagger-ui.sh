@@ -3,15 +3,14 @@
 set -e
 
 [[ -z "$SWAGGER_UI_VERSION" ]] && echo "missing \$SWAGGER_UI_VERSION" && exit 1
-[[ -z "$app" ]] && echo "missing \$app" && exit 1
-
+[[ -z "$APP" ]] && echo "missing \$APP" && exit 1
 
 
 SWAGGER_UI_GIT="https://github.com/swagger-api/swagger-ui.git"
 CACHE_DIR="./.cache/swagger-ui/$SWAGGER_UI_VERSION"
 GEN_DIR="./third_party/swagger-ui"
 
-cp -r ./api/http-spec/pudding/${app}/v1/* $GEN_DIR
+cp -r ./api/http-spec/pudding/${APP}/v1/* $GEN_DIR
 
 escape_str() {
   echo "$1" | sed -e 's/[]\/$*.^[]/\\&/g'
