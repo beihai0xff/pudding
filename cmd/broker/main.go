@@ -10,23 +10,20 @@ import (
 
 	"github.com/beihai0xff/pudding/app/broker/pkg/configs"
 	"github.com/beihai0xff/pudding/app/broker/server"
+	"github.com/beihai0xff/pudding/pkg/grpc/args"
 	"github.com/beihai0xff/pudding/pkg/log"
 	"github.com/beihai0xff/pudding/pkg/shutdown"
 )
 
 var (
-	grpcPort = flag.Int("grpcPort", 50051, "The grpc server grpcPort")
-	httpPort = flag.Int("httpPort", 8081, "The http server grpcPort")
-
-	confPath  = flag.String("config", "./config.yaml", "The server config file path")
-	redisURL  = flag.String("redis", "", "The server redis url")
-	pulsarURL = flag.String("pulsar", "", "The server pulsar url")
+	redisURL  = flag.String("redis_url", "", "The server redis url")
+	pulsarURL = flag.String("pulsar_url", "", "The server pulsar url")
 )
 
 func main() {
 	flag.Parse()
 
-	configs.Init(*confPath, configs.WithRedisURL(*redisURL), configs.WithPulsarURL(*pulsarURL))
+	configs.Init(*args.ConfigPath, configs.WithRedisURL(*redisURL), configs.WithPulsarURL(*pulsarURL))
 	server.RegisterLogger()
 
 	interrupt := make(chan os.Signal, 1)
@@ -34,9 +31,9 @@ func main() {
 	defer signal.Stop(interrupt)
 
 	// start server
-	grpcServer, healthcheck, httpServer := server.StartServer(*grpcPort, *httpPort)
+	grpcServer, healthcheck, httpServer := server.StartServer()
 	// register service to consul
-	resolverPairs := server.RegisterResolver(*grpcPort, *httpPort)
+	resolverPairs := server.RegisterResolver(*args.GRPCPort, *args.HTTPPort)
 
 	// block until a signal is received.
 	sign := <-interrupt

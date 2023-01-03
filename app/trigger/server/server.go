@@ -2,8 +2,6 @@
 package server
 
 import (
-	"fmt"
-	"net"
 	"net/http"
 
 	_ "github.com/mbobakov/grpc-consul-resolver" // It's important
@@ -81,17 +79,8 @@ func RegisterResolver(grpcPort, httpPort int) []*resolver.Pair {
 }
 
 // StartServer starts the server.
-func StartServer(grpcPort, httpPort int) (*grpc.Server, *health.Server, *http.Server) {
-	grpcLis, err := net.Listen("tcp", fmt.Sprintf(":%d", grpcPort))
-	if err != nil {
-		log.Fatalf("failed to listen: %v", err)
-	}
-	httpLis, err := net.Listen("tcp", fmt.Sprintf(":%d", httpPort))
-	if err != nil {
-		log.Fatalf("failed to listen: %v", err)
-	}
-
-	grpcServer, healthcheck := launcher.StartGRPCService(grpcLis, startCronTriggerService, startWebhookTriggerService)
-	httpServer := launcher.StartHTTPService(grpcLis, httpLis, healthEndpointPath, swaggerEndpointPath)
+func StartServer() (*grpc.Server, *health.Server, *http.Server) {
+	grpcServer, healthcheck := launcher.StartGRPCServer(startCronTriggerService, startWebhookTriggerService)
+	httpServer := launcher.StartHTTPServer(healthEndpointPath, swaggerEndpointPath)
 	return grpcServer, healthcheck, httpServer
 }
