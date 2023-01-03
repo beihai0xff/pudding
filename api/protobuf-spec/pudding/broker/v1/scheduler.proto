@@ -9,7 +9,7 @@ import "google/protobuf/empty.proto";
 // These annotations are used when generating the OpenAPI file.
 option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_swagger) = {
   info: {version: "1.0"};
-  schemes: HTTP;
+  schemes: HTTPS;
 };
 
 // The Pudding service definition.

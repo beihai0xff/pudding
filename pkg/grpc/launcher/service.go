@@ -23,25 +23,21 @@ import (
 	"google.golang.org/grpc/reflection"
 
 	pb "github.com/beihai0xff/pudding/api/gen/pudding/broker/v1"
-
+	. "github.com/beihai0xff/pudding/pkg/grpc/args"
 	"github.com/beihai0xff/pudding/pkg/log"
 	"github.com/beihai0xff/pudding/pkg/swagger"
 )
 
 type StartServiceFunc func(server *grpc.Server, serviceName *string) error
 
-var (
-	certFile, keyFile = "./certs/pudding.pem", "./certs/pudding-key.pem"
-)
-
 func getCertsAndCertPool() (tls.Certificate, *x509.CertPool) {
-	cert, err := tls.LoadX509KeyPair(certFile, keyFile)
+	cert, err := tls.LoadX509KeyPair(*CertPath, *KeyPath)
 	if err != nil {
 		log.Fatalf("Failed to load key pair: %v", err)
 	}
 	// create a certificate pool from the certificate authority
 	certPool := x509.NewCertPool()
-	ca, err := os.ReadFile(certFile)
+	ca, err := os.ReadFile(*CertPath)
 	if err != nil {
 		log.Fatalf("Failed to read ca cert: %v", err)
 	}
@@ -52,8 +48,28 @@ func getCertsAndCertPool() (tls.Certificate, *x509.CertPool) {
 
 	return cert, certPool
 }
-func StartGRPCService(grpcLis net.Listener, opts ...StartServiceFunc) (*grpc.Server, *health.Server) {
+
+func getListen() (grpcLis, httpLis net.Listener) {
+	var err error
+	grpcLis, err = net.Listen("tcp", fmt.Sprintf(":%d", *GRPCPort))
+	if err != nil {
+		log.Fatalf("failed to listen: %v", err)
+	}
+	httpLis, err = net.Listen("tcp", fmt.Sprintf(":%d", *HTTPPort))
+	if err != nil {
+		log.Fatalf("failed to listen: %v", err)
+	}
+
+	return
+}
+
+// StartGRPCServer starts the gRPC server with the given service.
+// It serves the given gRPC service and the gRPC-healthz.
+func StartGRPCServer(opts ...StartServiceFunc) (*grpc.Server, *health.Server) {
+
 	log.Info("starting grpc server ...")
+	grpcLis, _ := getListen()
+
 	cert, certPool := getCertsAndCertPool()
 	cred := credentials.NewTLS(&tls.Config{
 		Certificates: []tls.Certificate{cert},
@@ -107,10 +123,12 @@ func StartGRPCService(grpcLis net.Listener, opts ...StartServiceFunc) (*grpc.Ser
 	return server, healthcheckServer
 }
 
-// StartHTTPService starts the HTTP service.
+// StartHTTPServer starts the HTTP service.
 // It serves the gRPC-gateway, gRPC-healthz and the swagger UI.
-func StartHTTPService(grpcLis, httpLis net.Listener, healthEndpointPath, swaggerEndpointPath string) *http.Server {
+func StartHTTPServer(healthEndpointPath, swaggerEndpointPath string) *http.Server {
 	log.Info("starting http server ...")
+	grpcLis, httpLis := getListen()
+
 	cert, certPool := getCertsAndCertPool()
 	cred := credentials.NewTLS(&tls.Config{
 		Certificates: []tls.Certificate{cert},
@@ -146,7 +164,7 @@ func StartHTTPService(grpcLis, httpLis net.Listener, healthEndpointPath, swagger
 
 	go func() {
 		log.Infof("http server listening at %v", httpLis.Addr())
-		if err = httpServer.ServeTLS(httpLis, certFile, keyFile); err != nil {
+		if err = httpServer.ServeTLS(httpLis, *CertPath, *KeyPath); err != nil {
 			if errors.Is(err, http.ErrServerClosed) {
 				log.Info("http server closed")
 				return
