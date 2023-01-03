@@ -1,3 +1,5 @@
+// Package args provides some common command line arguments.
+// nolint:revive
 package args
 
 import "flag"
