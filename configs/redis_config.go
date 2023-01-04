@@ -1,3 +1,4 @@
+// Package configs provides config management
 package configs
 
 // RedisConfig Redis 配置
