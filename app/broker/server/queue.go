@@ -14,7 +14,7 @@ import (
 	rdb "github.com/beihai0xff/pudding/pkg/redis"
 )
 
-func newQueue(config *conf.SchedulerConfig) (storage.DelayStorage, connector.RealTimeConnector) {
+func newQueue(config *conf.BrokerConfig) (storage.DelayStorage, connector.RealTimeConnector) {
 	return newDelayStorage(config.Broker), newConnector(config.Connector)
 }
 
@@ -23,7 +23,7 @@ func newDelayStorage(broker string) storage.DelayStorage {
 	switch broker {
 	case "redis":
 		// parse Polling delay queue interval
-		interval := configs.GetSchedulerConfig().TimeSliceInterval
+		interval := configs.GetBrokerConfig().TimeSliceInterval
 		t, err := time.ParseDuration(interval)
 		if err != nil {
 			log.Fatalf("failed to parse '%s' to time.Duration: %v", interval, err)

@@ -23,8 +23,7 @@ import (
 	"google.golang.org/grpc/reflection"
 
 	pb "github.com/beihai0xff/pudding/api/gen/pudding/broker/v1"
-	// nolint:revive
-	. "github.com/beihai0xff/pudding/pkg/grpc/args"
+	"github.com/beihai0xff/pudding/pkg/grpc/args"
 	"github.com/beihai0xff/pudding/pkg/log"
 	"github.com/beihai0xff/pudding/pkg/swagger"
 )
@@ -32,13 +31,13 @@ import (
 type StartServiceFunc func(server *grpc.Server, serviceName *string) error
 
 func getCertsAndCertPool() (tls.Certificate, *x509.CertPool) {
-	cert, err := tls.LoadX509KeyPair(*CertPath, *KeyPath)
+	cert, err := tls.LoadX509KeyPair(*args.CertPath, *args.KeyPath)
 	if err != nil {
 		log.Fatalf("Failed to load key pair: %v", err)
 	}
 	// create a certificate pool from the certificate authority
 	certPool := x509.NewCertPool()
-	ca, err := os.ReadFile(*CertPath)
+	ca, err := os.ReadFile(*args.CertPath)
 	if err != nil {
 		log.Fatalf("Failed to read ca cert: %v", err)
 	}
@@ -52,11 +51,11 @@ func getCertsAndCertPool() (tls.Certificate, *x509.CertPool) {
 
 func getListen() (grpcLis, httpLis net.Listener) {
 	var err error
-	grpcLis, err = net.Listen("tcp", fmt.Sprintf(":%d", *GRPCPort))
+	grpcLis, err = net.Listen("tcp", fmt.Sprintf(":%d", *args.GRPCPort))
 	if err != nil {
 		log.Fatalf("failed to listen: %v", err)
 	}
-	httpLis, err = net.Listen("tcp", fmt.Sprintf(":%d", *HTTPPort))
+	httpLis, err = net.Listen("tcp", fmt.Sprintf(":%d", *args.HTTPPort))
 	if err != nil {
 		log.Fatalf("failed to listen: %v", err)
 	}
@@ -165,7 +164,7 @@ func StartHTTPServer(healthEndpointPath, swaggerEndpointPath string) *http.Serve
 
 	go func() {
 		log.Infof("http server listening at %v", httpLis.Addr())
-		if err = httpServer.ServeTLS(httpLis, *CertPath, *KeyPath); err != nil {
+		if err = httpServer.ServeTLS(httpLis, *args.CertPath, *args.KeyPath); err != nil {
 			if errors.Is(err, http.ErrServerClosed) {
 				log.Info("http server closed")
 				return

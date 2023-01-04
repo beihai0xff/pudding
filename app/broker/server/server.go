@@ -42,7 +42,7 @@ func RegisterLogger() {
 
 // RegisterResolver registers the service to the resolver.
 func RegisterResolver(grpcPort, httpPort int) []*resolver.Pair {
-	consulURL := configs.GetConsulURL()
+	consulURL := configs.GetNameServerURL()
 
 	pairs := []*resolver.Pair{
 		resolver.GRPCRegistration(pb.SchedulerService_ServiceDesc.ServiceName,

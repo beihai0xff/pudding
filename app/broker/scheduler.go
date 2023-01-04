@@ -59,7 +59,7 @@ type scheduler struct {
 	quit chan int64
 }
 
-func New(config *configs.SchedulerConfig, delay storage.DelayStorage, realtime connector.RealTimeConnector) Scheduler {
+func New(config *configs.BrokerConfig, delay storage.DelayStorage, realtime connector.RealTimeConnector) Scheduler {
 	q := &scheduler{
 		delay:        delay,
 		connector:    realtime,

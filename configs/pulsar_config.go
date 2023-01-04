@@ -1,3 +1,5 @@
+// Package configs provides config management
+//
 //nolint:lll
 package configs
 
@@ -8,6 +10,7 @@ type PulsarConfig struct {
 	ProducersConfig   []ProducerConfig `json:"producers_config" yaml:"producers_config" mapstructure:"producers_config"`
 }
 
+// ProducerConfig pulsar producer config
 type ProducerConfig struct {
 	// Topic specifies the topic this producer will be publishing on.
 	// This argument is required when constructing the producer.

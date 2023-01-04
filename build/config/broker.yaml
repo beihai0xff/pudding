@@ -1,11 +1,65 @@
-name: pudding
-consul_url: http://192.168.10.220:8500
-scheduler_config:
+name: pudding.broker
+broker_config:
   broker: redis
   connector: pulsar
   time_slice_interval: 60s
   message_topic: default
   token_topic: token
+  name_server_url: http://192.168.10.220:8500
+  log_config:
+    default:
+      level: info
+      writers:
+        - console
+        - file
+      format: json
+      file_config:
+        # log file path
+        filepath: ./log/server.log
+        # file max_age
+        max_age: 7
+        # max backup files
+        max_backups: 7
+        # max file size, MB
+        max_size: 128
+        # log file is compress
+        compress: false
+    pulsar_log:
+      level: info
+      writers:
+        - console
+        - file
+      format: json
+      file_config:
+        # log file path
+        filepath: ./log/pulsar.log
+        # file max_age
+        max_age: 7
+        # max backup files
+        max_backups: 7
+        # max file size, MB
+        max_size: 128
+        # log file is compress
+        compress: false
+    grpc_log:
+      level: info
+      writers:
+        - console
+        - file
+      format: json
+      file_config:
+        # log file path
+        filepath: ./log/grpc.log
+        # file max_age
+        max_age: 7
+        # max backup files
+        max_backups: 7
+        # max file size, MB
+        max_size: 128
+        # log file is compress
+        compress: false
+
+
 redis_config:
   url: redis://default:default@192.168.10.220:6379/11
   dial_timeout: 20
@@ -27,57 +81,4 @@ pulsar_config:
       batching_max_publish_delay: 10
       batching_max_messages: 100
       batching_max_size: 5
-
-log_config:
-  default:
-    level: info
-    writers:
-      - console
-      - file
-    format: json
-    file_config:
-      # log file path
-      filepath: ./log/server.log
-      # file max_age
-      max_age: 7
-      # max backup files
-      max_backups: 7
-      # max file size, MB
-      max_size: 128
-      # log file is compress
-      compress: false
-  pulsar_log:
-    level: info
-    writers:
-      - console
-      - file
-    format: json
-    file_config:
-      # log file path
-      filepath: ./log/pulsar.log
-      # file max_age
-      max_age: 7
-      # max backup files
-      max_backups: 7
-      # max file size, MB
-      max_size: 128
-      # log file is compress
-      compress: false
-  grpc_log:
-    level: info
-    writers:
-      - console
-      - file
-    format: json
-    file_config:
-      # log file path
-      filepath: ./log/grpc.log
-      # file max_age
-      max_age: 7
-      # max backup files
-      max_backups: 7
-      # max file size, MB
-      max_size: 128
-      # log file is compress
-      compress: false
 
