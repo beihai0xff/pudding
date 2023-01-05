@@ -1,63 +1,37 @@
 name: pudding.broker
-broker_config:
+server_config:
   broker: redis
   connector: pulsar
   time_slice_interval: 60s
   message_topic: default
   token_topic: token
-  name_server_url: http://192.168.10.220:8500
-  log_config:
-    default:
-      level: info
-      writers:
-        - console
-        - file
-      format: json
-      file_config:
-        # log file path
-        filepath: ./log/server.log
-        # file max_age
-        max_age: 7
-        # max backup files
-        max_backups: 7
-        # max file size, MB
-        max_size: 128
-        # log file is compress
-        compress: false
-    pulsar_log:
-      level: info
-      writers:
-        - console
-        - file
-      format: json
-      file_config:
-        # log file path
-        filepath: ./log/pulsar.log
-        # file max_age
-        max_age: 7
-        # max backup files
-        max_backups: 7
-        # max file size, MB
-        max_size: 128
-        # log file is compress
-        compress: false
-    grpc_log:
-      level: info
-      writers:
-        - console
-        - file
-      format: json
-      file_config:
-        # log file path
-        filepath: ./log/grpc.log
-        # file max_age
-        max_age: 7
-        # max backup files
-        max_backups: 7
-        # max file size, MB
-        max_size: 128
-        # log file is compress
-        compress: false
+  base_config:
+    name_server_url: http://192.168.10.220:8500
+    log_config:
+      default:
+        level: info
+        writers:
+          - console
+          - file
+        format: json
+        file_config:
+          filepath: ./log/server.log
+      pulsar_log:
+        level: info
+        writers:
+          - console
+          - file
+        format: json
+        file_config:
+          filepath: ./log/pulsar.log
+      grpc_log:
+        level: info
+        writers:
+          - console
+          - file
+        format: json
+        file_config:
+          filepath: ./log/grpc.log
 
 
 redis_config:

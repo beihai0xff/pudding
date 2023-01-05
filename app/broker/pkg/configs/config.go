@@ -3,7 +3,7 @@ package configs
 import conf "github.com/beihai0xff/pudding/configs"
 
 var c = &Config{
-	BrokerConfig: &conf.BrokerConfig{
+	ServerConfig: &conf.BrokerConfig{
 		TimeSliceInterval: "",
 	},
 	Redis: &conf.RedisConfig{
@@ -19,10 +19,12 @@ var c = &Config{
 
 // Config is the config for scheduler module.
 type Config struct {
-	// BrokerConfig config
-	BrokerConfig *conf.BrokerConfig `json:"broker_config" yaml:"broker_config" mapstructure:"broker_config"`
+	// ServerConfig server config
+	ServerConfig *conf.BrokerConfig `json:"server_config" yaml:"server_config" mapstructure:"server_config"`
 
-	Redis  *conf.RedisConfig  `json:"redis_config" yaml:"redis_config" mapstructure:"redis_config"`
+	// Redis redis config
+	Redis *conf.RedisConfig `json:"redis_config" yaml:"redis_config" mapstructure:"redis_config"`
+	// Pulsar pulsar config
 	Pulsar *conf.PulsarConfig `json:"pulsar_config" yaml:"pulsar_config" mapstructure:"pulsar_config"`
 }
 
@@ -38,10 +40,10 @@ func GetPulsarConfig() *conf.PulsarConfig {
 
 // GetBrokerConfig returns the scheduler config.
 func GetBrokerConfig() *conf.BrokerConfig {
-	return c.BrokerConfig
+	return c.ServerConfig
 }
 
 // GetNameServerURL returns the name server url.
 func GetNameServerURL() string {
-	return c.BrokerConfig.NameServerURL
+	return c.ServerConfig.NameServerURL
 }

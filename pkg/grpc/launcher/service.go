@@ -9,6 +9,7 @@ import (
 	"net"
 	"net/http"
 	"os"
+	"sync"
 	"time"
 
 	grpc_middleware "github.com/grpc-ecosystem/go-grpc-middleware"
@@ -49,18 +50,25 @@ func getCertsAndCertPool() (tls.Certificate, *x509.CertPool) {
 	return cert, certPool
 }
 
-func getListen() (grpcLis, httpLis net.Listener) {
-	var err error
-	grpcLis, err = net.Listen("tcp", fmt.Sprintf(":%d", *args.GRPCPort))
-	if err != nil {
-		log.Fatalf("failed to listen: %v", err)
-	}
-	httpLis, err = net.Listen("tcp", fmt.Sprintf(":%d", *args.HTTPPort))
-	if err != nil {
-		log.Fatalf("failed to listen: %v", err)
-	}
+var (
+	listenerOnce     sync.Once
+	grpcLis, httpLis net.Listener
+)
 
-	return
+func getListen() (net.Listener, net.Listener) {
+	listenerOnce.Do(func() {
+		var err error
+		grpcLis, err = net.Listen("tcp", fmt.Sprintf(":%d", *args.GRPCPort))
+		if err != nil {
+			log.Fatalf("failed to listen: %v", err)
+		}
+		httpLis, err = net.Listen("tcp", fmt.Sprintf(":%d", *args.HTTPPort))
+		if err != nil {
+			log.Fatalf("failed to listen: %v", err)
+		}
+	})
+
+	return grpcLis, httpLis
 }
 
 // StartGRPCServer starts the gRPC server with the given service.

@@ -1,8 +1,8 @@
 // Package configs provides config management
 package configs
 
-// ServerConfig server common Config
-type ServerConfig struct {
+// BaseConfig server base Config
+type BaseConfig struct {
 	// GRPCPort grpc server port
 	GRPCPort int `json:"grpc_port" yaml:"grpc_port" mapstructure:"grpc_port"`
 	// HTTPPort http server port
@@ -19,8 +19,8 @@ type ServerConfig struct {
 
 // BrokerConfig BrokerConfig Config
 type BrokerConfig struct {
-	// ServerConfig server common Config
-	ServerConfig
+	// BaseConfig server base Config
+	BaseConfig `json:"base_config" yaml:"base_config" mapstructure:"base_config"`
 
 	// TimeSliceInterval broker loop time interval
 	TimeSliceInterval string `json:"time_slice_interval" yaml:"time_slice_interval" mapstructure:"time_slice_interval"`
