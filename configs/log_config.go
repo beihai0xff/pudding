@@ -2,6 +2,7 @@
 package configs
 
 import (
+	"encoding/json"
 	"fmt"
 
 	"github.com/spf13/viper"
@@ -36,7 +37,7 @@ type LogConfig struct {
 	// Writers log output(console, file)
 	Writers []string `yaml:"writers" mapstructure:"writers" json:"writers"`
 	// FileConfig 日志文件配置，如果 Writers 为 file 则该配置不能为空
-	FileConfig *LogFileConfig `yaml:"file_config" mapstructure:"file_config" json:"file_config"`
+	FileConfig LogFileConfig `yaml:"file_config" mapstructure:"file_config" json:"file_config"`
 
 	// Format log format type (console, json)
 	Format string `yaml:"format" mapstructure:"format" json:"format"`
@@ -62,17 +63,28 @@ type LogFileConfig struct {
 	MaxSize int `yaml:"max_size" mapstructure:"max_size" json:"max_size"`
 }
 
+var defaultConfig = LogConfig{
+	Writers:    []string{OutputConsole},
+	Format:     EncoderTypeConsole,
+	Level:      "info",
+	CallerSkip: 1,
+}
+
 func GetLogConfig(logName string) *LogConfig {
-	logName = fmt.Sprintf("log_config.%s", logName)
-	v := viper.Sub(logName)
+	logPath := fmt.Sprintf("server_config.base_config.log_config.%s", logName)
+	v := viper.Sub(logPath)
 	if v == nil { // Sub returns nil if the key cannot be found
-		panic(fmt.Sprintf(" %s not found\n", logName))
+		panic(fmt.Sprintf(" %s not found\n", logPath))
 	}
 
-	c := LogConfig{}
+	c := defaultConfig
 	if err := v.Unmarshal(&c); err != nil {
 		panic(fmt.Errorf("unmarshal log config failed: %w", err))
 	}
+	c.LogName = logName
+
+	cjson, _ := json.Marshal(c)
+	fmt.Printf("log config: %+v \n", string(cjson))
 
 	return &c
 }

@@ -22,11 +22,11 @@ func (c *Config) JSON() []byte {
 func Init(filePath string, opts ...OptionFunc) {
 	conf.Parse(filePath, "yaml", c, conf.ReadFromFile)
 
-	if c.BrokerConfig.MessageTopic == "" {
-		c.BrokerConfig.MessageTopic = types.DefaultTopic
+	if c.ServerConfig.MessageTopic == "" {
+		c.ServerConfig.MessageTopic = types.DefaultTopic
 	}
-	if c.BrokerConfig.TokenTopic == "" {
-		c.BrokerConfig.TokenTopic = types.TokenTopic
+	if c.ServerConfig.TokenTopic == "" {
+		c.ServerConfig.TokenTopic = types.TokenTopic
 	}
 
 	for _, opt := range opts {
@@ -38,7 +38,7 @@ func Init(filePath string, opts ...OptionFunc) {
 		producers[v.Topic] = struct{}{}
 	}
 
-	if _, ok := producers[c.BrokerConfig.MessageTopic]; !ok {
+	if _, ok := producers[c.ServerConfig.MessageTopic]; !ok {
 		c.Pulsar.ProducersConfig = append(c.Pulsar.ProducersConfig, conf.ProducerConfig{
 			Topic:                   types.DefaultTopic,
 			BatchingMaxPublishDelay: 20,
@@ -47,7 +47,7 @@ func Init(filePath string, opts ...OptionFunc) {
 		})
 	}
 
-	if _, ok := producers[c.BrokerConfig.TokenTopic]; !ok {
+	if _, ok := producers[c.ServerConfig.TokenTopic]; !ok {
 		c.Pulsar.ProducersConfig = append(c.Pulsar.ProducersConfig, conf.ProducerConfig{
 			Topic:                   types.TokenTopic,
 			BatchingMaxPublishDelay: 20,
