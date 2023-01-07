@@ -32,10 +32,10 @@ var (
 
 // RegisterLogger registers the logger to the resolver.
 func RegisterLogger() {
+
 	log.RegisterLogger(log.DefaultLoggerName, log.WithCallerSkip(1))
 	log.RegisterLogger(logger.PulsarLoggerName, log.WithCallerSkip(1))
 	log.RegisterLogger(logger.GRPCLoggerName, log.WithCallerSkip(1))
-	logger.GetGRPCLogger()
 	rdb := redis.New(configs.GetRedisConfig())
 	lock.Init(rdb)
 }

@@ -2,10 +2,8 @@
 package configs
 
 import (
-	"encoding/json"
-	"fmt"
-
-	"github.com/spf13/viper"
+	"github.com/jinzhu/copier"
+	"github.com/samber/lo"
 	"go.uber.org/zap/zapcore"
 )
 
@@ -63,29 +61,37 @@ type LogFileConfig struct {
 	MaxSize int `yaml:"max_size" mapstructure:"max_size" json:"max_size"`
 }
 
-var defaultConfig = LogConfig{
-	Writers:    []string{OutputConsole},
-	Format:     EncoderTypeConsole,
-	Level:      "info",
-	CallerSkip: 1,
-}
+var (
+	defaultConfig = LogConfig{
+		Writers:    []string{OutputConsole},
+		Format:     EncoderTypeConsole,
+		Level:      "info",
+		CallerSkip: 1,
+	}
+	defaultLogFileConfig = LogFileConfig{
+		MaxAge:     7, // days
+		MaxBackups: 10,
+		Compress:   false,
+		MaxSize:    256, // megabytes
+	}
+)
 
 // GetLogConfig get specify log config by log name
 func GetLogConfig(logName string) *LogConfig {
-	logPath := fmt.Sprintf("%s.log_config.%s", baseConfigPath, logName)
-	v := viper.Sub(logPath)
-	if v == nil { // Sub returns nil if the key cannot be found
-		panic(fmt.Sprintf(" %s not found\n", logPath))
-	}
-
 	c := defaultConfig
-	if err := v.Unmarshal(&c); err != nil {
-		panic(fmt.Errorf("unmarshal log config failed: %w", err))
+	v, ok := baseConfig.Logger[logName]
+
+	if ok {
+		// if log writers contains file, then set file config
+		if lo.Contains[string](v.Writers, OutputFile) {
+			fileConfig := defaultLogFileConfig
+			c.FileConfig = fileConfig
+		}
+		if err := copier.CopyWithOption(&c, v, copier.Option{IgnoreEmpty: true, DeepCopy: true}); err != nil {
+			panic(err)
+		}
 	}
 	c.LogName = logName
-
-	cjson, _ := json.Marshal(c)
-	fmt.Printf("log config: %+v \n", string(cjson))
 
 	return &c
 }

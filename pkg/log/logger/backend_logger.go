@@ -79,7 +79,7 @@ func (l *GORMLogger) Trace(c context.Context, begin time.Time, fc func() (sql st
 
 func GetGORMLogger() *GORMLogger {
 	return &GORMLogger{
-		l:                         log.GerLoggerByName(BackendLoggerName).WithFields("module", "backend"),
+		l:                         log.GetLoggerByName(BackendLoggerName).WithFields("module", "backend"),
 		level:                     levels["debug"],
 		IgnoreRecordNotFoundError: false,
 		SlowThreshold:             1 * time.Second,

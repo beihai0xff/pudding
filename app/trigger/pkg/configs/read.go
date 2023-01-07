@@ -20,6 +20,7 @@ func (c *Config) JSON() []byte {
 
 func Init(filePath string, opts ...OptionFunc) {
 	conf.Parse(filePath, "yaml", c, conf.ReadFromFile)
+	c.ServerConfig.SetFlags()
 
 	for _, opt := range opts {
 		opt(c)

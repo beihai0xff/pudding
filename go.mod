@@ -19,6 +19,7 @@ require (
 	github.com/jinzhu/copier v0.3.6-0.20221021060712-6a4be2a76157
 	github.com/klauspost/compress v1.15.13
 	github.com/mbobakov/grpc-consul-resolver v1.4.4
+	github.com/samber/lo v1.37.0
 	github.com/spf13/viper v1.8.1
 	github.com/stretchr/testify v1.8.1
 	github.com/vmihailenco/msgpack/v5 v5.3.5
@@ -142,6 +143,7 @@ require (
 	go.uber.org/atomic v1.10.0 // indirect
 	go.uber.org/multierr v1.9.0 // indirect
 	golang.org/x/crypto v0.1.0 // indirect
+	golang.org/x/exp v0.0.0-20220303212507-bbda1eaf7a17 // indirect
 	golang.org/x/mod v0.7.0 // indirect
 	golang.org/x/oauth2 v0.3.0 // indirect
 	golang.org/x/sync v0.1.0 // indirect
