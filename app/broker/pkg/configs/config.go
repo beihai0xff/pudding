@@ -38,8 +38,8 @@ func GetPulsarConfig() *conf.PulsarConfig {
 	return c.Pulsar
 }
 
-// GetBrokerConfig returns the scheduler config.
-func GetBrokerConfig() *conf.BrokerConfig {
+// GetServerConfig returns the scheduler config.
+func GetServerConfig() *conf.BrokerConfig {
 	return c.ServerConfig
 }
 

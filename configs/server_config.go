@@ -1,7 +1,14 @@
 // Package configs provides config management
 package configs
 
+import (
+	"github.com/beihai0xff/pudding/pkg/grpc/args"
+)
+
+const baseConfigPath = "server_config.base_config"
+
 // BaseConfig server base Config
+// support CommandLine
 type BaseConfig struct {
 	// GRPCPort grpc server port
 	GRPCPort int `json:"grpc_port" yaml:"grpc_port" mapstructure:"grpc_port"`
@@ -15,6 +22,25 @@ type BaseConfig struct {
 	NameServerURL string `json:"name_server_url" yaml:"name_server_url" mapstructure:"name_server_url"`
 	// Logger log config for output config message, do not use it
 	Logger map[string]*LogConfig `json:"log_config" yaml:"log_config" mapstructure:"log_config"`
+}
+
+// SetFlags set flags to viper
+// flags have the highest priority
+func (c *BaseConfig) SetFlags() {
+	// if flag changes or not set value in other config file, use flag value
+	if *args.GRPCPort != args.DefaultGRPCPort || c.GRPCPort == 0 {
+		c.GRPCPort = *args.GRPCPort
+	}
+	if *args.HTTPPort != args.DefaultHTTPPort || c.HTTPPort == 0 {
+		c.HTTPPort = *args.HTTPPort
+	}
+	if *args.CertPath != args.DefaultCertPath || c.CertPath == "" {
+		c.CertPath = *args.CertPath
+	}
+	if *args.KeyPath != args.DefaultKeyPath || c.KeyPath == "" {
+		c.KeyPath = *args.KeyPath
+	}
+	return
 }
 
 // BrokerConfig BrokerConfig Config
@@ -32,4 +58,15 @@ type BrokerConfig struct {
 	Broker string `json:"broker" yaml:"broker" mapstructure:"broker"`
 	// Connector type
 	Connector string `json:"connector" yaml:"connector" mapstructure:"connector"`
+}
+
+// TriggerConfig Trigger server config
+type TriggerConfig struct {
+	// BaseConfig server base Config
+	BaseConfig `json:"base_config" yaml:"base_config" mapstructure:"base_config"`
+
+	// WebhookPrefix is the prefix of webhook url.
+	WebhookPrefix string `json:"webhook_prefix" yaml:"webhook_prefix" mapstructure:"webhook_prefix"`
+	// SchedulerConsulURL is the scheduler consul connection url.
+	SchedulerConsulURL string `json:"scheduler_consul_url" yaml:"scheduler_consul_url" mapstructure:"scheduler_consul_url"`
 }

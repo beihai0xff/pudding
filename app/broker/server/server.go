@@ -41,21 +41,23 @@ func RegisterLogger() {
 }
 
 // RegisterResolver registers the service to the resolver.
-func RegisterResolver(grpcPort, httpPort int) []*resolver.Pair {
+func RegisterResolver() []*resolver.Pair {
+	baseConfig := configs.GetServerConfig().BaseConfig
 	consulURL := configs.GetNameServerURL()
 
 	pairs := []*resolver.Pair{
 		resolver.GRPCRegistration(pb.SchedulerService_ServiceDesc.ServiceName,
-			grpcPort, resolver.WithConsulResolver(consulURL)),
+			baseConfig.GRPCPort, resolver.WithConsulResolver(consulURL)),
 		resolver.HTTPRegistration(healthEndpointPath,
-			httpPort, resolver.WithConsulResolver(consulURL)),
+			baseConfig.HTTPPort, resolver.WithConsulResolver(consulURL)),
 	}
 	return pairs
 }
 
 // StartServer starts the server.
 func StartServer() (*grpc.Server, *health.Server, *http.Server) {
-	grpcServer, healthcheck := launcher.StartGRPCServer(startSchedulerService)
-	httpServer := launcher.StartHTTPServer(healthEndpointPath, swaggerEndpointPath)
+	baseConfig := configs.GetServerConfig().BaseConfig
+	grpcServer, healthcheck := launcher.StartGRPCServer(&baseConfig, startSchedulerService)
+	httpServer := launcher.StartHTTPServer(&baseConfig, healthEndpointPath, swaggerEndpointPath)
 	return grpcServer, healthcheck, httpServer
 }

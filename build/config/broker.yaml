@@ -6,6 +6,10 @@ server_config:
   message_topic: default
   token_topic: token
   base_config:
+    grpc_port: 50051
+    http_port: 8081
+    cert_path: ./certs/pudding.pem
+    key_path: ./certs/pudding-key.pem
     name_server_url: http://192.168.10.220:8500
     log_config:
       default:
@@ -13,7 +17,6 @@ server_config:
         writers:
           - console
           - file
-        format: json
         file_config:
           filepath: ./log/server.log
       pulsar_log:
@@ -21,7 +24,6 @@ server_config:
         writers:
           - console
           - file
-        format: json
         file_config:
           filepath: ./log/pulsar.log
       grpc_log:
@@ -29,7 +31,6 @@ server_config:
         writers:
           - console
           - file
-        format: json
         file_config:
           filepath: ./log/grpc.log
 

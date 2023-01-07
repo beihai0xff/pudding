@@ -16,7 +16,7 @@ func startSchedulerService(server *grpc.Server, serviceName *string) error {
 	*serviceName = pb.SchedulerService_ServiceDesc.ServiceName
 
 	// Initialize dependencies
-	schedulerConfig := configs.GetBrokerConfig()
+	schedulerConfig := configs.GetServerConfig()
 	delay, realtime := newQueue(schedulerConfig)
 	s := broker.New(schedulerConfig, delay, realtime)
 	s.Run()
