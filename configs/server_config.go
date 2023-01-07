@@ -40,7 +40,6 @@ func (c *BaseConfig) SetFlags() {
 	if *args.KeyPath != args.DefaultKeyPath || c.KeyPath == "" {
 		c.KeyPath = *args.KeyPath
 	}
-	return
 }
 
 // BrokerConfig BrokerConfig Config
