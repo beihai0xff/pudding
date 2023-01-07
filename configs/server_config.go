@@ -24,7 +24,7 @@ type BaseConfig struct {
 	Logger map[string]*LogConfig `json:"log_config" yaml:"log_config" mapstructure:"log_config"`
 }
 
-// SetFlags set flags to viper
+// SetFlags set flags to BaseConfig
 // flags have the highest priority
 func (c *BaseConfig) SetFlags() {
 	// if flag changes or not set value in other config file, use flag value
