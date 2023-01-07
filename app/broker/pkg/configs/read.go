@@ -9,6 +9,7 @@ import (
 	"github.com/beihai0xff/pudding/types"
 )
 
+// JSON returns the json format of the config.
 func (c *Config) JSON() []byte {
 	b, err := json.Marshal(c)
 	if err != nil {
@@ -21,6 +22,7 @@ func (c *Config) JSON() []byte {
 
 func Init(filePath string, opts ...OptionFunc) {
 	conf.Parse(filePath, "yaml", c, conf.ReadFromFile)
+	c.ServerConfig.SetFlags()
 
 	if c.ServerConfig.MessageTopic == "" {
 		c.ServerConfig.MessageTopic = types.DefaultTopic
@@ -61,8 +63,10 @@ func Init(filePath string, opts ...OptionFunc) {
 	log.Printf("pudding scheduler config:\n %s \n", str.String())
 }
 
+// OptionFunc is the option function for config.
 type OptionFunc func(config *Config)
 
+// WithRedisURL sets the redis url.
 func WithRedisURL(url string) OptionFunc {
 	return func(config *Config) {
 		if url != "" {
@@ -71,6 +75,7 @@ func WithRedisURL(url string) OptionFunc {
 	}
 }
 
+// WithPulsarURL sets the pulsar url.
 func WithPulsarURL(url string) OptionFunc {
 	return func(config *Config) {
 		if url != "" {

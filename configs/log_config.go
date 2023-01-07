@@ -70,8 +70,9 @@ var defaultConfig = LogConfig{
 	CallerSkip: 1,
 }
 
+// GetLogConfig get specify log config by log name
 func GetLogConfig(logName string) *LogConfig {
-	logPath := fmt.Sprintf("server_config.base_config.log_config.%s", logName)
+	logPath := fmt.Sprintf("%s.log_config.%s", baseConfigPath, logName)
 	v := viper.Sub(logPath)
 	if v == nil { // Sub returns nil if the key cannot be found
 		panic(fmt.Sprintf(" %s not found\n", logPath))

@@ -22,7 +22,7 @@ var (
 	client                 *Client
 )
 
-// Client Redis 客户端
+// Client Redis client
 type Client struct {
 	client *redis.Client
 	config *configs.RedisConfig
@@ -30,7 +30,7 @@ type Client struct {
 	locker *redislock.Client
 }
 
-// New 获取客户端
+// New create a new redis client
 func New(c *configs.RedisConfig) *Client {
 	clientOnce.Do(
 		func() {

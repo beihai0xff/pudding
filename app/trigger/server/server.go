@@ -64,23 +64,26 @@ func RegisterLogger() {
 }
 
 // RegisterResolver registers the service to the resolver.
-func RegisterResolver(grpcPort, httpPort int) []*resolver.Pair {
-	consulURL := configs.GetConsulURL()
+func RegisterResolver() []*resolver.Pair {
+	baseConfig := configs.GetServerConfig().BaseConfig
+	consulURL := configs.GetNameServerURL()
 
 	pairs := []*resolver.Pair{
 		resolver.GRPCRegistration(pb.CronTriggerService_ServiceDesc.ServiceName,
-			grpcPort, resolver.WithConsulResolver(consulURL)),
+			baseConfig.GRPCPort, resolver.WithConsulResolver(consulURL)),
 		resolver.GRPCRegistration(pb.WebhookTriggerService_ServiceDesc.ServiceName,
-			grpcPort, resolver.WithConsulResolver(consulURL)),
+			baseConfig.GRPCPort, resolver.WithConsulResolver(consulURL)),
 		resolver.HTTPRegistration(healthEndpointPath,
-			httpPort, resolver.WithConsulResolver(consulURL)),
+			baseConfig.HTTPPort, resolver.WithConsulResolver(consulURL)),
 	}
 	return pairs
 }
 
 // StartServer starts the server.
 func StartServer() (*grpc.Server, *health.Server, *http.Server) {
-	grpcServer, healthcheck := launcher.StartGRPCServer(startCronTriggerService, startWebhookTriggerService)
-	httpServer := launcher.StartHTTPServer(healthEndpointPath, swaggerEndpointPath)
+	baseConfig := configs.GetServerConfig().BaseConfig
+	grpcServer, healthcheck := launcher.StartGRPCServer(&baseConfig,
+		startCronTriggerService, startWebhookTriggerService)
+	httpServer := launcher.StartHTTPServer(&baseConfig, healthEndpointPath, swaggerEndpointPath)
 	return grpcServer, healthcheck, httpServer
 }

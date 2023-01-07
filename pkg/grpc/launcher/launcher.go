@@ -24,21 +24,21 @@ import (
 	"google.golang.org/grpc/reflection"
 
 	pb "github.com/beihai0xff/pudding/api/gen/pudding/broker/v1"
-	"github.com/beihai0xff/pudding/pkg/grpc/args"
+	"github.com/beihai0xff/pudding/configs"
 	"github.com/beihai0xff/pudding/pkg/log"
 	"github.com/beihai0xff/pudding/pkg/swagger"
 )
 
 type StartServiceFunc func(server *grpc.Server, serviceName *string) error
 
-func getCertsAndCertPool() (tls.Certificate, *x509.CertPool) {
-	cert, err := tls.LoadX509KeyPair(*args.CertPath, *args.KeyPath)
+func getCertsAndCertPool(config *configs.BaseConfig) (tls.Certificate, *x509.CertPool) {
+	cert, err := tls.LoadX509KeyPair(config.CertPath, config.KeyPath)
 	if err != nil {
 		log.Fatalf("Failed to load key pair: %v", err)
 	}
 	// create a certificate pool from the certificate authority
 	certPool := x509.NewCertPool()
-	ca, err := os.ReadFile(*args.CertPath)
+	ca, err := os.ReadFile(config.CertPath)
 	if err != nil {
 		log.Fatalf("Failed to read ca cert: %v", err)
 	}
@@ -55,14 +55,14 @@ var (
 	grpcLis, httpLis net.Listener
 )
 
-func getListen() (net.Listener, net.Listener) {
+func getListen(grpcPort, httpPort int) (net.Listener, net.Listener) {
 	listenerOnce.Do(func() {
 		var err error
-		grpcLis, err = net.Listen("tcp", fmt.Sprintf(":%d", *args.GRPCPort))
+		grpcLis, err = net.Listen("tcp", fmt.Sprintf(":%d", grpcPort))
 		if err != nil {
 			log.Fatalf("failed to listen: %v", err)
 		}
-		httpLis, err = net.Listen("tcp", fmt.Sprintf(":%d", *args.HTTPPort))
+		httpLis, err = net.Listen("tcp", fmt.Sprintf(":%d", httpPort))
 		if err != nil {
 			log.Fatalf("failed to listen: %v", err)
 		}
@@ -73,12 +73,13 @@ func getListen() (net.Listener, net.Listener) {
 
 // StartGRPCServer starts the gRPC server with the given service.
 // It serves the given gRPC service and the gRPC-healthz.
-func StartGRPCServer(opts ...StartServiceFunc) (*grpc.Server, *health.Server) {
+func StartGRPCServer(config *configs.BaseConfig, opts ...StartServiceFunc) (
+	*grpc.Server, *health.Server) {
 
 	log.Info("starting grpc server ...")
-	grpcLis, _ := getListen()
+	grpcLis, _ := getListen(config.GRPCPort, config.HTTPPort)
 
-	cert, certPool := getCertsAndCertPool()
+	cert, certPool := getCertsAndCertPool(config)
 	cred := credentials.NewTLS(&tls.Config{
 		Certificates: []tls.Certificate{cert},
 		ClientAuth:   tls.VerifyClientCertIfGiven,
@@ -121,7 +122,6 @@ func StartGRPCServer(opts ...StartServiceFunc) (*grpc.Server, *health.Server) {
 	reflection.Register(server)
 
 	go func() {
-
 		log.Infof("grpc server listening at %v", grpcLis.Addr())
 		if err := server.Serve(grpcLis); err != nil {
 			log.Fatalf("failed to start grpc serve: %v", err)
@@ -131,13 +131,15 @@ func StartGRPCServer(opts ...StartServiceFunc) (*grpc.Server, *health.Server) {
 	return server, healthcheckServer
 }
 
-// StartHTTPServer starts the HTTP service.
+// StartHTTPServer sstarts the HTTP server with the given service.
 // It serves the gRPC-gateway, gRPC-healthz and the swagger UI.
-func StartHTTPServer(healthEndpointPath, swaggerEndpointPath string) *http.Server {
+// StartHTTPServer must be called after StartGRPCServer,
+// because it uses the same listener, and HTTP server base on gRPC Gateway.
+func StartHTTPServer(config *configs.BaseConfig, healthEndpointPath, swaggerEndpointPath string) *http.Server {
 	log.Info("starting http server ...")
-	grpcLis, httpLis := getListen()
+	grpcLis, httpLis := getListen(config.GRPCPort, config.HTTPPort)
 
-	cert, certPool := getCertsAndCertPool()
+	cert, certPool := getCertsAndCertPool(config)
 	cred := credentials.NewTLS(&tls.Config{
 		Certificates: []tls.Certificate{cert},
 		ServerName:   "localhost",
@@ -172,7 +174,7 @@ func StartHTTPServer(healthEndpointPath, swaggerEndpointPath string) *http.Serve
 
 	go func() {
 		log.Infof("http server listening at %v", httpLis.Addr())
-		if err = httpServer.ServeTLS(httpLis, *args.CertPath, *args.KeyPath); err != nil {
+		if err = httpServer.ServeTLS(httpLis, config.CertPath, config.KeyPath); err != nil {
 			if errors.Is(err, http.ErrServerClosed) {
 				log.Info("http server closed")
 				return

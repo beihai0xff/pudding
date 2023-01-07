@@ -11,6 +11,7 @@ import (
 
 type OptionFunc func(path, format string)
 
+// Parse ReadConfig read config from filePath with format
 func Parse(filePath, format string, c interface{}, opt OptionFunc) {
 	opt(filePath, format)
 	if err := viper.Unmarshal(c); err != nil {
@@ -18,6 +19,7 @@ func Parse(filePath, format string, c interface{}, opt OptionFunc) {
 	}
 }
 
+// ReadFromFile read config from filePath with format
 func ReadFromFile(filePath, format string) {
 	viper.SetConfigFile(filePath)
 	viper.SetConfigType(format)
@@ -33,6 +35,7 @@ func ReadFromFile(filePath, format string) {
 	}
 }
 
+// ReadFromConsul read config from consul
 func ReadFromConsul(filePath, format string) {
 	path := strings.SplitN(filePath, "/", 2)
 	if err := viper.AddRemoteProvider("consul", path[0], path[1]); err != nil {

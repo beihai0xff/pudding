@@ -23,7 +23,7 @@ func newDelayStorage(broker string) storage.DelayStorage {
 	switch broker {
 	case "redis":
 		// parse Polling delay queue interval
-		interval := configs.GetBrokerConfig().TimeSliceInterval
+		interval := configs.GetServerConfig().TimeSliceInterval
 		t, err := time.ParseDuration(interval)
 		if err != nil {
 			log.Fatalf("failed to parse '%s' to time.Duration: %v", interval, err)

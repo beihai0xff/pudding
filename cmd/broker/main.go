@@ -33,7 +33,7 @@ func main() {
 	// start server
 	grpcServer, healthcheck, httpServer := server.StartServer()
 	// register service to consul
-	resolverPairs := server.RegisterResolver(*args.GRPCPort, *args.HTTPPort)
+	resolverPairs := server.RegisterResolver()
 
 	// block until a signal is received.
 	sign := <-interrupt
