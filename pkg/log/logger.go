@@ -75,9 +75,8 @@ func newEncoder(c *configs.LogConfig) zapcore.Encoder {
 		CallerKey:  "caller",
 		MessageKey: "message",
 		// StacktraceKey: "stacktrace",
-		LineEnding:  zapcore.DefaultLineEnding,
-		EncodeLevel: zapcore.CapitalLevelEncoder,
-		// TODO: custom EncodeTime
+		LineEnding:     zapcore.DefaultLineEnding,
+		EncodeLevel:    zapcore.CapitalLevelEncoder,
 		EncodeTime:     zapcore.ISO8601TimeEncoder,
 		EncodeDuration: zapcore.StringDurationEncoder,
 		EncodeCaller:   zapcore.ShortCallerEncoder,

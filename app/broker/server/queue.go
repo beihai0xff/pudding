@@ -1,3 +1,4 @@
+// Package server provides the start and dependency registration of the broker server
 package server
 
 import (

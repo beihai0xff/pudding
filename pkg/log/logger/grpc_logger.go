@@ -28,10 +28,9 @@ func (l *GRPCLogger) V(level int) bool {
 }
 
 func GetGRPCLogger() grpclog.LoggerV2 {
-	l := log.GerLoggerByName(GRPCLoggerName).WithFields("module", "grpc")
+	l := log.GetLoggerByName(GRPCLoggerName).WithFields("module", "grpc")
 
 	logger := &GRPCLogger{Logger: l}
-	grpclog.SetLoggerV2(logger)
 
 	return logger
 }

@@ -60,7 +60,6 @@ func RegisterLogger() {
 	log.RegisterLogger(log.DefaultLoggerName, log.WithCallerSkip(1))
 	// gorm log need 3 skip
 	log.RegisterLogger(logger.BackendLoggerName, log.WithCallerSkip(3))
-	logger.GetGRPCLogger()
 }
 
 // RegisterResolver registers the service to the resolver.

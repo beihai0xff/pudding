@@ -1,6 +1,9 @@
+// Package log provides the log
 package log
 
 import (
+	"encoding/json"
+
 	"go.uber.org/zap"
 	"go.uber.org/zap/zapcore"
 
@@ -19,6 +22,7 @@ var (
 	loggers = map[string]Logger{}
 )
 
+// DefaultLoggerName is the default logger name
 const DefaultLoggerName = "default"
 
 func init() {
@@ -35,8 +39,11 @@ func (l *logger) WithFields(fields ...interface{}) Logger {
 	return &logger{l.WithOptions(zap.AddStacktrace(zapcore.WarnLevel)).With(fields...)}
 }
 
+// RegisterLogger register a logger with name
 func RegisterLogger(loggerName string, opts ...OptionFunc) {
 	c := configs.GetLogConfig(loggerName)
+	cjson, _ := json.Marshal(c)
+	Infof("Register Logger [%s] with config: %s", loggerName, string(cjson))
 
 	for _, opt := range opts {
 		opt(c)
@@ -49,7 +56,8 @@ func RegisterLogger(loggerName string, opts ...OptionFunc) {
 	loggers[loggerName] = log
 }
 
-func GerLoggerByName(loggerName string) Logger {
+// GetLoggerByName get logger by name
+func GetLoggerByName(loggerName string) Logger {
 	if logger, ok := loggers[loggerName]; ok {
 		return logger
 	}

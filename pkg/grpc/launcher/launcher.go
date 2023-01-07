@@ -18,6 +18,7 @@ import (
 	"github.com/grpc-ecosystem/grpc-gateway/v2/runtime"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials"
+	"google.golang.org/grpc/grpclog"
 	"google.golang.org/grpc/health"
 	pbhealth "google.golang.org/grpc/health/grpc_health_v1"
 	"google.golang.org/grpc/keepalive"
@@ -26,6 +27,7 @@ import (
 	pb "github.com/beihai0xff/pudding/api/gen/pudding/broker/v1"
 	"github.com/beihai0xff/pudding/configs"
 	"github.com/beihai0xff/pudding/pkg/log"
+	"github.com/beihai0xff/pudding/pkg/log/logger"
 	"github.com/beihai0xff/pudding/pkg/swagger"
 )
 
@@ -77,6 +79,8 @@ func StartGRPCServer(config *configs.BaseConfig, opts ...StartServiceFunc) (
 	*grpc.Server, *health.Server) {
 
 	log.Info("starting grpc server ...")
+	grpclog.SetLoggerV2(logger.GetGRPCLogger())
+
 	grpcLis, _ := getListen(config.GRPCPort, config.HTTPPort)
 
 	cert, certPool := getCertsAndCertPool(config)
