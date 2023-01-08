@@ -3,6 +3,7 @@ package logger
 import (
 	"google.golang.org/grpc/grpclog"
 
+	"github.com/beihai0xff/pudding/configs"
 	"github.com/beihai0xff/pudding/pkg/log"
 )
 
@@ -30,7 +31,8 @@ func (l *GRPCLogger) V(level int) bool {
 func GetGRPCLogger() grpclog.LoggerV2 {
 	l := log.GetLoggerByName(GRPCLoggerName).WithFields("module", "grpc")
 
-	logger := &GRPCLogger{Logger: l}
+	level := configs.Levels[configs.GetLogConfig(BackendLoggerName).Level]
+	logger := &GRPCLogger{Logger: l, verbosity: int(level)}
 
 	return logger
 }

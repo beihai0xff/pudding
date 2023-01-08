@@ -38,7 +38,7 @@ func (p *PulsarLogger) WithError(err error) plog.Entry {
 	return &PulsarLogger{Logger: p.with("error", err), with: p.with}
 }
 
-func GetPulsarLogger() *PulsarLogger {
+func GetPulsarLogger() plog.Logger {
 	l := log.GetLoggerByName(PulsarLoggerName).WithFields("module", "pulsar")
 	return &PulsarLogger{Logger: l, with: l.WithFields}
 }
