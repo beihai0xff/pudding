@@ -140,26 +140,30 @@ func (s *scheduler) startSchedule() {
 	for {
 		select {
 		case t := <-s.token:
-			ctx := context.Background()
+			func() {
+				ctx, cancel := context.WithTimeout(context.Background(), time.Second*3)
+				defer cancel()
 
-			// lock the timeSlice
-			name := s.getLockerName(t)
-			locker, err := lock.NewRedLock(ctx, name, time.Second*3)
-			if err != nil {
-				if !errors.Is(err, lock.ErrNotObtained) {
-					log.Errorf("failed to get timeSlice locker: %s, caused by %v", name, err)
+				// lock the timeSlice
+				name := s.getLockerName(t)
+				locker, err := lock.NewRedLock(ctx, name, time.Second*3)
+				if err != nil {
+					if !errors.Is(err, lock.ErrNotObtained) {
+						log.Errorf("failed to get timeSlice locker: %s, caused by %v", name, err)
+					}
+					return
 				}
-				continue
-			}
 
-			if err := s.delay.Consume(ctx, t, 100, s.produceRealTime); err != nil {
-				log.Errorf("failed to consume time: %d, caused by %v", t, err)
-			}
+				if err := s.delay.Consume(ctx, t, 100, s.produceRealTime); err != nil {
+					log.Errorf("failed to consume time: %d, caused by %v", t, err)
+				}
 
-			// Release the lock
-			if err := locker.Release(ctx); err != nil {
-				log.Errorf("failed to release time locker: %s, caused by %v", name, err)
-			}
+				// Release the lock
+				if err := locker.Release(ctx); err != nil {
+					log.Errorf("failed to release time locker: %s, caused by %v", name, err)
+				}
+
+			}()
 
 		case <-s.quit:
 			break

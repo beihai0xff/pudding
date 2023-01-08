@@ -8,7 +8,6 @@ import (
 	"sync"
 	"time"
 
-	"github.com/bsm/redislock"
 	"github.com/go-redis/redis/v9"
 
 	"github.com/beihai0xff/pudding/configs"
@@ -22,12 +21,10 @@ var (
 	client                 *Client
 )
 
-// Client Redis client
+// Client Redis client wrapper
 type Client struct {
 	client *redis.Client
 	config *configs.RedisConfig
-	// Create a new locker client.
-	locker *redislock.Client
 }
 
 // New create a new redis client
@@ -46,21 +43,22 @@ func New(c *configs.RedisConfig) *Client {
 				client: redis.NewClient(opt),
 				config: c,
 			}
-			client.locker = redislock.New(client.client)
 		})
 
 	return client
 }
 
+// GetClient get redis client
 func (c *Client) GetClient() *redis.Client {
 	return c.client
 }
 
 /*
-	JSON 相关 Command
+	KV related Command
 */
 
-// Set 执行 Redis SET 命令，expireTime 时间单位为秒
+// Set executes the Redis SET command, expireTime time unit is seconds
+// If expireTime is 0, it means not to set the expiration time
 func (c *Client) Set(ctx context.Context, key, value string, expireTime time.Duration) error {
 	if key == "" || value == "" {
 		return errors.New("redis SET key or value can't be empty")
@@ -68,49 +66,52 @@ func (c *Client) Set(ctx context.Context, key, value string, expireTime time.Dur
 	return c.client.Set(ctx, key, value, expireTime).Err()
 }
 
-// Get 执行 Redis GET 命令
+// Get executes the Redis GET command
+// it returns the value of key. If the key does not exist the special value nil is returned.
 func (c *Client) Get(ctx context.Context, key string) (string, error) {
 	return c.client.Get(ctx, key).Result()
 }
 
 /*
-	ZSet 相关 Command
+	ZSet related Command
 */
 
-// ZAddNX 执行 Redis ZAdd 命令
+// ZAddNX executes the Redis ZAddNX command
+// If the member already exists,
+// the score is updated and the element reinserted at the right position to ensure the correct ordering.
 func (c *Client) ZAddNX(ctx context.Context, key string, members ...redis.Z) error {
 	return c.client.ZAddNX(ctx, key, members...).Err()
 }
 
-// ZRangeByScore 执行 Redis ZRangeByScore 命令
+// ZRangeByScore executes the Redis ZRangeByScore command
 func (c *Client) ZRangeByScore(ctx context.Context, key string, opt *redis.ZRangeBy) ([]redis.Z, error) {
 	return c.client.ZRangeByScoreWithScores(ctx, key, opt).Result()
 }
 
-// ZRem 执行 Redis ZRem 命令
+// ZRem executes the Redis ZRem command
 func (c *Client) ZRem(ctx context.Context, key string, members ...interface{}) error {
 	return c.client.ZRem(ctx, key, members...).Err()
 }
 
 /*
-	HashTable 相关 Command
+	HashTable related Command
 */
 
-// HGet 执行 Redis HGet 命令
+// HGet executes the Redis HGet command
 func (c *Client) HGet(ctx context.Context, key, field string) ([]byte, error) {
 	return c.client.HGet(ctx, key, field).Bytes()
 }
 
-// Del 执行 Redis Del 命令
+// Del executes the Redis Del 命令
 func (c *Client) Del(ctx context.Context, keys string) error {
 	return c.client.Del(ctx, keys).Err()
 }
 
 /*
-	Stream 相关 Command
+	Stream related Command
 */
 
-// StreamSend 向指定 Stream 发送消息
+// StreamSend send message to stream
 func (c *Client) StreamSend(ctx context.Context, streamName string, msg []byte) error {
 	return c.client.XAdd(ctx, &redis.XAddArgs{
 		Stream: streamName,
@@ -121,7 +122,9 @@ func (c *Client) StreamSend(ctx context.Context, streamName string, msg []byte) 
 	}).Err()
 }
 
-// XGroupCreate start 参数表示该消费者组从哪个位置开始消费消息，可以指定为 ID 或 $，其中 $ 表示从最后一条消息开始消费。
+// XGroupCreate creates a new consumer group
+// start argument is the ID of the first message to consume
+// start can be specified as ID or $, where $ means from the last message
 func (c *Client) XGroupCreate(ctx context.Context, topic, group, start string) error {
 	// 创建消费者组
 	// 但是 XGroupCreate 这个命令不幂等，不能重复创建同一个消费者组，
@@ -135,9 +138,10 @@ func (c *Client) XGroupCreate(ctx context.Context, topic, group, start string) e
 	return nil
 }
 
+// XGroupConsume consumes messages from a stream
 func (c *Client) XGroupConsume(ctx context.Context, topic, group, consumerName, id string,
 	batchSize int) ([]redis.XMessage, error) {
-	// 阻塞的获取消息
+	// get messages from stream, it will block until there is a message
 	result, err := c.client.XReadGroup(ctx, &redis.XReadGroupArgs{
 		Group:    group,
 		Consumer: consumerName,
@@ -151,6 +155,7 @@ func (c *Client) XGroupConsume(ctx context.Context, topic, group, consumerName, 
 	return result[0].Messages, nil
 }
 
+// XGroupDelConsumer delete consumer from consumer group
 func (c *Client) XGroupDelConsumer(ctx context.Context, topic, group, consumerName string) error {
 	_, err := c.client.XGroupDelConsumer(ctx, topic, group, consumerName).Result()
 
@@ -159,16 +164,6 @@ func (c *Client) XGroupDelConsumer(ctx context.Context, topic, group, consumerNa
 
 func (c *Client) XAck(ctx context.Context, topic, group string, ids ...string) error {
 	return c.client.XAck(ctx, topic, group, ids...).Err()
-}
-
-/*
-	DistributeLock 相关
-*/
-
-// GetDistributeLock 获取一个分布式锁
-func (c *Client) GetDistributeLock(ctx context.Context, name string,
-	expireTime time.Duration) (*redislock.Lock, error) {
-	return c.locker.Obtain(ctx, name, expireTime, nil)
 }
 
 // Close redis client

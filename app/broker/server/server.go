@@ -32,12 +32,10 @@ var (
 
 // RegisterLogger registers the logger to the resolver.
 func RegisterLogger() {
-
 	log.RegisterLogger(log.DefaultLoggerName, log.WithCallerSkip(1))
 	log.RegisterLogger(logger.PulsarLoggerName, log.WithCallerSkip(1))
 	log.RegisterLogger(logger.GRPCLoggerName, log.WithCallerSkip(1))
-	rdb := redis.New(configs.GetRedisConfig())
-	lock.Init(rdb)
+
 }
 
 // RegisterResolver registers the service to the resolver.
@@ -56,6 +54,8 @@ func RegisterResolver() []*resolver.Pair {
 
 // StartServer starts the server.
 func StartServer() (*grpc.Server, *health.Server, *http.Server) {
+	rdb := redis.New(configs.GetRedisConfig())
+	lock.Init(rdb)
 	baseConfig := configs.GetServerConfig().BaseConfig
 	grpcServer, healthcheck := launcher.StartGRPCServer(&baseConfig, startSchedulerService)
 	httpServer := launcher.StartHTTPServer(&baseConfig, healthEndpointPath, swaggerEndpointPath)

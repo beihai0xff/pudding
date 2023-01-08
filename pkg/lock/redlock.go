@@ -1,4 +1,4 @@
-// Package lock package lock implements the distributed lock
+// Package lock implements the distributed lock
 package lock
 
 import (
@@ -11,20 +11,30 @@ import (
 	rdb "github.com/beihai0xff/pudding/pkg/redis"
 )
 
-var r *rdb.Client
+var r *redislock.Client
 
 // Init init the lock module
 func Init(rdb *rdb.Client) {
-	r = rdb
+	r = redislock.New(rdb.GetClient())
 }
 
+// RedLock is the redis distributed lock implement
 type RedLock struct {
 	locker *redislock.Lock
+	// Create a new locker client.
 }
 
 // NewRedLock create a new redlock
 func NewRedLock(ctx context.Context, name string, expireTime time.Duration) (Lock, error) {
-	locker, err := r.GetDistributeLock(ctx, name, expireTime)
+	if r == nil {
+		return nil, errors.New("redis client is nil, please init the lock module first")
+	}
+
+	// Retry every 100ms, for up-to 3x
+	backoff := redislock.LimitRetry(redislock.LinearBackoff(100*time.Millisecond), 3)
+	locker, err := r.Obtain(ctx, name, expireTime, &redislock.Options{
+		RetryStrategy: backoff,
+	})
 	if err != nil {
 		if errors.Is(err, redislock.ErrNotObtained) {
 			return nil, ErrNotObtained
