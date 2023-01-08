@@ -3,11 +3,11 @@ package configs
 import (
 	"bytes"
 	"encoding/json"
-	"log"
 
 	"github.com/samber/lo"
 
 	conf "github.com/beihai0xff/pudding/configs"
+	"github.com/beihai0xff/pudding/pkg/log"
 	"github.com/beihai0xff/pudding/types"
 )
 
@@ -23,7 +23,7 @@ func ReadFrom(configPath string, opts ...OptionFunc) {
 
 	var str bytes.Buffer
 	_ = json.Indent(&str, c.JSON(), "", "    ")
-	log.Printf("pudding scheduler config:\n %s \n", str.String())
+	log.Infof("pudding broker config:\n %s \n", str.String())
 }
 
 func setConnector() {
