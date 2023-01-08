@@ -23,7 +23,7 @@ var (
 func main() {
 	flag.Parse()
 
-	configs.Init(*args.ConfigPath, configs.WithRedisURL(*redisURL), configs.WithPulsarURL(*pulsarURL))
+	configs.ReadFrom(*args.ConfigPath, configs.WithRedisURL(*redisURL), configs.WithPulsarURL(*pulsarURL))
 	server.RegisterLogger()
 
 	interrupt := make(chan os.Signal, 1)
