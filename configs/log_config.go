@@ -79,6 +79,9 @@ var (
 // GetLogConfig get specify log config by log name
 func GetLogConfig(logName string) *LogConfig {
 	c := defaultConfig
+	if baseConfig == nil {
+		return &c
+	}
 	v, ok := baseConfig.Logger[logName]
 
 	if ok {
