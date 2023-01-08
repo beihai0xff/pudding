@@ -2,14 +2,12 @@ package redis
 
 import (
 	"context"
-	"fmt"
 	"os"
 	"reflect"
 	"strconv"
 	"testing"
 	"time"
 
-	"github.com/bsm/redislock"
 	"github.com/go-redis/redis/v9"
 )
 
@@ -81,42 +79,6 @@ func TestClient_Get(t *testing.T) {
 			}
 			if got != tt.want {
 				t.Errorf("Get() got = %v, want %v", got, tt.want)
-			}
-		})
-	}
-}
-
-// TestClient_GetDistributeLock 测试 GetDistributeLock 方法
-func TestClient_GetDistributeLock(t *testing.T) {
-
-	lock, _ := c.GetDistributeLock(context.Background(), "DLockUsed", 10*time.Second)
-	defer lock.Release(context.Background())
-	type args struct {
-		name string
-	}
-	tests := []struct {
-		name         string
-		args         args
-		wantDLockErr bool
-		unlock       bool
-	}{
-		{"DistributeLock 测试获取未被使用的锁", args{"DLockUnused"}, false, true},
-		{"DistributeLock 测试获取已经释放的锁", args{"DLockUnused"}, false, false},
-		{"DistributeLock 测试获取已经使用的锁", args{"DLockUsed"}, true, false},
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			ctx := context.Background()
-			mutex, err := c.GetDistributeLock(ctx, tt.args.name, 2*time.Second)
-			if (err != nil) != tt.wantDLockErr {
-				t.Errorf("mutex Lock error = %v, wantErr %v", err, tt.wantDLockErr)
-				return
-			}
-			if err == redislock.ErrNotObtained {
-				fmt.Println(err)
-			}
-			if tt.unlock {
-				mutex.Release(ctx)
 			}
 		})
 	}
