@@ -21,7 +21,6 @@ func ResolverDeregister(pairs ...*resolver.Pair) OptionFunc {
 	return func(ctx context.Context) error {
 		// reverse the order of the pairs, so that to deregister is in the reverse order of the register
 		// to ensure that the service is no longer accepting new requests when deregistering
-		log.Infof("pairs: %+v", pairs)
 		for i := range pairs {
 			p := pairs[len(pairs)-i-1]
 			if err := p.Resolver.Deregister(p.ServiceID); err != nil {
