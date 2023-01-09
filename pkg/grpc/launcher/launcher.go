@@ -18,6 +18,7 @@ import (
 	"github.com/grpc-ecosystem/grpc-gateway/v2/runtime"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials"
+	"google.golang.org/grpc/credentials/insecure"
 	"google.golang.org/grpc/grpclog"
 	"google.golang.org/grpc/health"
 	pbhealth "google.golang.org/grpc/health/grpc_health_v1"
@@ -150,6 +151,7 @@ func StartHTTPServer(config *configs.BaseConfig, healthEndpointPath, swaggerEndp
 		ClientAuth:   tls.VerifyClientCertIfGiven,
 		RootCAs:      certPool,
 	})
+	insecure.NewCredentials()
 	conn, err := grpc.DialContext(
 		context.Background(),
 		// net.JoinHostPort("localhost", grpcLis.Addr().(*net.TCPAddr).Port),
