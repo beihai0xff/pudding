@@ -12,7 +12,7 @@ jobs:
 
 
     steps:
-      - uses: actions/checkout@v3.2.0
+      - uses: actions/checkout@v3.3.0
       - name: Set up Apache Pulsar
         uses: reugn/github-action-pulsar@v1
 
@@ -35,6 +35,6 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-go-
       - name: Checkout code
-        uses: actions/checkout@v3.2.0
+        uses: actions/checkout@v3.3.0
       - name: Test
         run: go test ./...
