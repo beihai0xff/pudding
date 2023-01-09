@@ -116,7 +116,7 @@ func StartGRPCServer(config *configs.BaseConfig, opts ...StartServiceFunc) (
 			log.Fatalf("failed to start service ")
 		}
 		// asynchronously inspect dependencies and toggle serving status as needed
-		healthcheckServer.SetServingStatus(serviceName, pbhealth.HealthCheckResponse_SERVING)
+		healthcheckServer.Resume()
 	}
 
 	// RegisterGRPC reflection service on gRPC server.
@@ -147,6 +147,7 @@ func StartHTTPServer(config *configs.BaseConfig, healthEndpointPath, swaggerEndp
 	cred := credentials.NewTLS(&tls.Config{
 		Certificates: []tls.Certificate{cert},
 		ServerName:   "localhost",
+		ClientAuth:   tls.VerifyClientCertIfGiven,
 		RootCAs:      certPool,
 	})
 	conn, err := grpc.DialContext(
@@ -171,6 +172,7 @@ func StartHTTPServer(config *configs.BaseConfig, healthEndpointPath, swaggerEndp
 
 	// define HTTP server configuration
 	httpServer := &http.Server{
+		Addr:    httpLis.Addr().String(),
 		Handler: gwmux,
 		TLSConfig: &tls.Config{
 			Certificates: []tls.Certificate{cert},

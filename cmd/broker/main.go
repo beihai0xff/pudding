@@ -43,7 +43,7 @@ func main() {
 	defer cancel()
 	shutdown.GracefulShutdown(ctx,
 		shutdown.ResolverDeregister(resolverPairs...),
-		shutdown.HealthcheckServerShutdown(healthcheck),
+		shutdown.HealthServerShutdown(healthcheck),
 		shutdown.HTTPServerShutdown(httpServer),
 		shutdown.GRPCServerShutdown(grpcServer),
 		shutdown.LogSync(),

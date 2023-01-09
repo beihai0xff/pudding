@@ -24,20 +24,20 @@ func ResolverDeregister(pairs ...*resolver.Pair) OptionFunc {
 		for i := range pairs {
 			p := pairs[len(pairs)-i-1]
 			if err := p.Resolver.Deregister(p.ServiceID); err != nil {
-				log.Errorf("failed to deregister service %s: %v", p.ServiceID, err)
+				log.Errorf("failed to deregister service [%s]: %v", p.ServiceID, err)
 			} else {
-				log.Infof("service %s deregistered", p.ServiceID)
+				log.Infof("service [%s] deregistered", p.ServiceID)
 			}
 		}
 		return nil
 	}
 }
 
-// HealthcheckServerShutdown shutdown the healthcheck server.
-func HealthcheckServerShutdown(healthcheck *health.Server) OptionFunc {
+// HealthServerShutdown shutdown the healthcheck server.
+func HealthServerShutdown(healthServer *health.Server) OptionFunc {
 	return func(ctx context.Context) error {
-		healthcheck.Shutdown()
-		log.Infof("gRPC healthcheck server stopped")
+		healthServer.Shutdown()
+		log.Infof("gRPC health server stopped")
 		return nil
 	}
 }

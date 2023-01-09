@@ -29,7 +29,7 @@ func newDelayStorage(broker string) storage.DelayStorage {
 		if err != nil {
 			log.Fatalf("failed to parse '%s' to time.Duration: %v", interval, err)
 		}
-		log.Infof("timeSlice interval is: %d seconds", t.Seconds())
+		log.Infof("timeSlice interval is: %f seconds", t.Seconds())
 		return redis_storage.NewDelayQueue(rdb.New(configs.GetRedisConfig()), int64(t.Seconds()))
 	default:
 		log.Fatalf("unknown broker type: [%s]", broker)
