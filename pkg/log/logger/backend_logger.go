@@ -1,3 +1,5 @@
+// Package logger defines logging for components in the pudding project.
+// backend_logger.go defines logging for gorm, aka db storage.
 package logger
 
 import (
@@ -29,6 +31,7 @@ var levels = map[string]logger.LogLevel{
 	"silent": logger.Silent,
 }
 
+// GORMLogger is a wrapper of log.Logger to implement gorm.Logger.
 type GORMLogger struct {
 	l                                   log.Logger
 	level                               logger.LogLevel
@@ -37,23 +40,28 @@ type GORMLogger struct {
 	traceStr, traceErrStr, traceWarnStr string
 }
 
+// LogMode set log mode
 func (l *GORMLogger) LogMode(level logger.LogLevel) logger.Interface {
 	l.level = level
 	return l
 }
 
+// Info log info
 func (l *GORMLogger) Info(ctx context.Context, s string, i ...interface{}) {
 	l.l.Infof(s, i...)
 }
 
+// Warn log warn
 func (l *GORMLogger) Warn(ctx context.Context, s string, i ...interface{}) {
 	l.l.Warnf(s, i...)
 }
 
+// Error log error
 func (l *GORMLogger) Error(ctx context.Context, s string, i ...interface{}) {
 	l.l.Errorf(s, i...)
 }
 
+// Trace log sql
 func (l *GORMLogger) Trace(c context.Context, begin time.Time, fc func() (sql string, rowsAffected int64), err error) {
 	if l.level <= logger.Silent {
 		return
@@ -78,6 +86,7 @@ func (l *GORMLogger) Trace(c context.Context, begin time.Time, fc func() (sql st
 	}
 }
 
+// GetGORMLogger returns a gorm.Logger that uses the given pudding logger.
 func GetGORMLogger() *GORMLogger {
 	return &GORMLogger{
 		l:                         log.GetLoggerByName(BackendLoggerName).WithFields("module", "backend"),
