@@ -18,6 +18,7 @@ import (
 	"github.com/grpc-ecosystem/grpc-gateway/v2/runtime"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials"
+	"google.golang.org/grpc/credentials/insecure"
 	"google.golang.org/grpc/grpclog"
 	"google.golang.org/grpc/health"
 	pbhealth "google.golang.org/grpc/health/grpc_health_v1"
@@ -116,7 +117,7 @@ func StartGRPCServer(config *configs.BaseConfig, opts ...StartServiceFunc) (
 			log.Fatalf("failed to start service ")
 		}
 		// asynchronously inspect dependencies and toggle serving status as needed
-		healthcheckServer.SetServingStatus(serviceName, pbhealth.HealthCheckResponse_SERVING)
+		healthcheckServer.Resume()
 	}
 
 	// RegisterGRPC reflection service on gRPC server.
@@ -147,8 +148,10 @@ func StartHTTPServer(config *configs.BaseConfig, healthEndpointPath, swaggerEndp
 	cred := credentials.NewTLS(&tls.Config{
 		Certificates: []tls.Certificate{cert},
 		ServerName:   "localhost",
+		ClientAuth:   tls.VerifyClientCertIfGiven,
 		RootCAs:      certPool,
 	})
+	insecure.NewCredentials()
 	conn, err := grpc.DialContext(
 		context.Background(),
 		// net.JoinHostPort("localhost", grpcLis.Addr().(*net.TCPAddr).Port),
@@ -171,6 +174,7 @@ func StartHTTPServer(config *configs.BaseConfig, healthEndpointPath, swaggerEndp
 
 	// define HTTP server configuration
 	httpServer := &http.Server{
+		Addr:    httpLis.Addr().String(),
 		Handler: gwmux,
 		TLSConfig: &tls.Config{
 			Certificates: []tls.Certificate{cert},

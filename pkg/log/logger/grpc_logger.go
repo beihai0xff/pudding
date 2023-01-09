@@ -25,7 +25,7 @@ func (l *GRPCLogger) Warningf(format string, args ...interface{}) {
 }
 
 func (l *GRPCLogger) V(level int) bool {
-	return level < l.verbosity
+	return level <= l.verbosity
 }
 
 func GetGRPCLogger() grpclog.LoggerV2 {
