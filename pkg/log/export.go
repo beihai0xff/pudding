@@ -88,6 +88,11 @@ func Errorf(format string, args ...interface{}) {
 	defaultLogger.Errorf(format, args...)
 }
 
+// Panicf logs to PANIC log, Arguments will be formatted with Sprint, Sprintf, or neither.
+func Panicf(format string, args ...interface{}) {
+	defaultLogger.Panicf(format, args...)
+}
+
 // Fatalf logs to FATAL log, Arguments will be formatted with Sprint, Sprintf, or neither.
 func Fatalf(format string, args ...interface{}) {
 	defaultLogger.Fatalf(format, args...)
