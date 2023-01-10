@@ -1,15 +1,12 @@
+// Package launcher provides a launcher to start gRPC server, health server and grpc gateway server.
 package launcher
 
 import (
 	"context"
-	"crypto/tls"
-	"crypto/x509"
 	"errors"
 	"fmt"
 	"net"
 	"net/http"
-	"os"
-	"sync"
 	"time"
 
 	grpc_middleware "github.com/grpc-ecosystem/go-grpc-middleware"
@@ -31,46 +28,16 @@ import (
 	"github.com/beihai0xff/pudding/pkg/swagger"
 )
 
+// StartServiceFunc is a function that starts a service.
+// Note that the service name is passed by reference and can be modified.
 type StartServiceFunc func(server *grpc.Server, serviceName *string) error
 
-func getCertsAndCertPool(config *configs.BaseConfig) (tls.Certificate, *x509.CertPool) {
-	cert, err := tls.LoadX509KeyPair(config.CertPath, config.KeyPath)
+func getListen(port int) net.Listener {
+	listen, err := net.Listen("tcp", fmt.Sprintf(":%d", port))
 	if err != nil {
-		log.Fatalf("Failed to load key pair: %v", err)
+		log.Panicf("failed to listen: %v", err)
 	}
-	// create a certificate pool from the certificate authority
-	certPool := x509.NewCertPool()
-	ca, err := os.ReadFile(config.CertPath)
-	if err != nil {
-		log.Fatalf("Failed to read ca cert: %v", err)
-	}
-	// append the client certificates from the CA
-	if ok := certPool.AppendCertsFromPEM(ca); !ok {
-		log.Fatalf("Failed to append ca certs")
-	}
-
-	return cert, certPool
-}
-
-var (
-	listenerOnce     sync.Once
-	grpcLis, httpLis net.Listener
-)
-
-func getListen(grpcPort, httpPort int) (net.Listener, net.Listener) {
-	listenerOnce.Do(func() {
-		var err error
-		grpcLis, err = net.Listen("tcp", fmt.Sprintf(":%d", grpcPort))
-		if err != nil {
-			log.Fatalf("failed to listen: %v", err)
-		}
-		httpLis, err = net.Listen("tcp", fmt.Sprintf(":%d", httpPort))
-		if err != nil {
-			log.Fatalf("failed to listen: %v", err)
-		}
-	})
-
-	return grpcLis, httpLis
+	return listen
 }
 
 // StartGRPCServer starts the gRPC server with the given service.
@@ -81,14 +48,12 @@ func StartGRPCServer(config *configs.BaseConfig, opts ...StartServiceFunc) (
 	log.Info("starting grpc server ...")
 	grpclog.SetLoggerV2(logger.GetGRPCLogger())
 
-	grpcLis, _ := getListen(config.GRPCPort, config.HTTPPort)
+	grpcLis := getListen(config.GRPCPort)
 
-	cert, certPool := getCertsAndCertPool(config)
-	cred := credentials.NewTLS(&tls.Config{
-		Certificates: []tls.Certificate{cert},
-		ClientAuth:   tls.VerifyClientCertIfGiven,
-		ClientCAs:    certPool,
-	})
+	cred, err := credentials.NewServerTLSFromFile(config.CertPath, config.KeyPath)
+	if err != nil {
+		log.Panicf("Failed to load Server TLS: %v", err)
+	}
 	// init grpc server
 	server := grpc.NewServer(
 		grpc.KeepaliveParams(keepalive.ServerParameters{
@@ -106,19 +71,19 @@ func StartGRPCServer(config *configs.BaseConfig, opts ...StartServiceFunc) (
 		grpc.Creds(cred),
 	)
 
-	// register health check server
-	healthcheckServer := health.NewServer()
-	pbhealth.RegisterHealthServer(server, healthcheckServer)
+	// register health server
+	healthServer := health.NewServer()
+	pbhealth.RegisterHealthServer(server, healthServer)
 
 	for _, opt := range opts {
 		serviceName := ""
 		if err := opt(server, &serviceName); err != nil {
-			log.Fatalf("failed to start service ")
+			log.Panicf("failed to start service [%s]", serviceName)
 		}
 		// asynchronously inspect dependencies and toggle serving status as needed
-		healthcheckServer.Resume()
+		healthServer.SetServingStatus(serviceName, pbhealth.HealthCheckResponse_SERVING)
 	}
-
+	healthServer.Resume()
 	// RegisterGRPC reflection service on gRPC server.
 	// 提供该服务器端上可公开使用的 gRPC 服务的信息，
 	// 服务反射向客户端提供了服务端注册的服务的信息，因此客户端不需要预编译服务定义就能与服务端交互
@@ -128,11 +93,11 @@ func StartGRPCServer(config *configs.BaseConfig, opts ...StartServiceFunc) (
 	go func() {
 		log.Infof("grpc server listening at %v", grpcLis.Addr())
 		if err := server.Serve(grpcLis); err != nil {
-			log.Fatalf("failed to start grpc serve: %v", err)
+			log.Panicf("failed to start grpc serve: %v", err)
 		}
 	}()
 
-	return server, healthcheckServer
+	return server, healthServer
 }
 
 // StartHTTPServer sstarts the HTTP server with the given service.
@@ -141,46 +106,27 @@ func StartGRPCServer(config *configs.BaseConfig, opts ...StartServiceFunc) (
 // because it uses the same listener, and HTTP server base on gRPC Gateway.
 func StartHTTPServer(config *configs.BaseConfig, healthEndpointPath, swaggerEndpointPath string) *http.Server {
 	log.Info("starting http server ...")
-	grpcLis, httpLis := getListen(config.GRPCPort, config.HTTPPort)
 
-	cert, certPool := getCertsAndCertPool(config)
-	cred := credentials.NewTLS(&tls.Config{
-		Certificates: []tls.Certificate{cert},
-		ServerName:   "localhost",
-		ClientAuth:   tls.VerifyClientCertIfGiven,
-		RootCAs:      certPool,
-	})
-	conn, err := grpc.DialContext(
-		context.Background(),
-		// net.JoinHostPort("localhost", grpcLis.Addr().(*net.TCPAddr).Port),
-		fmt.Sprintf("localhost:%d", grpcLis.Addr().(*net.TCPAddr).Port),
-		grpc.WithBlock(),
-		grpc.WithTransportCredentials(cred),
-	)
-	if err != nil {
-		log.Fatalf("Failed to dial server: %v", err)
-	}
+	conn := createGRPCLocalClient(config)
 
 	// gRPC-Gateway httpServer
 	gwmux := runtime.NewServeMux(runtime.WithHealthEndpointAt(pbhealth.NewHealthClient(conn), healthEndpointPath))
 	swagger.RegisterHandler(gwmux, swaggerEndpointPath)
 
-	err = pb.RegisterSchedulerServiceHandler(context.Background(), gwmux, conn)
-	if err != nil {
-		log.Fatalf("Failed to register gateway: %v", err)
+	if err := pb.RegisterSchedulerServiceHandler(context.Background(), gwmux, conn); err != nil {
+		log.Panicf("Failed to register gateway: %v", err)
 	}
 
 	// define HTTP server configuration
+	httpLis := getListen(config.HTTPPort)
 	httpServer := &http.Server{
 		Addr:    httpLis.Addr().String(),
 		Handler: gwmux,
-		TLSConfig: &tls.Config{
-			Certificates: []tls.Certificate{cert},
-		}}
+	}
 
 	go func() {
 		log.Infof("http server listening at %v", httpLis.Addr())
-		if err = httpServer.ServeTLS(httpLis, config.CertPath, config.KeyPath); err != nil {
+		if err := httpServer.ServeTLS(httpLis, config.CertPath, config.KeyPath); err != nil {
 			if errors.Is(err, http.ErrServerClosed) {
 				log.Info("http server closed")
 				return
@@ -190,4 +136,24 @@ func StartHTTPServer(config *configs.BaseConfig, healthEndpointPath, swaggerEndp
 	}()
 
 	return httpServer
+}
+
+// createGRPCLocalClient creates a gRPC client to the local gRPC server.
+// It is used by the gRPC-Gateway.
+func createGRPCLocalClient(config *configs.BaseConfig) *grpc.ClientConn {
+	cred, err := credentials.NewClientTLSFromFile(config.CertPath, "localhost")
+	if err != nil {
+		log.Panicf("Failed to load Server TLS: %v", err)
+	}
+	conn, err := grpc.DialContext(
+		context.Background(),
+		// net.JoinHostPort("localhost", grpcLis.Addr().(*net.TCPAddr).Port),
+		fmt.Sprintf("localhost:%d", config.GRPCPort),
+		grpc.WithBlock(),
+		grpc.WithTransportCredentials(cred),
+	)
+	if err != nil {
+		log.Panicf("Failed to dial server: %v", err)
+	}
+	return conn
 }
