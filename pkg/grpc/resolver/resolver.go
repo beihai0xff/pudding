@@ -21,7 +21,9 @@ type OptionResolver func() Resolver
 
 // Pair is a pair of resolver and serviceID
 type Pair struct {
-	Resolver  Resolver
+	// Resolver is a service discovery resolver interface.
+	Resolver Resolver
+	// ServiceID is a service unique ID
 	ServiceID string
 }
 
