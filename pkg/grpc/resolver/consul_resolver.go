@@ -1,3 +1,5 @@
+// Package resolver provides a resolver interface for service discovery.
+// consul_resolver.go provides a consul resolver.
 package resolver
 
 import (
@@ -106,6 +108,7 @@ func (c *consulResolver) RegisterHTTP(path, ip string, port int) (string, error)
 	return serviceID, nil
 }
 
+// Deregister deregister service from consul with serviceID
 func (c *consulResolver) Deregister(serviceID string) error {
 	return c.client.Agent().ServiceDeregister(serviceID)
 }
