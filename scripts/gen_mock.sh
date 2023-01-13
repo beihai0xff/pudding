@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 
 mockgen -destination=test/mock/app/broker/scheduler_mock.go -package=mock -source=app/broker/scheduler.go Scheduler
 mockgen -destination=test/mock/app/broker/storage/storage_mock.go -package=mock -source=app/broker/storage/storage.go DelayStorage

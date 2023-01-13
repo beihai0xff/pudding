@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 
 # log config
 gomodifytags -file configs/log_config.go -struct -all -add-tags json,yaml,mapstructure -w
