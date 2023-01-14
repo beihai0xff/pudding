@@ -1,3 +1,5 @@
+// Package webhook implemented the webhook trigger and handler
+// handler.go implements the grpc handler of webhook trigger
 package webhook
 
 import (
@@ -16,11 +18,13 @@ import (
 
 const webhookTriggerDomain = "pudding.trigger.webhook"
 
+// Handler is the grpc handler of webhook trigger
 type Handler struct {
 	t *Trigger
 	pb.UnimplementedWebhookTriggerServiceServer
 }
 
+// NewHandler create a new handler
 func NewHandler(t *Trigger) *Handler {
 	return &Handler{
 		t:                                        t,
@@ -28,6 +32,7 @@ func NewHandler(t *Trigger) *Handler {
 	}
 }
 
+// FindOneByID find one by id
 func (h *Handler) FindOneByID(ctx context.Context, req *pb.FindOneByIDRequest) (*pb.WebhookFindOneByIDResponse, error) {
 	if req.Id <= 0 {
 		return nil, errno.BadRequest("Invalid ID", &errdetails.BadRequest_FieldViolation{
@@ -48,6 +53,7 @@ func (h *Handler) FindOneByID(ctx context.Context, req *pb.FindOneByIDRequest) (
 	}, nil
 }
 
+// PageQueryTemplate page query
 func (h *Handler) PageQueryTemplate(ctx context.Context,
 	req *pb.PageQueryTemplateRequest) (*pb.WebhookPageQueryResponse, error) {
 
@@ -71,10 +77,11 @@ func (h *Handler) PageQueryTemplate(ctx context.Context,
 	}, nil
 }
 
+// Register register a webhook trigger template
 func (h *Handler) Register(ctx context.Context,
 	req *pb.WebhookTriggerServiceRegisterRequest) (*pb.WebhookRegisterResponse, error) {
 
-	e := &entity.WebhookTriggerTemplate{
+	e := &TriggerTemplate{
 		Topic:             req.Topic,
 		Payload:           req.Payload,
 		DeliverAfter:      req.DeliverAfter,
@@ -93,6 +100,7 @@ func (h *Handler) Register(ctx context.Context,
 	}, nil
 }
 
+// UpdateStatus update the status of trigger
 func (h *Handler) UpdateStatus(ctx context.Context, req *pb.UpdateStatusRequest) (*pb.UpdateStatusResponse, error) {
 	// check params
 	if req.Id <= 0 {
@@ -122,6 +130,7 @@ func (h *Handler) UpdateStatus(ctx context.Context, req *pb.UpdateStatusRequest)
 	return &pb.UpdateStatusResponse{RowsAffected: rowsAffected}, nil
 }
 
+// Call handler webhook
 func (h *Handler) Call(ctx context.Context, req *pb.WebhookTriggerServiceCallRequest) (
 	*pb.WebhookTriggerServiceCallResponse, error) {
 
@@ -137,7 +146,7 @@ func (h *Handler) Call(ctx context.Context, req *pb.WebhookTriggerServiceCallReq
 	return &pb.WebhookTriggerServiceCallResponse{MessageKey: messageKey}, nil
 }
 
-func (h *Handler) convertTemplateEntityToPb(e *entity.WebhookTriggerTemplate) *pb.WebhookTriggerTemplate {
+func (h *Handler) convertTemplateEntityToPb(e *TriggerTemplate) *pb.WebhookTriggerTemplate {
 	return &pb.WebhookTriggerTemplate{
 		Id:                uint64(e.ID),
 		Topic:             e.Topic,
@@ -149,7 +158,7 @@ func (h *Handler) convertTemplateEntityToPb(e *entity.WebhookTriggerTemplate) *p
 	}
 }
 
-func (h *Handler) convertTemplateEntitySliceToPb(es []*entity.WebhookTriggerTemplate) []*pb.WebhookTriggerTemplate {
+func (h *Handler) convertTemplateEntitySliceToPb(es []*TriggerTemplate) []*pb.WebhookTriggerTemplate {
 	res := make([]*pb.WebhookTriggerTemplate, len(es))
 	for _, e := range es {
 		res = append(res, h.convertTemplateEntityToPb(e))

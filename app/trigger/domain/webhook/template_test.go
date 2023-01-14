@@ -14,7 +14,7 @@ import (
 func TestTrigger_Register(t1 *testing.T) {
 	type args struct {
 		ctx  context.Context
-		temp *entity.WebhookTriggerTemplate
+		temp *TriggerTemplate
 	}
 	tests := []struct {
 		name    string
@@ -25,7 +25,7 @@ func TestTrigger_Register(t1 *testing.T) {
 			name: "normal",
 			args: args{
 				ctx: context.Background(),
-				temp: &entity.WebhookTriggerTemplate{
+				temp: &TriggerTemplate{
 					ID:                0,
 					Topic:             "test",
 					Payload:           []byte("hello"),
@@ -40,8 +40,9 @@ func TestTrigger_Register(t1 *testing.T) {
 	for _, tt := range tests {
 		t1.Run(tt.name, func(t1 *testing.T) {
 			tt.wantErr(t1, testTrigger.Register(tt.args.ctx, tt.args.temp), fmt.Sprintf("RegisterGRPC(%+v, %+v)", tt.args.ctx, tt.args.temp))
-			e, err := testTrigger.repo.FindByID(tt.args.ctx, tt.args.temp.ID)
+			p, err := testTrigger.repo.FindByID(tt.args.ctx, tt.args.temp.ID)
 			assert.NoError(t1, err)
+			e, _ := convPoTOEntity(p)
 			assert.Equal(t1, tt.args.temp, e)
 		})
 	}
@@ -49,24 +50,24 @@ func TestTrigger_Register(t1 *testing.T) {
 
 func TestTrigger_checkRegisterParams(t1 *testing.T) {
 	type args struct {
-		temp *entity.WebhookTriggerTemplate
+		temp *TriggerTemplate
 	}
 	tests := []struct {
 		name    string
 		args    args
-		want    *entity.WebhookTriggerTemplate
+		want    *TriggerTemplate
 		wantErr assert.ErrorAssertionFunc
 	}{
 		{
 			name: "normal",
 			args: args{
-				&entity.WebhookTriggerTemplate{
+				&TriggerTemplate{
 					Topic:        "test",
 					Payload:      []byte("hello"),
 					DeliverAfter: 10,
 				},
 			},
-			want: &entity.WebhookTriggerTemplate{
+			want: &TriggerTemplate{
 				Topic:             "test",
 				Payload:           []byte("hello"),
 				DeliverAfter:      10,
@@ -79,11 +80,11 @@ func TestTrigger_checkRegisterParams(t1 *testing.T) {
 		{
 			name: "topic not found",
 			args: args{
-				&entity.WebhookTriggerTemplate{
+				&TriggerTemplate{
 					Payload: []byte("hello"),
 				},
 			},
-			want: &entity.WebhookTriggerTemplate{
+			want: &TriggerTemplate{
 				Payload: []byte("hello"),
 			},
 			wantErr: assert.Error,
@@ -91,11 +92,11 @@ func TestTrigger_checkRegisterParams(t1 *testing.T) {
 		{
 			name: "payload not found",
 			args: args{
-				&entity.WebhookTriggerTemplate{
+				&TriggerTemplate{
 					Topic: "test",
 				},
 			},
-			want: &entity.WebhookTriggerTemplate{
+			want: &TriggerTemplate{
 				Topic: "test",
 			},
 			wantErr: assert.Error,
@@ -111,7 +112,7 @@ func TestTrigger_checkRegisterParams(t1 *testing.T) {
 }
 
 func TestTrigger_UpdateStatus(t1 *testing.T) {
-	temp := &entity.WebhookTriggerTemplate{
+	temp := &TriggerTemplate{
 		ID:                0,
 		Topic:             "test",
 		Payload:           []byte("hello"),
