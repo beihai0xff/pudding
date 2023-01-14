@@ -6,7 +6,7 @@ import (
 	"gorm.io/gen"
 
 	pb "github.com/beihai0xff/pudding/api/gen/pudding/trigger/v1"
-	po2 "github.com/beihai0xff/pudding/app/trigger/repo/po"
+	"github.com/beihai0xff/pudding/app/trigger/repo/po"
 )
 
 // CronTemplateDAO is the interface of cron template DAO
@@ -42,9 +42,9 @@ func main() {
 		Mode:    gen.WithDefaultQuery,
 	})
 
-	g.ApplyBasic(po2.CronTriggerTemplate{}, po2.WebhookTriggerTemplate{})
+	g.ApplyBasic(po.CronTriggerTemplate{}, po.WebhookTriggerTemplate{})
 
-	g.ApplyInterface(func(CronTemplateDAO) {}, po2.CronTriggerTemplate{})
-	g.ApplyInterface(func(WebhookTemplateDAO) {}, po2.WebhookTriggerTemplate{})
+	g.ApplyInterface(func(CronTemplateDAO) {}, po.CronTriggerTemplate{})
+	g.ApplyInterface(func(WebhookTemplateDAO) {}, po.WebhookTriggerTemplate{})
 	g.Execute()
 }
