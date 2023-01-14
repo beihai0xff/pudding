@@ -1,5 +1,5 @@
 // Package webhook implemented the webhook trigger and handler
-// conv.go implements the conversion between entity and po
+// convertor.go implements the conversion between entity and po
 package webhook
 
 import (
