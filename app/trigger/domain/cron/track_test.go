@@ -6,14 +6,15 @@ import (
 	"time"
 
 	"github.com/stretchr/testify/assert"
+	"gorm.io/gorm"
 
 	pb "github.com/beihai0xff/pudding/api/gen/pudding/trigger/v1"
-	"github.com/beihai0xff/pudding/app/trigger/entity"
+	"github.com/beihai0xff/pudding/app/trigger/repo/storage/po"
 )
 
 func TestTrigger_checkTempShouldRun(t1 *testing.T) {
 	type args struct {
-		temp     *entity.CronTriggerTemplate
+		temp     *po.CronTriggerTemplate
 		nextTime time.Time
 	}
 	tests := []struct {
@@ -24,8 +25,10 @@ func TestTrigger_checkTempShouldRun(t1 *testing.T) {
 		{
 			name: "normal",
 			args: args{
-				temp: &entity.CronTriggerTemplate{
-					ID:                1,
+				temp: &po.CronTriggerTemplate{
+					Model: gorm.Model{
+						ID: 1,
+					},
 					LoopedTimes:       9,
 					LastExecutionTime: testTrigger.wallClock.Now(),
 					ExceptedEndTime:   testTrigger.wallClock.Now().AddDate(1, 1, 0),
@@ -38,8 +41,10 @@ func TestTrigger_checkTempShouldRun(t1 *testing.T) {
 		{
 			name: "reached the maximum loop times",
 			args: args{
-				temp: &entity.CronTriggerTemplate{
-					ID:                2,
+				temp: &po.CronTriggerTemplate{
+					Model: gorm.Model{
+						ID: 2,
+					},
 					LoopedTimes:       10,
 					LastExecutionTime: testTrigger.wallClock.Now(),
 					ExceptedEndTime:   testTrigger.wallClock.Now().AddDate(1, 1, 0),
@@ -52,8 +57,10 @@ func TestTrigger_checkTempShouldRun(t1 *testing.T) {
 		{
 			name: "normal",
 			args: args{
-				temp: &entity.CronTriggerTemplate{
-					ID:                3,
+				temp: &po.CronTriggerTemplate{
+					Model: gorm.Model{
+						ID: 3,
+					},
 					LoopedTimes:       8,
 					LastExecutionTime: testTrigger.wallClock.Now().AddDate(0, 1, 0),
 					ExceptedEndTime:   testTrigger.wallClock.Now().AddDate(0, 1, 0),
@@ -73,19 +80,19 @@ func TestTrigger_checkTempShouldRun(t1 *testing.T) {
 
 func TestTrigger_formatMessageKey(t *testing.T) {
 	type args struct {
-		temp *entity.CronTriggerTemplate
+		temp *TriggerTemplate
 	}
 	tests := []struct {
 		name string
 		args args
 		want string
 	}{
-		{"normal", args{&entity.CronTriggerTemplate{ID: 1, LoopedTimes: 10}}, "pudding_cron_trigger_template_1_10"},
-		{"normal", args{&entity.CronTriggerTemplate{ID: 100, LoopedTimes: 100}}, "pudding_cron_trigger_template_100_100"},
-		{"normal", args{&entity.CronTriggerTemplate{ID: 1000, LoopedTimes: 1000}}, "pudding_cron_trigger_template_1000_1000"},
+		{"normal", args{&TriggerTemplate{ID: 1, LoopedTimes: 10}}, "pudding_cron_trigger_template_1_10"},
+		{"normal", args{&TriggerTemplate{ID: 100, LoopedTimes: 100}}, "pudding_cron_trigger_template_100_100"},
+		{"normal", args{&TriggerTemplate{ID: 1000, LoopedTimes: 1000}}, "pudding_cron_trigger_template_1000_1000"},
 	}
 	for _, tt := range tests {
-		assert.Equal(t, tt.want, testTrigger.formatMessageKey(tt.args.temp))
+		assert.Equal(t, tt.want, testTrigger.formatMessageKey(tt.args.temp.ID, tt.args.temp.LoopedTimes))
 	}
 }
 

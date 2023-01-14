@@ -8,13 +8,12 @@ import (
 	"github.com/stretchr/testify/assert"
 
 	pb "github.com/beihai0xff/pudding/api/gen/pudding/trigger/v1"
-	"github.com/beihai0xff/pudding/app/trigger/entity"
 )
 
 func TestTrigger_Register(t1 *testing.T) {
 	type args struct {
 		ctx  context.Context
-		temp *entity.CronTriggerTemplate
+		temp *TriggerTemplate
 	}
 	tests := []struct {
 		name    string
@@ -25,7 +24,7 @@ func TestTrigger_Register(t1 *testing.T) {
 			name: "normal",
 			args: args{
 				ctx: context.Background(),
-				temp: &entity.CronTriggerTemplate{
+				temp: &TriggerTemplate{
 					ID:                0,
 					CronExpr:          "*/1 * * * * * *",
 					Topic:             "test",
@@ -41,8 +40,9 @@ func TestTrigger_Register(t1 *testing.T) {
 	for _, tt := range tests {
 		t1.Run(tt.name, func(t1 *testing.T) {
 			tt.wantErr(t1, testTrigger.Register(tt.args.ctx, tt.args.temp), fmt.Sprintf("RegisterGRPC(%+v, %+v)", tt.args.ctx, tt.args.temp))
-			e, err := testTrigger.repo.FindByID(tt.args.ctx, tt.args.temp.ID)
+			p, err := testTrigger.repo.FindByID(tt.args.ctx, tt.args.temp.ID)
 			assert.NoError(t1, err)
+			e, _ := convPoTOEntity(p)
 			assert.Equal(t1, tt.args.temp, e)
 		})
 	}
@@ -50,24 +50,24 @@ func TestTrigger_Register(t1 *testing.T) {
 
 func TestTrigger_checkRegisterParams(t1 *testing.T) {
 	type args struct {
-		temp *entity.CronTriggerTemplate
+		temp *TriggerTemplate
 	}
 	tests := []struct {
 		name    string
 		args    args
-		want    *entity.CronTriggerTemplate
+		want    *TriggerTemplate
 		wantErr assert.ErrorAssertionFunc
 	}{
 		{
 			name: "normal",
 			args: args{
-				&entity.CronTriggerTemplate{
+				&TriggerTemplate{
 					CronExpr: "*/1 * * * * * *",
 					Topic:    "test",
 					Payload:  []byte("hello"),
 				},
 			},
-			want: &entity.CronTriggerTemplate{
+			want: &TriggerTemplate{
 				CronExpr:          "*/1 * * * * * *",
 				Topic:             "test",
 				Payload:           []byte("hello"),
@@ -81,13 +81,13 @@ func TestTrigger_checkRegisterParams(t1 *testing.T) {
 		{
 			name: "Invalid cron expression",
 			args: args{
-				&entity.CronTriggerTemplate{
+				&TriggerTemplate{
 					CronExpr: "*/70 * * * * * *",
 					Topic:    "test",
 					Payload:  []byte("hello"),
 				},
 			},
-			want: &entity.CronTriggerTemplate{
+			want: &TriggerTemplate{
 				CronExpr: "*/70 * * * * * *",
 				Topic:    "test",
 				Payload:  []byte("hello"),
@@ -97,12 +97,12 @@ func TestTrigger_checkRegisterParams(t1 *testing.T) {
 		{
 			name: "topic not found",
 			args: args{
-				&entity.CronTriggerTemplate{
+				&TriggerTemplate{
 					CronExpr: "*/20 * * * * * *",
 					Payload:  []byte("hello"),
 				},
 			},
-			want: &entity.CronTriggerTemplate{
+			want: &TriggerTemplate{
 				CronExpr: "*/20 * * * * * *",
 				Payload:  []byte("hello"),
 			},
@@ -111,12 +111,12 @@ func TestTrigger_checkRegisterParams(t1 *testing.T) {
 		{
 			name: "payload not found",
 			args: args{
-				&entity.CronTriggerTemplate{
+				&TriggerTemplate{
 					CronExpr: "*/20 * * * * * *",
 					Topic:    "test",
 				},
 			},
-			want: &entity.CronTriggerTemplate{
+			want: &TriggerTemplate{
 				CronExpr: "*/20 * * * * * *",
 				Topic:    "test",
 			},
@@ -133,7 +133,7 @@ func TestTrigger_checkRegisterParams(t1 *testing.T) {
 }
 
 func TestTrigger_UpdateStatus(t1 *testing.T) {
-	temp := &entity.CronTriggerTemplate{
+	temp := &TriggerTemplate{
 		ID:                0,
 		CronExpr:          "*/1 * * * * * *",
 		Topic:             "test",

@@ -1,4 +1,4 @@
-package convertor
+package cron
 
 import (
 	"fmt"
@@ -9,21 +9,20 @@ import (
 	"gorm.io/gorm"
 
 	pb "github.com/beihai0xff/pudding/api/gen/pudding/trigger/v1"
-	"github.com/beihai0xff/pudding/app/trigger/entity"
 	"github.com/beihai0xff/pudding/app/trigger/repo/storage/po"
 )
 
 func TestCronTemplateEntityTOPo(t *testing.T) {
 	tests := []struct {
 		name      string
-		e         *entity.CronTriggerTemplate
+		e         *TriggerTemplate
 		want      *po.CronTriggerTemplate
 		wantErr   assert.ErrorAssertionFunc
 		assertion assert.ComparisonAssertionFunc
 	}{
 		{
 			name: "normal",
-			e: &entity.CronTriggerTemplate{
+			e: &TriggerTemplate{
 				CronExpr:          "0 0 0 * * *",
 				Topic:             "test",
 				Payload:           []byte("hello"),
@@ -48,7 +47,7 @@ func TestCronTemplateEntityTOPo(t *testing.T) {
 		},
 		{
 			name: "CronExpr is empty",
-			e: &entity.CronTriggerTemplate{
+			e: &TriggerTemplate{
 				ExceptedEndTime:   time.Date(2020, 1, 2, 0, 0, 0, 0, time.UTC),
 				ExceptedLoopTimes: 1,
 				LoopedTimes:       1,
@@ -65,7 +64,7 @@ func TestCronTemplateEntityTOPo(t *testing.T) {
 		},
 		{
 			name: "Status is empty",
-			e: &entity.CronTriggerTemplate{
+			e: &TriggerTemplate{
 				CronExpr:          "0 0 0 * * *",
 				LastExecutionTime: time.Date(2020, 1, 1, 0, 0, 0, 0, time.UTC),
 				ExceptedEndTime:   time.Date(2020, 1, 2, 0, 0, 0, 0, time.UTC),
@@ -84,7 +83,7 @@ func TestCronTemplateEntityTOPo(t *testing.T) {
 		},
 	}
 	for _, tt := range tests {
-		v, err := CronTemplateEntityTOPo(tt.e)
+		v, err := convEntityTOPo(tt.e)
 
 		tt.wantErr(t, err)
 		tt.assertion(t, tt.want, v)
@@ -95,7 +94,7 @@ func TestCronTemplatePoTOEntity(t *testing.T) {
 	tests := []struct {
 		name      string
 		p         *po.CronTriggerTemplate
-		want      *entity.CronTriggerTemplate
+		want      *TriggerTemplate
 		wantErr   assert.ErrorAssertionFunc
 		assertion assert.ComparisonAssertionFunc
 	}{
@@ -111,7 +110,7 @@ func TestCronTemplatePoTOEntity(t *testing.T) {
 				LoopedTimes:       1,
 				Status:            pb.TriggerStatus_ENABLED,
 			},
-			want: &entity.CronTriggerTemplate{
+			want: &TriggerTemplate{
 				CronExpr:          "0 0 0 * * *",
 				Topic:             "test",
 				Payload:           []byte("hello"),
@@ -132,7 +131,7 @@ func TestCronTemplatePoTOEntity(t *testing.T) {
 				LoopedTimes:       1,
 				Status:            pb.TriggerStatus_ENABLED,
 			},
-			want: &entity.CronTriggerTemplate{
+			want: &TriggerTemplate{
 				ExceptedEndTime:   time.Date(2020, 1, 2, 0, 0, 0, 0, time.UTC),
 				ExceptedLoopTimes: 1,
 				LoopedTimes:       1,
@@ -150,7 +149,7 @@ func TestCronTemplatePoTOEntity(t *testing.T) {
 				ExceptedLoopTimes: 1,
 				LoopedTimes:       1,
 			},
-			want: &entity.CronTriggerTemplate{
+			want: &TriggerTemplate{
 				CronExpr:          "0 0 0 * * *",
 				LastExecutionTime: time.Date(2020, 1, 1, 0, 0, 0, 0, time.UTC),
 				ExceptedEndTime:   time.Date(2020, 1, 2, 0, 0, 0, 0, time.UTC),
@@ -163,7 +162,7 @@ func TestCronTemplatePoTOEntity(t *testing.T) {
 	}
 
 	for _, tt := range tests {
-		v, err := CronTemplatePoTOEntity(tt.p)
+		v, err := convPoTOEntity(tt.p)
 
 		tt.wantErr(t, err)
 		tt.assertion(t, tt.want, v)
@@ -177,7 +176,7 @@ func TestCronTemplateSlicePoTOEntity(t *testing.T) {
 	tests := []struct {
 		name    string
 		args    args
-		want    []*entity.CronTriggerTemplate
+		want    []*TriggerTemplate
 		wantErr assert.ErrorAssertionFunc
 	}{
 		{
@@ -218,7 +217,7 @@ func TestCronTemplateSlicePoTOEntity(t *testing.T) {
 					},
 				},
 			},
-			want: []*entity.CronTriggerTemplate{
+			want: []*TriggerTemplate{
 				{
 					ID:                1,
 					CronExpr:          "0 0 0 * * *",
@@ -247,11 +246,11 @@ func TestCronTemplateSlicePoTOEntity(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got, err := CronTemplateSlicePoTOEntity(tt.args.p)
-			if !tt.wantErr(t, err, fmt.Sprintf("CronTemplateSlicePoTOEntity(%v)", tt.args.p)) {
+			got, err := convSlicePoTOEntity(tt.args.p)
+			if !tt.wantErr(t, err, fmt.Sprintf("convSlicePoTOEntity(%v)", tt.args.p)) {
 				return
 			}
-			assert.Equalf(t, tt.want, got, "CronTemplateSlicePoTOEntity(%v)", tt.args.p)
+			assert.Equalf(t, tt.want, got, "convSlicePoTOEntity(%v)", tt.args.p)
 		})
 	}
 }

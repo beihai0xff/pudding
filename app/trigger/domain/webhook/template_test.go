@@ -8,7 +8,7 @@ import (
 	"github.com/stretchr/testify/assert"
 
 	pb "github.com/beihai0xff/pudding/api/gen/pudding/trigger/v1"
-	"github.com/beihai0xff/pudding/app/trigger/entity"
+	"github.com/beihai0xff/pudding/app/trigger/pkg/constants"
 )
 
 func TestTrigger_Register(t1 *testing.T) {
@@ -71,8 +71,8 @@ func TestTrigger_checkRegisterParams(t1 *testing.T) {
 				Topic:             "test",
 				Payload:           []byte("hello"),
 				DeliverAfter:      10,
-				ExceptedEndTime:   testTrigger.wallClock.Now().Add(entity.DefaultTemplateActiveDuration),
-				ExceptedLoopTimes: entity.DefaultMaximumLoopTimes,
+				ExceptedEndTime:   testTrigger.wallClock.Now().Add(constants.DefaultTemplateActiveDuration),
+				ExceptedLoopTimes: constants.DefaultMaximumLoopTimes,
 				Status:            pb.TriggerStatus_DISABLED,
 			},
 			wantErr: assert.NoError,

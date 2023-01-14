@@ -1,3 +1,5 @@
+// Package cron implemented the cron trigger and handler
+// handler.go implements the grpc handler of cron trigger
 package cron
 
 import (
@@ -10,18 +12,20 @@ import (
 	"google.golang.org/protobuf/types/known/timestamppb"
 
 	pb "github.com/beihai0xff/pudding/api/gen/pudding/trigger/v1"
+	"github.com/beihai0xff/pudding/app/trigger/pkg/constants"
 
-	"github.com/beihai0xff/pudding/app/trigger/entity"
 	"github.com/beihai0xff/pudding/pkg/errno"
 )
 
 const cronTriggerDomain = "pudding.trigger.cron"
 
+// Handler implements the grpc handler of cron trigger
 type Handler struct {
 	t *Trigger
 	pb.UnimplementedCronTriggerServiceServer
 }
 
+// NewHandler returns a new cron trigger handler
 func NewHandler(t *Trigger) *Handler {
 	return &Handler{
 		t:                                     t,
@@ -29,6 +33,7 @@ func NewHandler(t *Trigger) *Handler {
 	}
 }
 
+// FindOneByID find one by id
 func (h *Handler) FindOneByID(ctx context.Context, req *pb.FindOneByIDRequest) (*pb.CronFindOneByIDResponse, error) {
 	if req.Id <= 0 {
 		return nil, errno.BadRequest("Invalid ID", &errdetails.BadRequest_FieldViolation{
@@ -49,8 +54,9 @@ func (h *Handler) FindOneByID(ctx context.Context, req *pb.FindOneByIDRequest) (
 	}, nil
 }
 
+// PageQuery page query
 func (h *Handler) PageQuery(ctx context.Context, req *pb.PageQueryTemplateRequest) (*pb.CronPageQueryResponse, error) {
-	p := entity.PageQuery{
+	p := constants.PageQuery{
 		Offset: int(req.Offset),
 		Limit:  int(req.Limit),
 	}
@@ -70,8 +76,9 @@ func (h *Handler) PageQuery(ctx context.Context, req *pb.PageQueryTemplateReques
 	}, nil
 }
 
+// Register register a webhook trigger template
 func (h *Handler) Register(ctx context.Context, req *pb.CronTriggerServiceRegisterRequest) (*emptypb.Empty, error) {
-	e := &entity.CronTriggerTemplate{
+	e := &TriggerTemplate{
 		CronExpr:          req.CronExpr,
 		Topic:             req.Topic,
 		Payload:           req.Payload,
@@ -88,6 +95,7 @@ func (h *Handler) Register(ctx context.Context, req *pb.CronTriggerServiceRegist
 	return &emptypb.Empty{}, nil
 }
 
+// UpdateStatus update the status of trigger
 func (h *Handler) UpdateStatus(ctx context.Context, req *pb.UpdateStatusRequest) (*pb.UpdateStatusResponse, error) {
 	// check params
 	if req.Id <= 0 {
@@ -117,7 +125,7 @@ func (h *Handler) UpdateStatus(ctx context.Context, req *pb.UpdateStatusRequest)
 	return &pb.UpdateStatusResponse{RowsAffected: rowsAffected}, nil
 }
 
-func (h *Handler) convertTemplateEntityToPb(e *entity.CronTriggerTemplate) *pb.CronTriggerTemplate {
+func (h *Handler) convertTemplateEntityToPb(e *TriggerTemplate) *pb.CronTriggerTemplate {
 	return &pb.CronTriggerTemplate{
 		Id:                uint64(e.ID),
 		CronExpr:          e.CronExpr,
@@ -131,7 +139,7 @@ func (h *Handler) convertTemplateEntityToPb(e *entity.CronTriggerTemplate) *pb.C
 	}
 }
 
-func (h *Handler) convertTemplateEntitySliceToPb(es []*entity.CronTriggerTemplate) []*pb.CronTriggerTemplate {
+func (h *Handler) convertTemplateEntitySliceToPb(es []*TriggerTemplate) []*pb.CronTriggerTemplate {
 	res := make([]*pb.CronTriggerTemplate, len(es))
 	for _, e := range es {
 		res = append(res, h.convertTemplateEntityToPb(e))
