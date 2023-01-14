@@ -19,7 +19,7 @@ import (
 	"gorm.io/plugin/dbresolver"
 
 	pb "github.com/beihai0xff/pudding/api/gen/pudding/trigger/v1"
-	"github.com/beihai0xff/pudding/app/trigger/repo/storage/po"
+	"github.com/beihai0xff/pudding/app/trigger/repo/po"
 )
 
 func newCronTriggerTemplate(db *gorm.DB, opts ...gen.DOOption) cronTriggerTemplate {
@@ -38,9 +38,9 @@ func newCronTriggerTemplate(db *gorm.DB, opts ...gen.DOOption) cronTriggerTempla
 	_cronTriggerTemplate.Topic = field.NewString(tableName, "topic")
 	_cronTriggerTemplate.Payload = field.NewBytes(tableName, "payload")
 	_cronTriggerTemplate.LastExecutionTime = field.NewTime(tableName, "last_execution_time")
+	_cronTriggerTemplate.LoopedTimes = field.NewUint64(tableName, "looped_times")
 	_cronTriggerTemplate.ExceptedEndTime = field.NewTime(tableName, "excepted_end_time")
 	_cronTriggerTemplate.ExceptedLoopTimes = field.NewUint64(tableName, "excepted_loop_times")
-	_cronTriggerTemplate.LoopedTimes = field.NewUint64(tableName, "looped_times")
 	_cronTriggerTemplate.Status = field.NewInt32(tableName, "status")
 
 	_cronTriggerTemplate.fillFieldMap()
@@ -60,9 +60,9 @@ type cronTriggerTemplate struct {
 	Topic             field.String
 	Payload           field.Bytes
 	LastExecutionTime field.Time
+	LoopedTimes       field.Uint64
 	ExceptedEndTime   field.Time
 	ExceptedLoopTimes field.Uint64
-	LoopedTimes       field.Uint64
 	Status            field.Int32
 
 	fieldMap map[string]field.Expr
@@ -88,9 +88,9 @@ func (c *cronTriggerTemplate) updateTableName(table string) *cronTriggerTemplate
 	c.Topic = field.NewString(table, "topic")
 	c.Payload = field.NewBytes(table, "payload")
 	c.LastExecutionTime = field.NewTime(table, "last_execution_time")
+	c.LoopedTimes = field.NewUint64(table, "looped_times")
 	c.ExceptedEndTime = field.NewTime(table, "excepted_end_time")
 	c.ExceptedLoopTimes = field.NewUint64(table, "excepted_loop_times")
-	c.LoopedTimes = field.NewUint64(table, "looped_times")
 	c.Status = field.NewInt32(table, "status")
 
 	c.fillFieldMap()
@@ -125,9 +125,9 @@ func (c *cronTriggerTemplate) fillFieldMap() {
 	c.fieldMap["topic"] = c.Topic
 	c.fieldMap["payload"] = c.Payload
 	c.fieldMap["last_execution_time"] = c.LastExecutionTime
+	c.fieldMap["looped_times"] = c.LoopedTimes
 	c.fieldMap["excepted_end_time"] = c.ExceptedEndTime
 	c.fieldMap["excepted_loop_times"] = c.ExceptedLoopTimes
-	c.fieldMap["looped_times"] = c.LoopedTimes
 	c.fieldMap["status"] = c.Status
 }
 

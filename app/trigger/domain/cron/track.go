@@ -11,7 +11,7 @@ import (
 	"github.com/beihai0xff/pudding/api/gen/pudding/broker/v1"
 	pb "github.com/beihai0xff/pudding/api/gen/pudding/trigger/v1"
 	"github.com/beihai0xff/pudding/app/trigger/repo"
-	"github.com/beihai0xff/pudding/app/trigger/repo/storage/po"
+	"github.com/beihai0xff/pudding/app/trigger/repo/po"
 	"github.com/beihai0xff/pudding/pkg/clock"
 	"github.com/beihai0xff/pudding/pkg/cronexpr"
 	"github.com/beihai0xff/pudding/pkg/db/mysql"

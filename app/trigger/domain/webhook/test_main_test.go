@@ -6,7 +6,7 @@ import (
 	"time"
 
 	"github.com/beihai0xff/pudding/app/trigger/repo"
-	"github.com/beihai0xff/pudding/app/trigger/repo/storage/po"
+	"github.com/beihai0xff/pudding/app/trigger/repo/po"
 	"github.com/beihai0xff/pudding/configs"
 	"github.com/beihai0xff/pudding/pkg/clock"
 	"github.com/beihai0xff/pudding/pkg/db/mysql"
@@ -54,6 +54,6 @@ func createTable(db *mysql.Client) {
 func dropTable(db *mysql.Client) {
 	err := db.Migrator().DropTable(&po.WebhookTriggerTemplate{})
 	if err != nil {
-		log.Errorf("drop table failed: %v", err)
+		log.Errorf("drop test table failed: %v", err)
 	}
 }

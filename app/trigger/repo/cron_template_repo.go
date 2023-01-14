@@ -8,22 +8,20 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/go-playground/validator/v10"
 	"github.com/samber/lo"
 	"gorm.io/gen"
 	"gorm.io/gorm/clause"
 
 	pb "github.com/beihai0xff/pudding/api/gen/pudding/trigger/v1"
 	"github.com/beihai0xff/pudding/app/trigger/pkg/constants"
-	"github.com/beihai0xff/pudding/app/trigger/repo/storage/po"
+	"github.com/beihai0xff/pudding/app/trigger/repo/po"
 	"github.com/beihai0xff/pudding/app/trigger/repo/storage/sql"
 	"github.com/beihai0xff/pudding/pkg/db/mysql"
 	"github.com/beihai0xff/pudding/pkg/log"
 )
 
-// use a single instance of Validate, it caches struct info
-var validate = validator.New()
-
+// CronTempHandler is the handler for cron template
+// It will be called when the cron template is ready to be executed
 type CronTempHandler func(results *po.CronTriggerTemplate) error
 
 // CronTemplateDAO is the interface for the CronTemplate repository.

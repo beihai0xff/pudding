@@ -6,7 +6,7 @@ import (
 	"gorm.io/gen"
 
 	pb "github.com/beihai0xff/pudding/api/gen/pudding/trigger/v1"
-	"github.com/beihai0xff/pudding/app/trigger/repo/storage/po"
+	"github.com/beihai0xff/pudding/app/trigger/repo/po"
 )
 
 // CronTemplateDAO is the interface of cron template DAO
