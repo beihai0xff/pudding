@@ -5,7 +5,7 @@ package webhook
 import (
 	"github.com/jinzhu/copier"
 
-	"github.com/beihai0xff/pudding/app/trigger/repo/storage/po"
+	"github.com/beihai0xff/pudding/app/trigger/repo/po"
 )
 
 func convEntityTOPo(e *TriggerTemplate) (*po.WebhookTriggerTemplate, error) {

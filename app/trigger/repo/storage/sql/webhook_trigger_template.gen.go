@@ -19,7 +19,7 @@ import (
 	"gorm.io/plugin/dbresolver"
 
 	pb "github.com/beihai0xff/pudding/api/gen/pudding/trigger/v1"
-	"github.com/beihai0xff/pudding/app/trigger/repo/storage/po"
+	"github.com/beihai0xff/pudding/app/trigger/repo/po"
 )
 
 func newWebhookTriggerTemplate(db *gorm.DB, opts ...gen.DOOption) webhookTriggerTemplate {
@@ -36,9 +36,10 @@ func newWebhookTriggerTemplate(db *gorm.DB, opts ...gen.DOOption) webhookTrigger
 	_webhookTriggerTemplate.DeletedAt = field.NewField(tableName, "deleted_at")
 	_webhookTriggerTemplate.Topic = field.NewString(tableName, "topic")
 	_webhookTriggerTemplate.Payload = field.NewBytes(tableName, "payload")
+	_webhookTriggerTemplate.DeliverAfter = field.NewInt64(tableName, "deliver_after")
+	_webhookTriggerTemplate.LoopedTimes = field.NewUint64(tableName, "looped_times")
 	_webhookTriggerTemplate.ExceptedEndTime = field.NewTime(tableName, "excepted_end_time")
 	_webhookTriggerTemplate.ExceptedLoopTimes = field.NewUint64(tableName, "excepted_loop_times")
-	_webhookTriggerTemplate.LoopedTimes = field.NewUint64(tableName, "looped_times")
 	_webhookTriggerTemplate.Status = field.NewInt32(tableName, "status")
 
 	_webhookTriggerTemplate.fillFieldMap()
@@ -56,9 +57,10 @@ type webhookTriggerTemplate struct {
 	DeletedAt         field.Field
 	Topic             field.String
 	Payload           field.Bytes
+	DeliverAfter      field.Int64
+	LoopedTimes       field.Uint64
 	ExceptedEndTime   field.Time
 	ExceptedLoopTimes field.Uint64
-	LoopedTimes       field.Uint64
 	Status            field.Int32
 
 	fieldMap map[string]field.Expr
@@ -82,9 +84,10 @@ func (w *webhookTriggerTemplate) updateTableName(table string) *webhookTriggerTe
 	w.DeletedAt = field.NewField(table, "deleted_at")
 	w.Topic = field.NewString(table, "topic")
 	w.Payload = field.NewBytes(table, "payload")
+	w.DeliverAfter = field.NewInt64(table, "deliver_after")
+	w.LoopedTimes = field.NewUint64(table, "looped_times")
 	w.ExceptedEndTime = field.NewTime(table, "excepted_end_time")
 	w.ExceptedLoopTimes = field.NewUint64(table, "excepted_loop_times")
-	w.LoopedTimes = field.NewUint64(table, "looped_times")
 	w.Status = field.NewInt32(table, "status")
 
 	w.fillFieldMap()
@@ -110,16 +113,17 @@ func (w *webhookTriggerTemplate) GetFieldByName(fieldName string) (field.OrderEx
 }
 
 func (w *webhookTriggerTemplate) fillFieldMap() {
-	w.fieldMap = make(map[string]field.Expr, 10)
+	w.fieldMap = make(map[string]field.Expr, 11)
 	w.fieldMap["id"] = w.ID
 	w.fieldMap["created_at"] = w.CreatedAt
 	w.fieldMap["updated_at"] = w.UpdatedAt
 	w.fieldMap["deleted_at"] = w.DeletedAt
 	w.fieldMap["topic"] = w.Topic
 	w.fieldMap["payload"] = w.Payload
+	w.fieldMap["deliver_after"] = w.DeliverAfter
+	w.fieldMap["looped_times"] = w.LoopedTimes
 	w.fieldMap["excepted_end_time"] = w.ExceptedEndTime
 	w.fieldMap["excepted_loop_times"] = w.ExceptedLoopTimes
-	w.fieldMap["looped_times"] = w.LoopedTimes
 	w.fieldMap["status"] = w.Status
 }
 
