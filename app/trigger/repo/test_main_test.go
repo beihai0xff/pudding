@@ -52,7 +52,7 @@ func createTable(db *mysql.Client) {
 func dropTable(db *mysql.Client) {
 	err := db.Migrator().DropTable(&po.CronTriggerTemplate{})
 	if err != nil {
-		log.Errorf("drop table failed: %v", err)
+		log.Errorf("drop test table failed: %v", err)
 	}
 }
 

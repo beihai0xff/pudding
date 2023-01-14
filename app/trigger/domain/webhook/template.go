@@ -1,3 +1,5 @@
+// Package webhook implemented the webhook trigger and handler
+// template.go implements the webhook template
 package webhook
 
 import (
@@ -5,6 +7,7 @@ import (
 	"errors"
 	"fmt"
 
+	"github.com/go-playground/validator/v10"
 	"github.com/google/uuid"
 
 	"github.com/beihai0xff/pudding/api/gen/pudding/broker/v1"
@@ -18,6 +21,8 @@ import (
 )
 
 var (
+	validate = validator.New()
+
 	// errWebhookTemplateTopicNotFound is the error of webhook template topic is empty
 	errWebhookTemplateTopicNotFound = errors.New("webhook template topic not found")
 	// errWebhookTemplatePayloadNotFound is the error of webhook template payload is empty
@@ -26,6 +31,7 @@ var (
 
 const webhookURL = "%s/pudding/trigger/webhook/v1/call/%d"
 
+// Trigger is the webhook trigger
 type Trigger struct {
 	webhookPrefix string
 
@@ -35,6 +41,7 @@ type Trigger struct {
 	wallClock clock.Clock
 }
 
+// NewTrigger create a webhook trigger
 func NewTrigger(db *mysql.Client, client broker.SchedulerServiceClient) *Trigger {
 	return &Trigger{
 		webhookPrefix:   configs.GetWebhookPrefix(),
@@ -45,17 +52,22 @@ func NewTrigger(db *mysql.Client, client broker.SchedulerServiceClient) *Trigger
 }
 
 // FindByID find webhook template by id
-func (t *Trigger) FindByID(ctx context.Context, id uint) (*entity.WebhookTriggerTemplate, error) {
+func (t *Trigger) FindByID(ctx context.Context, id uint) (*TriggerTemplate, error) {
 	if id <= 0 {
 		err := fmt.Errorf("invalid id, id: %d", id)
 		log.Errorf("%v", err)
 		return nil, err
 	}
 
-	res, err := t.repo.FindByID(ctx, id)
+	po, err := t.repo.FindByID(ctx, id)
 	if err != nil {
 		log.Errorf("failed to find webhook template, caused by %v", err)
 		return nil, err
+	}
+
+	res, err := convPoTOEntity(po)
+	if err != nil {
+		return nil, fmt.Errorf("convert po to entity failed: %w", err)
 	}
 
 	return res, nil
@@ -63,7 +75,7 @@ func (t *Trigger) FindByID(ctx context.Context, id uint) (*entity.WebhookTrigger
 
 // PageQuery page query webhook templates
 func (t *Trigger) PageQuery(ctx context.Context, p *entity.PageQuery,
-	status pb.TriggerStatus) ([]*entity.WebhookTriggerTemplate, int64, error) {
+	status pb.TriggerStatus) ([]*TriggerTemplate, int64, error) {
 	// check params
 	if p.Offset < 0 || p.Limit <= 0 {
 		err := fmt.Errorf("invalid offset or limit, offset: %d, limit: %d", p.Offset, p.Limit)
@@ -77,28 +89,40 @@ func (t *Trigger) PageQuery(ctx context.Context, p *entity.PageQuery,
 		return nil, 0, err
 	}
 
-	return res, count, nil
+	e, err := convSlicePoTOEntity(res)
+	if err != nil {
+		return nil, 0, fmt.Errorf("convert po to entity failed: %w", err)
+	}
+	return e, count, nil
 }
 
 // Register create a webhook template
-func (t *Trigger) Register(ctx context.Context, temp *entity.WebhookTriggerTemplate) error {
+func (t *Trigger) Register(ctx context.Context, temp *TriggerTemplate) error {
 	// 1. check params
 	if err := t.checkRegisterParams(temp); err != nil {
 		log.Errorf("failed to check params, caused by %v", err)
 		return err
 	}
+	if err := validate.Struct(temp); err != nil {
+		return fmt.Errorf("invalid validation error: %w", err)
+	}
 
 	// 2. save the template to db
-	if err := t.repo.Insert(ctx, temp); err != nil {
+	p, err := convEntityTOPo(temp)
+	if err != nil {
+		return fmt.Errorf("convert entity to po failed: %w", err)
+	}
+	if err := t.repo.Insert(ctx, p); err != nil {
 		log.Errorf("failed to insert cron template, caused by %v", err)
 		return err
 	}
 
+	temp.ID = p.ID
 	return nil
 }
 
 // checkRegisterParams check the params of register webhook template
-func (t *Trigger) checkRegisterParams(temp *entity.WebhookTriggerTemplate) error {
+func (t *Trigger) checkRegisterParams(temp *TriggerTemplate) error {
 	// 1. check topic
 	if temp.Topic == "" {
 		log.Error(errWebhookTemplateTopicNotFound.Error())

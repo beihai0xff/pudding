@@ -16,19 +16,13 @@ type Client struct {
 }
 
 func New(c *configs.MySQLConfig) *Client {
-	db, err := gorm.Open(mysql.New(mysql.Config{
-		DSN:                       c.DSN, // DSN data source name
-		DefaultStringSize:         256,
-		DisableDatetimePrecision:  true,
-		DontSupportRenameIndex:    true,
-		DontSupportRenameColumn:   true,
-		SkipInitializeWithVersion: false,
-	}), &gorm.Config{
-		DisableForeignKeyConstraintWhenMigrating: true,
-		SkipDefaultTransaction:                   true,
-		DisableAutomaticPing:                     false,
-		Logger:                                   logger.GetGORMLogger(),
-	})
+	db, err := gorm.Open(mysql.Open(c.DSN),
+		&gorm.Config{
+			DisableForeignKeyConstraintWhenMigrating: true,
+			SkipDefaultTransaction:                   true,
+			DisableAutomaticPing:                     false,
+			Logger:                                   logger.GetGORMLogger(),
+		})
 
 	if err != nil {
 		log.Fatalf("failed to connect MySQL database: %v", err)

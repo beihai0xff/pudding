@@ -5,11 +5,9 @@ package repo
 
 import (
 	"context"
-	"fmt"
 
 	pb "github.com/beihai0xff/pudding/api/gen/pudding/trigger/v1"
 	"github.com/beihai0xff/pudding/app/trigger/entity"
-	"github.com/beihai0xff/pudding/app/trigger/repo/convertor"
 	"github.com/beihai0xff/pudding/app/trigger/repo/storage/po"
 	"github.com/beihai0xff/pudding/app/trigger/repo/storage/sql"
 	"github.com/beihai0xff/pudding/pkg/db/mysql"
@@ -18,13 +16,13 @@ import (
 // WebhookTemplate is the interface for the webhook template repository.
 type WebhookTemplate interface {
 	// FindByID find a cron template by id
-	FindByID(ctx context.Context, id uint) (*entity.WebhookTriggerTemplate, error)
+	FindByID(ctx context.Context, id uint) (*po.WebhookTriggerTemplate, error)
 	// PageQuery query cron templates by page
-	PageQuery(ctx context.Context, p *entity.PageQuery, status pb.TriggerStatus) (res []*entity.WebhookTriggerTemplate,
+	PageQuery(ctx context.Context, p *entity.PageQuery, status pb.TriggerStatus) (res []*po.WebhookTriggerTemplate,
 		count int64, err error)
 
 	// Insert create a cron template
-	Insert(ctx context.Context, e *entity.WebhookTriggerTemplate) error
+	Insert(ctx context.Context, p *po.WebhookTriggerTemplate) error
 	// UpdateStatus update the status of a cron template
 	UpdateStatus(ctx context.Context, id uint, status pb.TriggerStatus) (int64, error)
 }
@@ -39,24 +37,20 @@ func NewWebhookTemplate(db *mysql.Client) WebhookTemplate {
 }
 
 // FindByID find a Webhook template by id
-func (dao *webhookTemplate) FindByID(ctx context.Context, id uint) (*entity.WebhookTriggerTemplate, error) {
+func (dao *webhookTemplate) FindByID(ctx context.Context, id uint) (*po.WebhookTriggerTemplate, error) {
 	// SELECT * FROM pudding_webhook_trigger_template WHERE id =
 	res, err := sql.WebhookTriggerTemplate.WithContext(ctx).FindByID(id)
 	if err != nil {
 		return nil, err
 	}
 
-	e, err := convertor.WebhookTemplatePoTOEntity(res)
-	if err != nil {
-		return nil, err
-	}
-	return e, nil
+	return res, nil
 
 }
 
 // PageQuery query Webhook templates by page
 func (dao *webhookTemplate) PageQuery(ctx context.Context, p *entity.PageQuery, status pb.TriggerStatus) (
-	[]*entity.WebhookTriggerTemplate, int64, error) {
+	[]*po.WebhookTriggerTemplate, int64, error) {
 
 	var res []*po.WebhookTriggerTemplate
 	var count int64
@@ -71,29 +65,15 @@ func (dao *webhookTemplate) PageQuery(ctx context.Context, p *entity.PageQuery, 
 	if err != nil {
 		return nil, 0, err
 	}
-
-	e, err := convertor.WebhookTemplateSlicePoTOEntity(res)
-	if err != nil {
-		return nil, 0, err
-	}
-	return e, count, nil
+	return res, count, nil
 
 }
 
 // Insert create a Webhook template
-func (dao *webhookTemplate) Insert(ctx context.Context, e *entity.WebhookTriggerTemplate) error {
-	if err := validate.Struct(e); err != nil {
-		return fmt.Errorf("invalid validation error: %w", err)
-	}
-
-	p, err := convertor.WebhookTemplateEntityTOPo(e)
-	if err != nil {
-		return fmt.Errorf("convert entity to po failed: %w", err)
-	}
+func (dao *webhookTemplate) Insert(ctx context.Context, p *po.WebhookTriggerTemplate) error {
 	if err := sql.WebhookTriggerTemplate.WithContext(ctx).Create(p); err != nil {
 		return err
 	}
-	e.ID = p.ID
 
 	return nil
 }

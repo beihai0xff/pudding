@@ -1,4 +1,6 @@
-package entity
+// Package webhook implemented the webhook trigger and handler
+// entity.go implements the webhook template
+package webhook
 
 import (
 	"time"
@@ -6,7 +8,9 @@ import (
 	pb "github.com/beihai0xff/pudding/api/gen/pudding/trigger/v1"
 )
 
-type WebhookTriggerTemplate struct {
+// TriggerTemplate is the webhook template
+type TriggerTemplate struct {
+	// ID is the id of the template
 	ID uint
 
 	// Topic the message topic

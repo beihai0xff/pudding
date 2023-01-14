@@ -6,15 +6,16 @@ import (
 	"time"
 
 	"github.com/stretchr/testify/assert"
+	"gorm.io/gorm"
 
 	pb "github.com/beihai0xff/pudding/api/gen/pudding/trigger/v1"
-	"github.com/beihai0xff/pudding/app/trigger/entity"
+	"github.com/beihai0xff/pudding/app/trigger/repo/storage/po"
 )
 
 func TestWebhookTemplate_Insert(t *testing.T) {
 	type args struct {
 		ctx context.Context
-		e   *entity.WebhookTriggerTemplate
+		p   *po.WebhookTriggerTemplate
 	}
 	tests := []struct {
 		name      string
@@ -26,7 +27,7 @@ func TestWebhookTemplate_Insert(t *testing.T) {
 			name: "normal",
 			args: args{
 				ctx: context.Background(),
-				e: &entity.WebhookTriggerTemplate{
+				p: &po.WebhookTriggerTemplate{
 					Topic:             "test",
 					Payload:           []byte("hello"),
 					DeliverAfter:      10,
@@ -41,17 +42,18 @@ func TestWebhookTemplate_Insert(t *testing.T) {
 		},
 	}
 	for _, tt := range tests {
-		err := testWebhookTemplate.Insert(tt.args.ctx, tt.args.e)
+		err := testWebhookTemplate.Insert(tt.args.ctx, tt.args.p)
 		tt.wantErr(t, err)
 
-		res, _ := testWebhookTemplate.FindByID(tt.args.ctx, tt.args.e.ID)
-		tt.assertion(t, tt.args.e, res)
+		res, _ := testWebhookTemplate.FindByID(tt.args.ctx, tt.args.p.ID)
+		res.CreatedAt, res.UpdatedAt = tt.args.p.CreatedAt, tt.args.p.UpdatedAt
+		tt.assertion(t, tt.args.p, res)
 	}
 }
 
 func TestWebhookTemplate_Update(t *testing.T) {
 	ctx := context.Background()
-	e := &entity.WebhookTriggerTemplate{
+	p := &po.WebhookTriggerTemplate{
 		Topic:             "test",
 		Payload:           []byte("hello"),
 		DeliverAfter:      10,
@@ -60,34 +62,38 @@ func TestWebhookTemplate_Update(t *testing.T) {
 		LoopedTimes:       1,
 		Status:            pb.TriggerStatus_DISABLED,
 	}
-	_ = testWebhookTemplate.Insert(ctx, e)
+	_ = testWebhookTemplate.Insert(ctx, p)
 
 	// test set status to enable
 
-	update := &entity.WebhookTriggerTemplate{
-		ID:     e.ID,
+	update := &po.WebhookTriggerTemplate{
+		Model: gorm.Model{
+			ID: p.ID,
+		},
 		Status: pb.TriggerStatus_ENABLED,
 	}
 	_, err := testWebhookTemplate.UpdateStatus(ctx, update.ID, update.Status)
 	if assert.NoError(t, err) {
-		res, _ := testWebhookTemplate.FindByID(ctx, e.ID)
+		res, _ := testWebhookTemplate.FindByID(ctx, p.ID)
 		assert.Equal(t, res.Status, pb.TriggerStatus_ENABLED)
-		e.Status = pb.TriggerStatus_ENABLED
+		p.Status = pb.TriggerStatus_ENABLED
 		assert.Equal(t, res.Status, pb.TriggerStatus_ENABLED)
 	}
 
 	// test set status to disable
-	e.Status, update.Status = pb.TriggerStatus_DISABLED, pb.TriggerStatus_DISABLED
+	p.Status, update.Status = pb.TriggerStatus_DISABLED, pb.TriggerStatus_DISABLED
 	_, err = testWebhookTemplate.UpdateStatus(ctx, update.ID, update.Status)
 	if assert.NoError(t, err) {
-		res, _ := testWebhookTemplate.FindByID(ctx, e.ID)
+		res, _ := testWebhookTemplate.FindByID(ctx, p.ID)
 		assert.Equal(t, res.Status, pb.TriggerStatus_DISABLED)
 		assert.Equal(t, res.Status, pb.TriggerStatus_DISABLED)
 	}
 
 	// test update not exist record
-	update = &entity.WebhookTriggerTemplate{
-		ID:     e.ID * 100,
+	update = &po.WebhookTriggerTemplate{
+		Model: gorm.Model{
+			ID: p.ID * 100,
+		},
 		Status: pb.TriggerStatus_DISABLED,
 	}
 	_, err = testWebhookTemplate.UpdateStatus(ctx, update.ID, update.Status)

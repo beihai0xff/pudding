@@ -1,4 +1,4 @@
-package convertor
+package webhook
 
 import (
 	"fmt"
@@ -9,21 +9,20 @@ import (
 	"gorm.io/gorm"
 
 	pb "github.com/beihai0xff/pudding/api/gen/pudding/trigger/v1"
-	"github.com/beihai0xff/pudding/app/trigger/entity"
 	"github.com/beihai0xff/pudding/app/trigger/repo/storage/po"
 )
 
 func TestWebhookTemplateEntityTOPo(t *testing.T) {
 	tests := []struct {
 		name      string
-		e         *entity.WebhookTriggerTemplate
+		e         *TriggerTemplate
 		want      *po.WebhookTriggerTemplate
 		wantErr   assert.ErrorAssertionFunc
 		assertion assert.ComparisonAssertionFunc
 	}{
 		{
 			name: "normal",
-			e: &entity.WebhookTriggerTemplate{
+			e: &TriggerTemplate{
 				Topic:             "test",
 				Payload:           []byte("hello"),
 				ExceptedEndTime:   time.Date(2020, 1, 2, 0, 0, 0, 0, time.UTC),
@@ -44,7 +43,7 @@ func TestWebhookTemplateEntityTOPo(t *testing.T) {
 		},
 		{
 			name: "Status is empty",
-			e: &entity.WebhookTriggerTemplate{
+			e: &TriggerTemplate{
 				ExceptedEndTime:   time.Date(2020, 1, 2, 0, 0, 0, 0, time.UTC),
 				ExceptedLoopTimes: 1,
 				LoopedTimes:       1,
@@ -59,7 +58,7 @@ func TestWebhookTemplateEntityTOPo(t *testing.T) {
 		},
 	}
 	for _, tt := range tests {
-		v, err := WebhookTemplateEntityTOPo(tt.e)
+		v, err := convEntityTOPo(tt.e)
 
 		tt.wantErr(t, err)
 		tt.assertion(t, tt.want, v)
@@ -70,13 +69,14 @@ func TestWebhookTemplatePoTOEntity(t *testing.T) {
 	tests := []struct {
 		name      string
 		p         *po.WebhookTriggerTemplate
-		want      *entity.WebhookTriggerTemplate
+		want      *TriggerTemplate
 		wantErr   assert.ErrorAssertionFunc
 		assertion assert.ComparisonAssertionFunc
 	}{
 		{
 			name: "normal",
 			p: &po.WebhookTriggerTemplate{
+				Model:             gorm.Model{ID: 10},
 				Topic:             "test",
 				Payload:           []byte("hello"),
 				ExceptedEndTime:   time.Date(2020, 1, 2, 0, 0, 0, 0, time.UTC),
@@ -84,7 +84,8 @@ func TestWebhookTemplatePoTOEntity(t *testing.T) {
 				LoopedTimes:       1,
 				Status:            pb.TriggerStatus_ENABLED,
 			},
-			want: &entity.WebhookTriggerTemplate{
+			want: &TriggerTemplate{
+				ID:                10,
 				Topic:             "test",
 				Payload:           []byte("hello"),
 				ExceptedEndTime:   time.Date(2020, 1, 2, 0, 0, 0, 0, time.UTC),
@@ -98,11 +99,13 @@ func TestWebhookTemplatePoTOEntity(t *testing.T) {
 		{
 			name: "Status is empty",
 			p: &po.WebhookTriggerTemplate{
+				Model:             gorm.Model{ID: 10},
 				ExceptedEndTime:   time.Date(2020, 1, 2, 0, 0, 0, 0, time.UTC),
 				ExceptedLoopTimes: 1,
 				LoopedTimes:       1,
 			},
-			want: &entity.WebhookTriggerTemplate{
+			want: &TriggerTemplate{
+				ID:                10,
 				ExceptedEndTime:   time.Date(2020, 1, 2, 0, 0, 0, 0, time.UTC),
 				ExceptedLoopTimes: 1,
 				LoopedTimes:       1,
@@ -113,7 +116,7 @@ func TestWebhookTemplatePoTOEntity(t *testing.T) {
 	}
 
 	for _, tt := range tests {
-		v, err := WebhookTemplatePoTOEntity(tt.p)
+		v, err := convPoTOEntity(tt.p)
 
 		tt.wantErr(t, err)
 		tt.assertion(t, tt.want, v)
@@ -127,7 +130,7 @@ func TestWebhookTemplateSlicePoTOEntity(t *testing.T) {
 	tests := []struct {
 		name    string
 		args    args
-		want    []*entity.WebhookTriggerTemplate
+		want    []*TriggerTemplate
 		wantErr assert.ErrorAssertionFunc
 	}{
 		{
@@ -164,7 +167,7 @@ func TestWebhookTemplateSlicePoTOEntity(t *testing.T) {
 					},
 				},
 			},
-			want: []*entity.WebhookTriggerTemplate{
+			want: []*TriggerTemplate{
 				{
 					ID:                1,
 					Topic:             "test",
@@ -189,7 +192,7 @@ func TestWebhookTemplateSlicePoTOEntity(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got, err := WebhookTemplateSlicePoTOEntity(tt.args.p)
+			got, err := convSlicePoTOEntity(tt.args.p)
 			if !tt.wantErr(t, err, fmt.Sprintf("CronTemplateSlicePoTOEntity(%v)", tt.args.p)) {
 				return
 			}
