@@ -18,7 +18,7 @@ test: gen/mock
 # build binary app
 build/binary: gen/proto gen/struct_tag gen/swagger-ui
 	echo build ${APP}
-	APP=$(APP) bash -x scripts/build_binary.sh
+	APP=$(APP) bash scripts/build_binary.sh
 
 # build docker image
 build/docker: clean/build
@@ -27,19 +27,19 @@ build/docker: clean/build
 
 # gen
 gen/proto:
-	bash -x scripts/gen_proto.sh
+	bash scripts/gen_proto.sh
 
 gen/struct_tag:
-	bash -x scripts/gen_configs_struct_tag.sh
+	bash scripts/gen_configs_struct_tag.sh
 
 gen/mock:
-	bash -x scripts/gen_mock.sh
+	bash scripts/gen_mock.sh
 
 gen/swagger-ui:
 	SWAGGER_UI_VERSION=$(SWAGGER_UI_VERSION) APP=$(APP) sh -x ./scripts/gen_swagger-ui.sh
 
 gen/certs:
-	bash -x scripts/gen_certs.sh
+	bash scripts/gen_certs.sh
 
 .PHONY: build/binary build/docker gen/proto gen/struct_tag gen/mock gen/swagger-ui gen/certs
 # clean
@@ -59,4 +59,4 @@ bootstrap:
 	go generate -tags tools tools/tools.go
 
 .PHONY: clean/build clean/docker lint test
-.PHONY: ootstrap
+.PHONY: bootstrap
