@@ -10,7 +10,8 @@ SWAGGER_UI_GIT="https://github.com/swagger-api/swagger-ui.git"
 CACHE_DIR="./.cache/swagger-ui/$SWAGGER_UI_VERSION"
 GEN_DIR="./third_party/swagger-ui"
 
-cp -r ./api/http-spec/pudding/${APP}/v1/* $GEN_DIR
+rm -f ./third_party/swagger-ui/*.swagger.json # ignore nonexistent files, never prompt
+cp -r ./api/http-spec/pudding/${APP}/v1/* $GEN_DIR/
 
 escape_str() {
   echo "$1" | sed -e 's/[]\/$*.^[]/\\&/g'
@@ -30,20 +31,20 @@ fi
 tmp="    urls: ["
 for i in $(find "$GEN_DIR" -name "*.swagger.json"); do
   escaped_gen_dir="$(escape_str "$GEN_DIR/")"
-  path="$(echo $i | sed -e "s/$escaped_gen_dir//g")"
+  path="${i//$escaped_gen_dir/}"
   tmp="$tmp{\"url\":\"$path\",\"name\":\"$path\"},"
 done
 # delete last characters from $tmp
-tmp=$(echo "$tmp" | sed 's/.$//')
+tmp="${tmp//.$//}"
 tmp="${tmp}],"
 
-# recreate swagger-ui, delete all except swagger.json
+# recreate swagger-ui, delete all file except swagger.json
 find "$GEN_DIR" -type f -not -name "*.swagger.json" -delete
 mkdir -p "$GEN_DIR"
 cp -r "$CACHE_DIR/"* "$GEN_DIR"
 
 # replace the default URL
-line="$(cat "$GEN_DIR/swagger-initializer.js" | grep -n "url" | cut -f1 -d:)"
+line="$(grep -n "url" "$GEN_DIR/swagger-initializer.js" | cut -f1 -d:)"
 escaped_tmp="$(escape_str "$tmp")"
 sed -i'' -e "$line s/^.*$/$escaped_tmp/" "$GEN_DIR/swagger-initializer.js"
 rm -f "$GEN_DIR/swagger-initializer.js-e"
