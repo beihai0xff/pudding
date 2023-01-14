@@ -11,8 +11,8 @@ import (
 	"google.golang.org/protobuf/types/known/timestamppb"
 
 	pb "github.com/beihai0xff/pudding/api/gen/pudding/trigger/v1"
+	"github.com/beihai0xff/pudding/app/trigger/pkg/constants"
 
-	"github.com/beihai0xff/pudding/app/trigger/entity"
 	"github.com/beihai0xff/pudding/pkg/errno"
 )
 
@@ -57,7 +57,7 @@ func (h *Handler) FindOneByID(ctx context.Context, req *pb.FindOneByIDRequest) (
 func (h *Handler) PageQueryTemplate(ctx context.Context,
 	req *pb.PageQueryTemplateRequest) (*pb.WebhookPageQueryResponse, error) {
 
-	p := entity.PageQuery{
+	p := constants.PageQuery{
 		Offset: int(req.Offset),
 		Limit:  int(req.Limit),
 	}

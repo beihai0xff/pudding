@@ -12,8 +12,8 @@ import (
 
 	"github.com/beihai0xff/pudding/api/gen/pudding/broker/v1"
 	pb "github.com/beihai0xff/pudding/api/gen/pudding/trigger/v1"
-	"github.com/beihai0xff/pudding/app/trigger/entity"
 	"github.com/beihai0xff/pudding/app/trigger/pkg/configs"
+	"github.com/beihai0xff/pudding/app/trigger/pkg/constants"
 	"github.com/beihai0xff/pudding/app/trigger/repo"
 	"github.com/beihai0xff/pudding/pkg/clock"
 	"github.com/beihai0xff/pudding/pkg/db/mysql"
@@ -74,7 +74,7 @@ func (t *Trigger) FindByID(ctx context.Context, id uint) (*TriggerTemplate, erro
 }
 
 // PageQuery page query webhook templates
-func (t *Trigger) PageQuery(ctx context.Context, p *entity.PageQuery,
+func (t *Trigger) PageQuery(ctx context.Context, p *constants.PageQuery,
 	status pb.TriggerStatus) ([]*TriggerTemplate, int64, error) {
 	// check params
 	if p.Offset < 0 || p.Limit <= 0 {
@@ -137,10 +137,10 @@ func (t *Trigger) checkRegisterParams(temp *TriggerTemplate) error {
 
 	// 3. set default value if necessary
 	if temp.ExceptedEndTime.IsZero() {
-		temp.ExceptedEndTime = t.wallClock.Now().Add(entity.DefaultTemplateActiveDuration)
+		temp.ExceptedEndTime = t.wallClock.Now().Add(constants.DefaultTemplateActiveDuration)
 	}
 	if temp.ExceptedLoopTimes == 0 {
-		temp.ExceptedLoopTimes = entity.DefaultMaximumLoopTimes
+		temp.ExceptedLoopTimes = constants.DefaultMaximumLoopTimes
 	}
 
 	// default status is Disable

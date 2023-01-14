@@ -1,4 +1,6 @@
-package entity
+// Package cron implemented the cron trigger and handler
+// entity.go implements the cron template
+package cron
 
 import (
 	"time"
@@ -6,7 +8,9 @@ import (
 	pb "github.com/beihai0xff/pudding/api/gen/pudding/trigger/v1"
 )
 
-type CronTriggerTemplate struct {
+// TriggerTemplate is the entity of cron trigger template.
+type TriggerTemplate struct {
+	// ID is the unique identifier of the trigger template.
 	ID uint
 
 	// CronExpr is the cron expression.

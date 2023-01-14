@@ -6,15 +6,16 @@ import (
 	"time"
 
 	"github.com/stretchr/testify/assert"
+	"gorm.io/gorm"
 
 	pb "github.com/beihai0xff/pudding/api/gen/pudding/trigger/v1"
-	"github.com/beihai0xff/pudding/app/trigger/entity"
+	"github.com/beihai0xff/pudding/app/trigger/repo/storage/po"
 )
 
 func TestCronTemplate_Insert(t *testing.T) {
 	type args struct {
 		ctx context.Context
-		e   *entity.CronTriggerTemplate
+		p   *po.CronTriggerTemplate
 	}
 	tests := []struct {
 		name      string
@@ -26,7 +27,7 @@ func TestCronTemplate_Insert(t *testing.T) {
 			name: "normal",
 			args: args{
 				ctx: context.Background(),
-				e: &entity.CronTriggerTemplate{
+				p: &po.CronTriggerTemplate{
 					CronExpr:          "0 0 0 * * *",
 					Topic:             "test",
 					Payload:           []byte("hello"),
@@ -45,7 +46,7 @@ func TestCronTemplate_Insert(t *testing.T) {
 			name: "no_CronExpr",
 			args: args{
 				ctx: context.Background(),
-				e: &entity.CronTriggerTemplate{
+				p: &po.CronTriggerTemplate{
 					Topic:             "test",
 					Payload:           []byte("hello"),
 					LastExecutionTime: time.Date(2022, 1, 1, 0, 0, 0, 0, time.UTC),
@@ -60,17 +61,20 @@ func TestCronTemplate_Insert(t *testing.T) {
 		},
 	}
 	for _, tt := range tests {
-		err := testCronTemplate.Insert(tt.args.ctx, tt.args.e)
+		err := testCronTemplate.Insert(tt.args.ctx, tt.args.p)
 		tt.wantErr(t, err)
-
-		res, _ := testCronTemplate.FindByID(tt.args.ctx, tt.args.e.ID)
-		tt.assertion(t, tt.args.e, res)
+		if err != nil {
+			continue
+		}
+		res, _ := testCronTemplate.FindByID(tt.args.ctx, tt.args.p.ID)
+		res.CreatedAt, res.UpdatedAt = tt.args.p.CreatedAt, tt.args.p.UpdatedAt
+		tt.assertion(t, tt.args.p, res)
 	}
 }
 
 func TestCronTemplate_Update(t *testing.T) {
 	ctx := context.Background()
-	e := &entity.CronTriggerTemplate{
+	e := &po.CronTriggerTemplate{
 		CronExpr:          "0 0 0 * * *",
 		Topic:             "test",
 		Payload:           []byte("hello"),
@@ -84,15 +88,15 @@ func TestCronTemplate_Update(t *testing.T) {
 
 	// test set status to enable
 
-	update := &entity.CronTriggerTemplate{
-		ID:     e.ID,
+	update := &po.CronTriggerTemplate{
+		Model: gorm.Model{
+			ID: e.ID,
+		},
 		Status: pb.TriggerStatus_ENABLED,
 	}
 	_, err := testCronTemplate.UpdateStatus(ctx, update.ID, update.Status)
 	if assert.NoError(t, err) {
 		res, _ := testCronTemplate.FindByID(ctx, e.ID)
-		assert.Equal(t, res.Status, pb.TriggerStatus_ENABLED)
-		e.Status = pb.TriggerStatus_ENABLED
 		assert.Equal(t, res.Status, pb.TriggerStatus_ENABLED)
 	}
 
@@ -106,8 +110,10 @@ func TestCronTemplate_Update(t *testing.T) {
 	}
 
 	// test update not exist record
-	update = &entity.CronTriggerTemplate{
-		ID:     e.ID * 100,
+	update = &po.CronTriggerTemplate{
+		Model: gorm.Model{
+			ID: e.ID + 100,
+		},
 		Status: pb.TriggerStatus_DISABLED,
 	}
 	_, err = testCronTemplate.UpdateStatus(ctx, update.ID, update.Status)
@@ -117,7 +123,7 @@ func TestCronTemplate_Update(t *testing.T) {
 
 func TestCronTemplate_FindEnableRecords(t *testing.T) {
 	ctx := context.Background()
-	e := &entity.CronTriggerTemplate{
+	e := &po.CronTriggerTemplate{
 		CronExpr:          "0 0 0 * * *",
 		Topic:             "test",
 		Payload:           []byte("hello"),
@@ -131,7 +137,8 @@ func TestCronTemplate_FindEnableRecords(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	fc := func(e2 *entity.CronTriggerTemplate) error {
+	fc := func(e2 *po.CronTriggerTemplate) error {
+		e.CreatedAt, e.UpdatedAt = e2.CreatedAt, e2.UpdatedAt
 		assert.Equal(t, e, e2)
 		e2.LoopedTimes = 2
 		return nil

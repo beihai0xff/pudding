@@ -7,7 +7,7 @@ import (
 	"context"
 
 	pb "github.com/beihai0xff/pudding/api/gen/pudding/trigger/v1"
-	"github.com/beihai0xff/pudding/app/trigger/entity"
+	"github.com/beihai0xff/pudding/app/trigger/pkg/constants"
 	"github.com/beihai0xff/pudding/app/trigger/repo/storage/po"
 	"github.com/beihai0xff/pudding/app/trigger/repo/storage/sql"
 	"github.com/beihai0xff/pudding/pkg/db/mysql"
@@ -18,10 +18,10 @@ type WebhookTemplate interface {
 	// FindByID find a cron template by id
 	FindByID(ctx context.Context, id uint) (*po.WebhookTriggerTemplate, error)
 	// PageQuery query cron templates by page
-	PageQuery(ctx context.Context, p *entity.PageQuery, status pb.TriggerStatus) (res []*po.WebhookTriggerTemplate,
+	PageQuery(ctx context.Context, p *constants.PageQuery, status pb.TriggerStatus) (res []*po.WebhookTriggerTemplate,
 		count int64, err error)
 
-	// Insert create a cron template
+	// Insert create a webhook template
 	Insert(ctx context.Context, p *po.WebhookTriggerTemplate) error
 	// UpdateStatus update the status of a cron template
 	UpdateStatus(ctx context.Context, id uint, status pb.TriggerStatus) (int64, error)
@@ -49,7 +49,7 @@ func (dao *webhookTemplate) FindByID(ctx context.Context, id uint) (*po.WebhookT
 }
 
 // PageQuery query Webhook templates by page
-func (dao *webhookTemplate) PageQuery(ctx context.Context, p *entity.PageQuery, status pb.TriggerStatus) (
+func (dao *webhookTemplate) PageQuery(ctx context.Context, p *constants.PageQuery, status pb.TriggerStatus) (
 	[]*po.WebhookTriggerTemplate, int64, error) {
 
 	var res []*po.WebhookTriggerTemplate

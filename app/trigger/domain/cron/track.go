@@ -1,3 +1,5 @@
+// Package cron implemented the cron trigger and handler
+// track.go is the cron trigger loop
 package cron
 
 import (
@@ -8,8 +10,8 @@ import (
 
 	"github.com/beihai0xff/pudding/api/gen/pudding/broker/v1"
 	pb "github.com/beihai0xff/pudding/api/gen/pudding/trigger/v1"
-	"github.com/beihai0xff/pudding/app/trigger/entity"
 	"github.com/beihai0xff/pudding/app/trigger/repo"
+	"github.com/beihai0xff/pudding/app/trigger/repo/storage/po"
 	"github.com/beihai0xff/pudding/pkg/clock"
 	"github.com/beihai0xff/pudding/pkg/cronexpr"
 	"github.com/beihai0xff/pudding/pkg/db/mysql"
@@ -78,7 +80,7 @@ func (t *Trigger) Run() {
 }
 
 // Tracking try to produce Cron Trigger Message
-func (t *Trigger) Tracking(temp *entity.CronTriggerTemplate) error {
+func (t *Trigger) Tracking(temp *po.CronTriggerTemplate) error {
 	nextTime, err := t.getNextTime(temp.CronExpr)
 	if err != nil {
 		log.Errorf("failed to get next time, caused by %v", err)
@@ -92,7 +94,7 @@ func (t *Trigger) Tracking(temp *entity.CronTriggerTemplate) error {
 	// produce the message
 	msg := &broker.SendDelayMessageRequest{
 		Topic:     temp.Topic,
-		Key:       t.formatMessageKey(temp),
+		Key:       t.formatMessageKey(temp.ID, temp.LoopedTimes),
 		Payload:   temp.Payload,
 		DeliverAt: nextTime.Unix(),
 	}
@@ -116,7 +118,7 @@ func (t *Trigger) Tracking(temp *entity.CronTriggerTemplate) error {
 }
 
 // checkTempShouldRun check whether the template should run
-func (t *Trigger) checkTempShouldRun(temp *entity.CronTriggerTemplate, nextTime time.Time) bool {
+func (t *Trigger) checkTempShouldRun(temp *po.CronTriggerTemplate, nextTime time.Time) bool {
 	if temp.LoopedTimes >= temp.ExceptedLoopTimes {
 		log.Warnf("cron template [%d] has reached the maximum loop times, but it has been tracked", temp.ID)
 
@@ -145,6 +147,6 @@ func (t *Trigger) getNextTime(expr string) (time.Time, error) {
 }
 
 // formatMessageKey get cron trigger the message key
-func (t *Trigger) formatMessageKey(temp *entity.CronTriggerTemplate) string {
-	return fmt.Sprintf(messageKeyFormat, temp.ID, temp.LoopedTimes)
+func (t *Trigger) formatMessageKey(id uint, loopedTimes uint64) string {
+	return fmt.Sprintf(messageKeyFormat, id, loopedTimes)
 }
