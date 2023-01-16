@@ -61,6 +61,9 @@ func StartGRPCServer(config *configs.BaseConfig, opts ...StartServiceFunc) (
 
 	// define open telemetry exporter and MeterProvider
 	export, err := prometheusExporter.New()
+	if err != nil {
+		log.Panicf("failed to create prometheus exporter: %v", err)
+	}
 	meterProvider := metricsdk.NewMeterProvider(metricsdk.WithReader(export.Reader))
 	// init grpc server
 	server := grpc.NewServer(
