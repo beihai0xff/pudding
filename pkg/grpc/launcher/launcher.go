@@ -13,6 +13,10 @@ import (
 	grpc_recovery "github.com/grpc-ecosystem/go-grpc-middleware/recovery"
 	grpc_validator "github.com/grpc-ecosystem/go-grpc-middleware/validator"
 	"github.com/grpc-ecosystem/grpc-gateway/v2/runtime"
+	"github.com/prometheus/client_golang/prometheus/promhttp"
+	"go.opentelemetry.io/contrib/instrumentation/google.golang.org/grpc/otelgrpc"
+	prometheusExporter "go.opentelemetry.io/otel/exporters/prometheus"
+	metricsdk "go.opentelemetry.io/otel/sdk/metric"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials"
 	"google.golang.org/grpc/grpclog"
@@ -54,6 +58,10 @@ func StartGRPCServer(config *configs.BaseConfig, opts ...StartServiceFunc) (
 	if err != nil {
 		log.Panicf("Failed to load Server TLS: %v", err)
 	}
+
+	// define open telemetry exporter and MeterProvider
+	export, err := prometheusExporter.New()
+	meterProvider := metricsdk.NewMeterProvider(metricsdk.WithReader(export.Reader))
 	// init grpc server
 	server := grpc.NewServer(
 		grpc.KeepaliveParams(keepalive.ServerParameters{
@@ -67,6 +75,7 @@ func StartGRPCServer(config *configs.BaseConfig, opts ...StartServiceFunc) (
 		grpc.UnaryInterceptor(grpc_middleware.ChainUnaryServer(
 			grpc_recovery.UnaryServerInterceptor(),
 			grpc_validator.UnaryServerInterceptor(),
+			otelgrpc.UnaryServerInterceptor(otelgrpc.WithMeterProvider(meterProvider)),
 		)),
 		grpc.Creds(cred),
 	)
@@ -100,7 +109,7 @@ func StartGRPCServer(config *configs.BaseConfig, opts ...StartServiceFunc) (
 	return server, healthServer
 }
 
-// StartHTTPServer sstarts the HTTP server with the given service.
+// StartHTTPServer starts the HTTP server with the given service.
 // It serves the gRPC-gateway, gRPC-healthz and the swagger UI.
 // StartHTTPServer must be called after StartGRPCServer,
 // because it uses the same listener, and HTTP server base on gRPC Gateway.
@@ -117,11 +126,20 @@ func StartHTTPServer(config *configs.BaseConfig, healthEndpointPath, swaggerEndp
 		log.Panicf("Failed to register gateway: %v", err)
 	}
 
+	if err := gwmux.HandlePath("GET", "/metrics", func(w http.ResponseWriter,
+		r *http.Request, pathParams map[string]string) {
+		promhttp.Handler().ServeHTTP(w, r)
+	}); err != nil {
+		log.Fatalf("failed to register metrics handler: %v", err)
+	}
+
 	// define HTTP server configuration
 	httpLis := getListen(config.HTTPPort)
 	httpServer := &http.Server{
-		Addr:    httpLis.Addr().String(),
-		Handler: gwmux,
+		Addr:        httpLis.Addr().String(),
+		Handler:     gwmux,
+		ReadTimeout: 10 * time.Second,
+		IdleTimeout: 30 * time.Second,
 	}
 
 	go func() {
