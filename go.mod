@@ -14,7 +14,7 @@ require (
 	github.com/golang/protobuf v1.5.2
 	github.com/google/uuid v1.3.0
 	github.com/grpc-ecosystem/go-grpc-middleware v1.3.0
-	github.com/grpc-ecosystem/grpc-gateway/v2 v2.14.0
+	github.com/grpc-ecosystem/grpc-gateway/v2 v2.15.0
 	github.com/hashicorp/consul/api v1.18.0
 	github.com/jinzhu/copier v0.3.6-0.20221021060712-6a4be2a76157
 	github.com/klauspost/compress v1.15.13
@@ -25,7 +25,7 @@ require (
 	github.com/vmihailenco/msgpack/v5 v5.3.5
 	go.uber.org/zap v1.24.0
 	golang.org/x/net v0.5.0
-	google.golang.org/genproto v0.0.0-20221114212237-e4508ebdbee1
+	google.golang.org/genproto v0.0.0-20221207170731-23e4bf6bdc37
 	google.golang.org/grpc v1.51.0
 	google.golang.org/protobuf v1.28.2-0.20220831092852-f930b1dc76e8
 	gopkg.in/natefinch/lumberjack.v2 v2.0.0
