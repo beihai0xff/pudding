@@ -1,4 +1,4 @@
-// Package redis 实现了统一的 Redis 客户端，并提供基础的分布式缓存与分布式锁功能封装
+// Package redis implements a Redis client.
 package redis
 
 import (
@@ -8,14 +8,17 @@ import (
 	"sync"
 	"time"
 
+	"github.com/go-redis/redis/extra/redisotel/v9"
 	"github.com/go-redis/redis/v9"
 
 	"github.com/beihai0xff/pudding/configs"
+	"github.com/beihai0xff/pudding/pkg/log"
+	"github.com/beihai0xff/pudding/pkg/otel"
 )
 
 var (
 
-	// ErrConsumerGroupExists 该
+	// ErrConsumerGroupExists is returned when the consumer group already exists
 	ErrConsumerGroupExists = errors.New("BUSYGROUP Consumer Group name already exists")
 	clientOnce             sync.Once
 	client                 *Client
@@ -39,8 +42,12 @@ func New(c *configs.RedisConfig) *Client {
 			opt.DialTimeout = time.Duration(c.DialTimeout) * time.Second
 			opt.PoolSize = 40 * runtime.GOMAXPROCS(runtime.NumCPU())
 
+			rdb := redis.NewClient(opt)
+			if err := redisotel.InstrumentMetrics(rdb, redisotel.WithMeterProvider(otel.GetMeterProvider())); err != nil {
+				log.Panicf("redisotel.InstrumentMetrics error: %v", err)
+			}
 			client = &Client{
-				client: redis.NewClient(opt),
+				client: rdb,
 				config: c,
 			}
 		})
