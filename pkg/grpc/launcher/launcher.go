@@ -15,8 +15,6 @@ import (
 	"github.com/grpc-ecosystem/grpc-gateway/v2/runtime"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"go.opentelemetry.io/contrib/instrumentation/google.golang.org/grpc/otelgrpc"
-	prometheusExporter "go.opentelemetry.io/otel/exporters/prometheus"
-	metricsdk "go.opentelemetry.io/otel/sdk/metric"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials"
 	"google.golang.org/grpc/grpclog"
@@ -29,6 +27,7 @@ import (
 	"github.com/beihai0xff/pudding/configs"
 	"github.com/beihai0xff/pudding/pkg/log"
 	"github.com/beihai0xff/pudding/pkg/log/logger"
+	"github.com/beihai0xff/pudding/pkg/otel"
 	"github.com/beihai0xff/pudding/pkg/swagger"
 )
 
@@ -50,38 +49,8 @@ func StartGRPCServer(config *configs.BaseConfig, opts ...StartServiceFunc) (
 	*grpc.Server, *health.Server) {
 
 	log.Info("starting grpc server ...")
-	grpclog.SetLoggerV2(logger.GetGRPCLogger())
 
-	grpcLis := getListen(config.GRPCPort)
-
-	cred, err := credentials.NewServerTLSFromFile(config.CertPath, config.KeyPath)
-	if err != nil {
-		log.Panicf("Failed to load Server TLS: %v", err)
-	}
-
-	// define open telemetry exporter and MeterProvider
-	export, err := prometheusExporter.New()
-	if err != nil {
-		log.Panicf("failed to create prometheus exporter: %v", err)
-	}
-	meterProvider := metricsdk.NewMeterProvider(metricsdk.WithReader(export.Reader))
-	// init grpc server
-	server := grpc.NewServer(
-		grpc.KeepaliveParams(keepalive.ServerParameters{
-			Time:    time.Minute,
-			Timeout: 5 * time.Second,
-		}),
-		grpc.KeepaliveEnforcementPolicy(keepalive.EnforcementPolicy{
-			MinTime:             1,
-			PermitWithoutStream: true,
-		}),
-		grpc.UnaryInterceptor(grpc_middleware.ChainUnaryServer(
-			grpc_recovery.UnaryServerInterceptor(),
-			grpc_validator.UnaryServerInterceptor(),
-			otelgrpc.UnaryServerInterceptor(otelgrpc.WithMeterProvider(meterProvider)),
-		)),
-		grpc.Creds(cred),
-	)
+	server := createGRPCServer(config)
 
 	// register health server
 	healthServer := health.NewServer()
@@ -102,6 +71,7 @@ func StartGRPCServer(config *configs.BaseConfig, opts ...StartServiceFunc) (
 	// 通过此方式支持 grpcCRUL
 	reflection.Register(server)
 
+	grpcLis := getListen(config.GRPCPort)
 	go func() {
 		log.Infof("grpc server listening at %v", grpcLis.Addr())
 		if err := server.Serve(grpcLis); err != nil {
@@ -177,4 +147,34 @@ func createGRPCLocalClient(config *configs.BaseConfig) *grpc.ClientConn {
 		log.Panicf("Failed to dial server: %v", err)
 	}
 	return conn
+}
+
+// createGRPCServer creates a gRPC server
+func createGRPCServer(config *configs.BaseConfig) *grpc.Server {
+	grpclog.SetLoggerV2(logger.GetGRPCLogger())
+
+	// define TLS configuration
+	cred, err := credentials.NewServerTLSFromFile(config.CertPath, config.KeyPath)
+	if err != nil {
+		log.Panicf("Failed to load Server TLS: %v", err)
+	}
+
+	// init grpc server
+	return grpc.NewServer(
+		grpc.KeepaliveParams(keepalive.ServerParameters{
+			Time:    time.Minute,
+			Timeout: 5 * time.Second,
+		}),
+		grpc.KeepaliveEnforcementPolicy(keepalive.EnforcementPolicy{
+			MinTime:             1,
+			PermitWithoutStream: true,
+		}),
+		grpc.UnaryInterceptor(grpc_middleware.ChainUnaryServer(
+			grpc_recovery.UnaryServerInterceptor(),
+			grpc_validator.UnaryServerInterceptor(),
+			// define open telemetry MeterProvider
+			otelgrpc.UnaryServerInterceptor(otelgrpc.WithMeterProvider(otel.GetMeterProvider())),
+		)),
+		grpc.Creds(cred),
+	)
 }
