@@ -22,14 +22,14 @@ func RegisterHandler(gwmux *runtime.ServeMux, prefix string) {
 		log.Infof("Serving swagger file: %s", r.URL.Path)
 		swaggerHandler.ServeHTTP(w, r)
 	}); err != nil {
-		log.Fatalf("failed to register swagger handler: %v", err)
+		log.Panicf("failed to register swagger handler: %v", err)
 	}
 }
 
 // GetOpenAPIHandler serves an OpenAPI UI.
 func getOpenAPIHandler(efs embed.FS) http.Handler {
 	if err := mime.AddExtensionType(".svg", "image/svg+xml"); err != nil {
-		log.Fatalf("failed to add mime type for .svg: %v", err)
+		log.Panicf("failed to add mime type for .svg: %v", err)
 	}
 
 	// Use subdirectory in embedded files
