@@ -8,6 +8,8 @@ import (
 	"syscall"
 	"time"
 
+	_ "go.uber.org/automaxprocs"
+
 	"github.com/beihai0xff/pudding/app/trigger/pkg/configs"
 	"github.com/beihai0xff/pudding/app/trigger/server"
 	"github.com/beihai0xff/pudding/pkg/grpc/args"

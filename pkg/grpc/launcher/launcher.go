@@ -13,7 +13,6 @@ import (
 	grpc_recovery "github.com/grpc-ecosystem/go-grpc-middleware/recovery"
 	grpc_validator "github.com/grpc-ecosystem/go-grpc-middleware/validator"
 	"github.com/grpc-ecosystem/grpc-gateway/v2/runtime"
-	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"go.opentelemetry.io/contrib/instrumentation/google.golang.org/grpc/otelgrpc"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials"
@@ -25,10 +24,10 @@ import (
 
 	pb "github.com/beihai0xff/pudding/api/gen/pudding/broker/v1"
 	"github.com/beihai0xff/pudding/configs"
+	"github.com/beihai0xff/pudding/pkg/grpc/swagger"
 	"github.com/beihai0xff/pudding/pkg/log"
 	"github.com/beihai0xff/pudding/pkg/log/logger"
 	"github.com/beihai0xff/pudding/pkg/otel"
-	"github.com/beihai0xff/pudding/pkg/swagger"
 )
 
 // StartServiceFunc is a function that starts a service.
@@ -94,16 +93,10 @@ func StartHTTPServer(config *configs.BaseConfig, healthEndpointPath, swaggerEndp
 	// gRPC-Gateway httpServer
 	gwmux := runtime.NewServeMux(runtime.WithHealthEndpointAt(pbhealth.NewHealthClient(conn), healthEndpointPath))
 	swagger.RegisterHandler(gwmux, swaggerEndpointPath)
+	otel.RegisterHandler(gwmux)
 
 	if err := pb.RegisterSchedulerServiceHandler(context.Background(), gwmux, conn); err != nil {
 		log.Panicf("Failed to register gateway: %v", err)
-	}
-
-	if err := gwmux.HandlePath("GET", "/metrics", func(w http.ResponseWriter,
-		r *http.Request, pathParams map[string]string) {
-		promhttp.Handler().ServeHTTP(w, r)
-	}); err != nil {
-		log.Fatalf("failed to register metrics handler: %v", err)
 	}
 
 	// define HTTP server configuration
