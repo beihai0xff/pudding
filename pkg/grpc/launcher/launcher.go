@@ -103,7 +103,7 @@ func StartHTTPServer(config *configs.BaseConfig, healthEndpointPath, swaggerEndp
 	httpLis := getListen(config.HTTPPort)
 	httpServer := &http.Server{
 		Addr:        httpLis.Addr().String(),
-		Handler:     gwmux,
+		Handler:     Handler(gwmux, WithRequestLog),
 		ReadTimeout: 10 * time.Second,
 		IdleTimeout: 30 * time.Second,
 	}
