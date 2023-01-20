@@ -4,11 +4,17 @@ package launcher
 
 import (
 	"encoding/json"
+	"fmt"
 	"net/http"
+	"strings"
+
+	"github.com/samber/lo"
 
 	"github.com/beihai0xff/pudding/pkg/log"
 	"github.com/beihai0xff/pudding/pkg/log/logger"
 )
+
+var gwLogger = log.GetLoggerByName(logger.GRPCLoggerName).WithFields("module", "http")
 
 // GwMuxDecorator is a decorator for http.Handler.
 type GwMuxDecorator func(http.Handler) http.Handler
@@ -22,19 +28,77 @@ func Handler(h http.Handler, decors ...GwMuxDecorator) http.Handler {
 	return h
 }
 
+var notLogPrefix = []string{"/metrics", "/pudding/broker/swagger"}
+
 // WithRequestLog returns a GwMuxDecorator that logs the request.
 func WithRequestLog(h http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		h.ServeHTTP(w, r)
+		if lo.ContainsBy(notLogPrefix, func(item string) bool { return strings.HasPrefix(item, r.RequestURI) }) {
+			h.ServeHTTP(w, r)
+			return
+		}
+
+		// x, err := httputil.DumpRequest(r, true)
+		// if err != nil {
+		// 	http.Error(w, fmt.Sprint(err), http.StatusInternalServerError)
+		// 	return
+		// }
+		rspProxy := &responseProxy{ResponseWriter: w}
+
+		h.ServeHTTP(rspProxy, r)
+
+		realIP := r.Header.Get("X-Forwarded-For")
+		if realIP == "" {
+			realIP = r.RemoteAddr
+		}
 		request := map[string]interface{}{
-			"protocol":    r.Proto,
-			"method":      r.Method,
-			"uri":         r.RequestURI,
-			"remote_addr": r.RemoteAddr,
+			"request_line": fmt.Sprintf("%s %s %s", r.Method, r.RequestURI, r.Proto),
+			"remote_addr":  realIP,
+			// "request":      string(x),
+			"status":   rspProxy.GETHTTPStatus(),
+			"response": rspProxy.Body(),
 		}
 
 		b, _ := json.Marshal(request)
-		log.GetLoggerByName(logger.GRPCLoggerName).WithFields("module", "http").Info(string(b))
+		if rspProxy.GETHTTPStatus() != http.StatusOK {
+			gwLogger.Error(string(b))
+			return
+		}
+		gwLogger.Info(string(b))
 	})
 
+}
+
+// responseProxy wraps a http.ResponseWriter that implements the minimal
+// http.ResponseWriter interface.
+type responseProxy struct {
+	http.ResponseWriter
+	status int
+	body   []byte
+	Len    int
+}
+
+// WriteHeader writes the HTTP status code of the response.
+func (p *responseProxy) WriteHeader(status int) {
+	p.status = status
+	p.ResponseWriter.WriteHeader(status)
+}
+
+func (p *responseProxy) Write(buf []byte) (int, error) {
+	if p.status == 0 {
+		p.WriteHeader(http.StatusOK)
+	}
+	n, err := p.ResponseWriter.Write(buf)
+	p.body = append(p.body, buf[:n]...)
+	p.Len += n
+	return n, err
+}
+
+func (p *responseProxy) Body() string {
+	return string(p.body)
+}
+
+// GETHTTPStatus returns the HTTP status code of the response.
+func (p *responseProxy) GETHTTPStatus() int {
+	return p.status
 }
