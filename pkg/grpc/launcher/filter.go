@@ -28,12 +28,23 @@ func Handler(h http.Handler, decors ...GwMuxDecorator) http.Handler {
 	return h
 }
 
+// WithRedirectToHTTPS returns a GwMuxDecorator that redirects HTTP requests to HTTPS.
+func WithRedirectToHTTPS(h http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if r.URL.Scheme == "http" {
+			http.Redirect(w, r, "https://"+r.Host+r.RequestURI, http.StatusMovedPermanently)
+			return
+		}
+		h.ServeHTTP(w, r)
+	})
+}
+
 var notLogPrefix = []string{"/metrics", "/pudding/broker/swagger"}
 
 // WithRequestLog returns a GwMuxDecorator that logs the request.
 func WithRequestLog(h http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		if lo.ContainsBy(notLogPrefix, func(item string) bool { return strings.HasPrefix(item, r.RequestURI) }) {
+		if lo.ContainsBy(notLogPrefix, func(item string) bool { return strings.HasPrefix(r.RequestURI, item) }) {
 			h.ServeHTTP(w, r)
 			return
 		}
@@ -51,7 +62,13 @@ func WithRequestLog(h http.Handler) http.Handler {
 		if realIP == "" {
 			realIP = r.RemoteAddr
 		}
+
+		scheme := "http"
+		if r.TLS != nil {
+			scheme = "https"
+		}
 		request := map[string]interface{}{
+			"scheme":       scheme,
 			"request_line": fmt.Sprintf("%s %s %s", r.Method, r.RequestURI, r.Proto),
 			"remote_addr":  realIP,
 			// "request":      string(x),
