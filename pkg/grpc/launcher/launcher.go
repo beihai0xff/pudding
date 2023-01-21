@@ -103,16 +103,16 @@ func StartHTTPServer(config *configs.BaseConfig, healthEndpointPath, swaggerEndp
 	httpLis := getListen(config.HTTPPort)
 	httpServer := &http.Server{
 		Addr:        httpLis.Addr().String(),
-		Handler:     Handler(gwmux, WithRequestLog),
+		Handler:     Handler(gwmux, WithRequestLog, WithRedirectToHTTPS),
 		ReadTimeout: 10 * time.Second,
 		IdleTimeout: 30 * time.Second,
 	}
 
 	go func() {
-		log.Infof("http server listening at %v", httpLis.Addr())
+		log.Infof("gRPC-Gateway server listening at %v", httpLis.Addr())
 		if err := httpServer.ServeTLS(httpLis, config.CertPath, config.KeyPath); err != nil {
 			if errors.Is(err, http.ErrServerClosed) {
-				log.Info("http server closed")
+				log.Info("gRPC-Gateway server closed")
 				return
 			}
 			log.Fatalf("Failed to serve gRPC-Gateway: %v", err)
