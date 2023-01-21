@@ -16,7 +16,6 @@ import (
 	"go.opentelemetry.io/contrib/instrumentation/google.golang.org/grpc/otelgrpc"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials"
-	"google.golang.org/grpc/grpclog"
 	"google.golang.org/grpc/health"
 	pbhealth "google.golang.org/grpc/health/grpc_health_v1"
 	"google.golang.org/grpc/keepalive"
@@ -26,7 +25,6 @@ import (
 	"github.com/beihai0xff/pudding/configs"
 	"github.com/beihai0xff/pudding/pkg/grpc/swagger"
 	"github.com/beihai0xff/pudding/pkg/log"
-	"github.com/beihai0xff/pudding/pkg/log/logger"
 	"github.com/beihai0xff/pudding/pkg/otel"
 )
 
@@ -65,9 +63,7 @@ func StartGRPCServer(config *configs.BaseConfig, opts ...StartServiceFunc) (
 	}
 	healthServer.Resume()
 	// RegisterGRPC reflection service on gRPC server.
-	// 提供该服务器端上可公开使用的 gRPC 服务的信息，
-	// 服务反射向客户端提供了服务端注册的服务的信息，因此客户端不需要预编译服务定义就能与服务端交互
-	// 通过此方式支持 grpcCRUL
+	// This allows the gRPC server to be introspected by clients using reflection.67
 	reflection.Register(server)
 
 	grpcLis := getListen(config.GRPCPort)
@@ -144,8 +140,6 @@ func createGRPCLocalClient(config *configs.BaseConfig) *grpc.ClientConn {
 
 // createGRPCServer creates a gRPC server
 func createGRPCServer(config *configs.BaseConfig) *grpc.Server {
-	grpclog.SetLoggerV2(logger.GetGRPCLogger())
-
 	// define TLS configuration
 	cred, err := credentials.NewServerTLSFromFile(config.CertPath, config.KeyPath)
 	if err != nil {

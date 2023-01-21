@@ -10,11 +10,8 @@ import (
 
 	"github.com/samber/lo"
 
-	"github.com/beihai0xff/pudding/pkg/log"
 	"github.com/beihai0xff/pudding/pkg/log/logger"
 )
-
-var gwLogger = log.GetLoggerByName(logger.GRPCLoggerName).WithFields("module", "http")
 
 // GwMuxDecorator is a decorator for http.Handler.
 type GwMuxDecorator func(http.Handler) http.Handler
@@ -39,7 +36,7 @@ func WithRedirectToHTTPS(h http.Handler) http.Handler {
 	})
 }
 
-var notLogPrefix = []string{"/metrics", "/pudding/broker/swagger"}
+var notLogPrefix = []string{"/metrics", "/healthz", "/pudding/broker/swagger"}
 
 // WithRequestLog returns a GwMuxDecorator that logs the request.
 func WithRequestLog(h http.Handler) http.Handler {
@@ -58,64 +55,35 @@ func WithRequestLog(h http.Handler) http.Handler {
 
 		h.ServeHTTP(rspProxy, r)
 
-		realIP := r.Header.Get("X-Forwarded-For")
-		if realIP == "" {
-			realIP = r.RemoteAddr
-		}
+		requestLog(rspProxy, r)
 
-		scheme := "http"
-		if r.TLS != nil {
-			scheme = "https"
-		}
-		request := map[string]interface{}{
-			"scheme":       scheme,
-			"request_line": fmt.Sprintf("%s %s %s", r.Method, r.RequestURI, r.Proto),
-			"remote_addr":  realIP,
-			// "request":      string(x),
-			"status":   rspProxy.GETHTTPStatus(),
-			"response": rspProxy.Body(),
-		}
-
-		b, _ := json.Marshal(request)
-		if rspProxy.GETHTTPStatus() != http.StatusOK {
-			gwLogger.Error(string(b))
-			return
-		}
-		gwLogger.Info(string(b))
 	})
 
 }
 
-// responseProxy wraps a http.ResponseWriter that implements the minimal
-// http.ResponseWriter interface.
-type responseProxy struct {
-	http.ResponseWriter
-	status int
-	body   []byte
-	Len    int
-}
-
-// WriteHeader writes the HTTP status code of the response.
-func (p *responseProxy) WriteHeader(status int) {
-	p.status = status
-	p.ResponseWriter.WriteHeader(status)
-}
-
-func (p *responseProxy) Write(buf []byte) (int, error) {
-	if p.status == 0 {
-		p.WriteHeader(http.StatusOK)
+func requestLog(p *responseProxy, r *http.Request) {
+	realIP := r.Header.Get("X-Forwarded-For")
+	if realIP == "" {
+		realIP = r.RemoteAddr
 	}
-	n, err := p.ResponseWriter.Write(buf)
-	p.body = append(p.body, buf[:n]...)
-	p.Len += n
-	return n, err
-}
 
-func (p *responseProxy) Body() string {
-	return string(p.body)
-}
+	scheme := "http"
+	if r.TLS != nil {
+		scheme = "https"
+	}
+	request := map[string]interface{}{
+		"scheme":       scheme,
+		"request_line": fmt.Sprintf("%s %s %s", r.Method, r.RequestURI, r.Proto),
+		"remote_addr":  realIP,
+		// "request":      string(x),
+		"status":   p.GETHTTPStatusCode(),
+		"response": p.GetBody(),
+	}
 
-// GETHTTPStatus returns the HTTP status code of the response.
-func (p *responseProxy) GETHTTPStatus() int {
-	return p.status
+	b, _ := json.Marshal(request)
+	if p.GETHTTPStatusCode() != http.StatusOK {
+		logger.GetGRPCLogger().Error(string(b))
+		return
+	}
+	logger.GetGRPCLogger().Info(string(b))
 }

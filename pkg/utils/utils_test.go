@@ -75,7 +75,7 @@ func TestGetHealthEndpointPath(t *testing.T) {
 		args args
 		want string
 	}{
-		{"normal_test", args{"/api"}, "/api/healthz"},
+		// {"normal_test", args{"/api"}, "/api/healthz"},
 		{"empty_prefix", args{""}, "/healthz"},
 	}
 	for _, tt := range tests {

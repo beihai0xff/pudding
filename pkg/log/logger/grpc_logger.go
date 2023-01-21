@@ -5,6 +5,7 @@ package logger
 import (
 	"os"
 	"strconv"
+	"sync"
 
 	"google.golang.org/grpc/grpclog"
 
@@ -37,19 +38,29 @@ func (l *GRPCLogger) V(level int) bool {
 	return level <= l.verbosity
 }
 
+var (
+	grpcLogOnce sync.Once
+	grpcLogger  *GRPCLogger
+	_           grpclog.LoggerV2 = (*GRPCLogger)(nil)
+)
+
 // GetGRPCLogger returns a grpclog.LoggerV2 that uses the given pudding logger.
 func GetGRPCLogger() grpclog.LoggerV2 {
-	l := log.GetLoggerByName(GRPCLoggerName).WithFields("module", "grpc")
+	grpcLogOnce.Do(func() {
+		l := log.GetLoggerByName(GRPCLoggerName).WithFields("module", "grpc")
 
-	// default verbosity is 2.
-	v := 2
-	// Get verbosity from environment variable.
-	vLevel := os.Getenv("GRPC_GO_LOG_VERBOSITY_LEVEL")
-	if vl, err := strconv.Atoi(vLevel); err == nil {
-		v = vl
-	}
+		// default verbosity is 2.
+		v := 1
+		// Get verbosity from environment variable.
+		vLevel := os.Getenv("GRPC_GO_LOG_VERBOSITY_LEVEL")
+		if vl, err := strconv.Atoi(vLevel); err == nil {
+			v = vl
+		}
 
-	logger := &GRPCLogger{Logger: l, verbosity: v}
+		grpcLogger = &GRPCLogger{Logger: l, verbosity: v}
 
-	return logger
+		grpclog.SetLoggerV2(grpcLogger)
+	})
+
+	return grpcLogger
 }
