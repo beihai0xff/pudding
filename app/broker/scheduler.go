@@ -13,6 +13,7 @@ import (
 	"github.com/beihai0xff/pudding/app/broker/storage"
 	"github.com/beihai0xff/pudding/configs"
 	"github.com/beihai0xff/pudding/pkg/clock"
+	"github.com/beihai0xff/pudding/pkg/errno"
 	"github.com/beihai0xff/pudding/pkg/lock"
 	"github.com/beihai0xff/pudding/pkg/log"
 	type2 "github.com/beihai0xff/pudding/types"
@@ -23,6 +24,8 @@ var (
 	errInvalidMessageDelay = errors.New("message delay must be greater than 0")
 	// error when the message ready time is invalid
 	errInvalidMessageReady = errors.New("DeliverAt must be greater than the current time")
+	// check scheduler is implemented Scheduler interface
+	_ Scheduler = (*scheduler)(nil)
 )
 
 const (
@@ -40,6 +43,8 @@ type Scheduler interface {
 	Produce(ctx context.Context, msg *types.Message) error
 	// NewConsumer consume Messages from the RealTime Connector queue
 	NewConsumer(topic, group string, batchSize int, fn type2.HandleMessage) error
+	// Close close the scheduler
+	Close() error
 }
 
 type scheduler struct {
@@ -59,6 +64,7 @@ type scheduler struct {
 	quit chan int64
 }
 
+// New create a new scheduler
 func New(config *configs.BrokerConfig, delay storage.DelayStorage, realtime connector.RealTimeConnector) Scheduler {
 	q := &scheduler{
 		delay:        delay,
@@ -73,6 +79,7 @@ func New(config *configs.BrokerConfig, delay storage.DelayStorage, realtime conn
 	return q
 }
 
+// Run start the scheduler
 func (s *scheduler) Run() {
 	go s.tryProduceToken()
 	s.getToken()
@@ -99,8 +106,13 @@ func (s *scheduler) Produce(ctx context.Context, msg *types.Message) error {
 			log.Infof("success produce message: %s", msg.String())
 			break
 		}
-		// if produce failed, retry in three times
+
 		log.Errorf("DelayStorage: failed to produce message: %v, retry in [%d] times", err, i)
+		// if produce failed, will retry in three times
+		// but if the error is ErrDuplicateMessage, will not retry
+		if errors.Is(err, errno.ErrDuplicateMessage) {
+			break
+		}
 	}
 	return err
 }
@@ -194,10 +206,12 @@ func (s *scheduler) produceRealTime(ctx context.Context, msg *types.Message) err
 	return err
 }
 
+// NewConsumer create a consumer to consume the queue in connector
 func (s *scheduler) NewConsumer(topic, group string, batchSize int, fn type2.HandleMessage) error {
 	return s.connector.NewConsumer(topic, group, batchSize, fn)
 }
 
+// Close close the scheduler
 func (s *scheduler) Close() error {
 	close(s.quit)
 	return s.connector.Close()

@@ -50,7 +50,7 @@ func GetGRPCLogger() grpclog.LoggerV2 {
 		l := log.GetLoggerByName(GRPCLoggerName).WithFields("module", "grpc")
 
 		// default verbosity is 2.
-		v := 1
+		v := 2
 		// Get verbosity from environment variable.
 		vLevel := os.Getenv("GRPC_GO_LOG_VERBOSITY_LEVEL")
 		if vl, err := strconv.Atoi(vLevel); err == nil {
