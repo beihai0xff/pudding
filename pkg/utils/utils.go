@@ -46,7 +46,7 @@ func GetRand(min, max int) int {
 
 // GetHealthEndpointPath get health check http endpoint path.
 func GetHealthEndpointPath(prefix string) string {
-	return prefix + "/healthz"
+	return "/healthz"
 }
 
 // GetSwaggerEndpointPath get Swagger ui http endpoint path.
