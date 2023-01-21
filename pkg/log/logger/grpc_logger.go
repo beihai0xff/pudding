@@ -41,7 +41,6 @@ func (l *GRPCLogger) V(level int) bool {
 var (
 	grpcLogOnce sync.Once
 	grpcLogger  *GRPCLogger
-	_           grpclog.LoggerV2 = (*GRPCLogger)(nil)
 )
 
 // GetGRPCLogger returns a grpclog.LoggerV2 that uses the given pudding logger.
