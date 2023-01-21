@@ -159,6 +159,7 @@ func createGRPCServer(config *configs.BaseConfig) *grpc.Server {
 		grpc.UnaryInterceptor(grpc_middleware.ChainUnaryServer(
 			grpc_recovery.UnaryServerInterceptor(),
 			grpc_validator.UnaryServerInterceptor(),
+			unaryServerRequestLog(),
 			// define open telemetry MeterProvider
 			otelgrpc.UnaryServerInterceptor(otelgrpc.WithMeterProvider(otel.GetMeterProvider())),
 		)),
