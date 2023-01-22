@@ -6,6 +6,7 @@ run:
   skip-dirs:
     - api
     - api/swagger/docs
+    - pkg/cronexpr
   # Which files to skip: they will be analyzed, but issues from them won't be reported.
   skip-files:
     - _test.go
@@ -17,26 +18,54 @@ linters:
   enable: # please keep this alphabetized
     # Don't use soon to deprecated[1] linters that lead to false
     # https://github.com/golangci/golangci-lint/issues/1841
-    - gosimple
-    - errcheck
-    - ineffassign
-    - staticcheck
-    - errname
-    - errorlint
     - bodyclose
+    - depguard
+    - dogsled
+    - dupl
+    - errcheck
+    - exportloopref
+    - exhaustive
+    - goconst
+    - gocritic
+    - gofmt
     - goimports
-    - lll
+#    - gomnd
+    - gocyclo
+#    - gosec
+    - gosimple
+    - govet
+    - ineffassign
     - misspell
+    - nolintlint
+    - nakedret
     - prealloc
+    - predeclared
     - revive
+    - staticcheck
     - stylecheck
+    - thelper
+    - tparallel
+    - typecheck
     - unconvert
     - unparam
-    - typecheck
+#    - whitespace
+#    - wsl
     # 后续添加
     # - unused
 
 linters-settings: # please keep this alphabetized
+  revive:
+    ignore-generated-header: false
+    severity: warning
+    rules:
+      - name: atomic
+        severity: warning
+      - name: exported
+        arguments : ["checkPrivateReceivers","disableStutteringCheck"]
+      - name: package-comments
+        severity: error
+      - name: unhandled-error
+        arguments : ["fmt.Printf", "myFunction"]
   staticcheck:
     checks:
       - "all"
@@ -69,3 +98,55 @@ issues:
     - linters:
         - revive
       text: "var-naming: don't use an underscore in package name"
+
+# output configuration options
+output:
+  # Format: colored-line-number|line-number|json|tab|checkstyle|code-climate|junit-xml|github-actions
+  #
+  # Multiple can be specified by separating them by comma, output can be provided
+  # for each of them by separating format name and path by colon symbol.
+  # Output path can be either `stdout`, `stderr` or path to the file to write to.
+  # Example: "checkstyle:report.json,colored-line-number"
+  #
+  # Default: colored-line-number
+  format: colored-line-number
+  # Print lines of code with issue.
+  # Default: true
+  print-issued-lines: true
+  # Print linter name in the end of issue text.
+  # Default: true
+  print-linter-name: true
+  # Make issues output unique by line.
+  # Default: true
+  uniq-by-line: true
+  # Add a prefix to the output file references.
+  # Default is no prefix.
+  path-prefix: ""
+  # Sort results by: filepath, line and column.
+  sort-results: true
+
+severity:
+  # Set the default severity for issues.
+  #
+  # If severity rules are defined and the issues do not match or no severity is provided to the rule
+  # this will be the default severity applied.
+  # Severities should match the supported severity names of the selected out format.
+  # - Code climate: https://docs.codeclimate.com/docs/issues#issue-severity
+  # - Checkstyle: https://checkstyle.sourceforge.io/property_types.html#SeverityLevel
+  # - GitHub: https://help.github.com/en/actions/reference/workflow-commands-for-github-actions#setting-an-error-message
+  #
+  # Default value is an empty string.
+  default-severity: warning
+  # If set to true `severity-rules` regular expressions become case-sensitive.
+  # Default: false
+  case-sensitive: false
+  # When a list of severity rules are provided, severity information will be added to lint issues.
+  # Severity rules have the same filtering capability as exclude rules
+  # except you are allowed to specify one matcher per severity rule.
+  # Only affects out formats that support setting severity information.
+  #
+  # Default: []
+  rules:
+    - linters:
+        - dupl
+      severity: info

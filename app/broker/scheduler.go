@@ -32,7 +32,7 @@ const (
 	prefixTimeLocker = "pudding_locker_time:%d"
 )
 
-// nolint:lll
+//nolint:lll
 //go:generate mockgen -destination=../../test/mock/scheduler_mock.go -package=mock github.com/beihai0xff/pudding/app/scheduler Scheduler
 
 // Scheduler interface
@@ -126,10 +126,8 @@ func (s *scheduler) checkParams(msg *types.Message) error {
 			return errInvalidMessageDelay
 		}
 		msg.DeliverAt = s.wallClock.Now().Unix() + msg.DeliverAfter
-	} else {
-		if time.Unix(msg.DeliverAt, 0).Before(s.wallClock.Now()) {
-			return errInvalidMessageReady
-		}
+	} else if time.Unix(msg.DeliverAt, 0).Before(s.wallClock.Now()) {
+		return errInvalidMessageReady
 	}
 
 	// if Message.Key is not set, generate a random ID
