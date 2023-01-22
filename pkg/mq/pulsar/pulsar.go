@@ -126,6 +126,7 @@ func (c *Client) NewConsumer(topic, group string, fn HandleMessage) error {
 				log.Errorf("message redelivery count exceed 3, message msgId: %#v -- content: '%s'",
 					msg.ID().EntryID(), string(msg.Payload()))
 				ack(msg)
+
 				continue
 			}
 

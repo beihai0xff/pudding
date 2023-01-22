@@ -84,9 +84,9 @@ func (q *DelayQueue) Consume(ctx context.Context, now, batchSize int64,
 
 		// iterate all messages
 		for _, msg := range messages {
-
+			// use pointer to avoid copylocks: range var msg copies lock alarm
 			// 处理消息
-			err = fn(ctx, &msg)
+			err = fn(ctx, msg)
 			if err != nil {
 				log.Errorf("failed to handle message: %s, caused by: %v", msg.String(), err)
 			}
@@ -102,7 +102,7 @@ func (q *DelayQueue) Consume(ctx context.Context, now, batchSize int64,
 	return nil
 }
 
-func (q *DelayQueue) getFromZSetByScore(timeSlice string, now, batchSize int64) ([]types.Message, error) {
+func (q *DelayQueue) getFromZSetByScore(timeSlice string, now, batchSize int64) ([]*types.Message, error) {
 	// 批量获取已经准备好执行的消息
 	zs, err := q.rdb.ZRangeByScore(context.Background(), q.getZSetName(timeSlice), &redis.ZRangeBy{
 		Min:    strconv.FormatInt(now, 10),
@@ -119,12 +119,14 @@ func (q *DelayQueue) getFromZSetByScore(timeSlice string, now, batchSize int64) 
 		return nil, nil
 	}
 
-	res := make([]types.Message, 0, len(zs))
+	res := make([]*types.Message, 0, len(zs))
 
 	hashTable := q.getHashtableName(timeSlice)
 
 	// 遍历每个 message key，根据 message key 获取 message body
-	for _, z := range zs {
+	for i := range zs {
+		// use pointer to avoid copylocks: range var msg copies lock alarm
+		z := &zs[i]
 		key := z.Member.(string)
 		// 获取消息的 body
 		body, err := q.rdb.HGet(context.Background(), hashTable, key)
@@ -138,7 +140,7 @@ func (q *DelayQueue) getFromZSetByScore(timeSlice string, now, batchSize int64) 
 			continue
 		}
 		log.Debugf("get message from zset: %s", msg.String())
-		res = append(res, msg)
+		res = append(res, &msg)
 	}
 	return res, nil
 }
