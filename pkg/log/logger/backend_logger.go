@@ -82,7 +82,6 @@ func (l *GORMLogger) Trace(c context.Context, begin time.Time, fc func() (sql st
 
 	case l.level == logger.Info:
 		l.l.Infof(l.traceStr, elapsed.Milliseconds(), rows, sql)
-
 	}
 }
 

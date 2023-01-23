@@ -70,7 +70,6 @@ func LogSync() OptionFunc {
 		log.Infof("server log flushed")
 		return nil
 	}
-
 }
 
 // GracefulShutdown

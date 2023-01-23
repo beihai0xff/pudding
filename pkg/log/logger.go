@@ -23,7 +23,6 @@ func newZapLogWithCallerSkip(c *configs.LogConfig) *zap.Logger {
 		zap.AddCaller(),
 		zap.AddStacktrace(zapcore.WarnLevel),
 	)
-
 }
 
 func newCore(c *configs.LogConfig) zapcore.Core {

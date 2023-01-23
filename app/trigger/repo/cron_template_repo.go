@@ -58,16 +58,15 @@ func (dao *CronTemplate) FindByID(ctx context.Context, id uint) (*po.CronTrigger
 	}
 
 	return res, nil
-
 }
 
 // PageQuery query cron templates by page
 func (dao *CronTemplate) PageQuery(ctx context.Context, p *constants.PageQuery, status pb.TriggerStatus) (
 	[]*po.CronTriggerTemplate, int64, error) {
-
 	var res []*po.CronTriggerTemplate
 	var count int64
 	var err error
+
 	if status > pb.TriggerStatus_UNKNOWN_UNSPECIFIED && status <= pb.TriggerStatus_MAX_AGE {
 		res, count, err = sql.CronTriggerTemplate.WithContext(ctx).
 			Where(sql.CronTriggerTemplate.Status.Eq(int32(status))).FindByPage(p.Offset, p.Limit)
@@ -80,7 +79,6 @@ func (dao *CronTemplate) PageQuery(ctx context.Context, p *constants.PageQuery, 
 	}
 
 	return res, count, nil
-
 }
 
 // Insert create a cron template
@@ -88,11 +86,7 @@ func (dao *CronTemplate) Insert(ctx context.Context, p *po.CronTriggerTemplate) 
 	if p.CronExpr == "" {
 		return fmt.Errorf("cron expression is empty")
 	}
-	if err := sql.CronTriggerTemplate.WithContext(ctx).Create(p); err != nil {
-		return err
-	}
-
-	return nil
+	return sql.CronTriggerTemplate.WithContext(ctx).Create(p)
 }
 
 // UpdateStatus update the status of a cron template
@@ -126,5 +120,4 @@ func (dao *CronTemplate) BatchHandleRecords(ctx context.Context, t time.Time, ba
 	}).Where(sql.CronTriggerTemplate.LastExecutionTime.Lte(t)).
 		Where(sql.CronTriggerTemplate.Status.Eq(int32(pb.TriggerStatus_ENABLED))).
 		FindInBatches(&results, batchSize, fw)
-
 }

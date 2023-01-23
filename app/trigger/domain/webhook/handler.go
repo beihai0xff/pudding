@@ -56,11 +56,11 @@ func (h *Handler) FindOneByID(ctx context.Context, req *pb.FindOneByIDRequest) (
 // PageQueryTemplate page query
 func (h *Handler) PageQueryTemplate(ctx context.Context,
 	req *pb.PageQueryTemplateRequest) (*pb.WebhookPageQueryResponse, error) {
-
 	p := constants.PageQuery{
 		Offset: int(req.Offset),
 		Limit:  int(req.Limit),
 	}
+
 	res, count, err := h.t.PageQuery(ctx, &p, req.Status)
 	if err != nil {
 		return nil, errno.InternalError("can not pageQuery Webhook trigger", &errdetails.ErrorInfo{
@@ -80,7 +80,6 @@ func (h *Handler) PageQueryTemplate(ctx context.Context,
 // Register register a webhook trigger template
 func (h *Handler) Register(ctx context.Context,
 	req *pb.WebhookTriggerServiceRegisterRequest) (*pb.WebhookRegisterResponse, error) {
-
 	e := &TriggerTemplate{
 		Topic:             req.Topic,
 		Payload:           req.Payload,
@@ -88,6 +87,7 @@ func (h *Handler) Register(ctx context.Context,
 		ExceptedEndTime:   req.ExceptedEndTime.AsTime(),
 		ExceptedLoopTimes: req.ExceptedLoopTimes,
 	}
+
 	if err := h.t.Register(ctx, e); err != nil {
 		return nil, errno.InternalError("can not register trigger", &errdetails.ErrorInfo{
 			Reason:   err.Error(),
@@ -133,8 +133,8 @@ func (h *Handler) UpdateStatus(ctx context.Context, req *pb.UpdateStatusRequest)
 // Call handler webhook
 func (h *Handler) Call(ctx context.Context, req *pb.WebhookTriggerServiceCallRequest) (
 	*pb.WebhookTriggerServiceCallResponse, error) {
-
 	messageKey, err := h.t.Call(ctx, uint(req.GetId()))
+
 	if err != nil {
 		return nil, errno.InternalError("can not call webhook", &errdetails.ErrorInfo{
 			Reason:   err.Error(),

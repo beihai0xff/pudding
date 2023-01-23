@@ -67,7 +67,6 @@ func (t *Trigger) Run() {
 
 	tick := time.NewTicker(1 * time.Second)
 	for {
-
 		now := <-tick.C
 		ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 

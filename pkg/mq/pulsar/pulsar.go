@@ -113,7 +113,6 @@ func (c *Client) NewConsumer(topic, group string, fn HandleMessage) error {
 
 	go func() {
 		for {
-
 			ctx := context.Background()
 			// receive message, block if queue is empty
 			msg, err := consumer.Receive(ctx)

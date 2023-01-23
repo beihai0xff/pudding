@@ -45,16 +45,15 @@ func (dao *webhookTemplate) FindByID(ctx context.Context, id uint) (*po.WebhookT
 	}
 
 	return res, nil
-
 }
 
 // PageQuery query Webhook templates by page
 func (dao *webhookTemplate) PageQuery(ctx context.Context, p *constants.PageQuery, status pb.TriggerStatus) (
 	[]*po.WebhookTriggerTemplate, int64, error) {
-
 	var res []*po.WebhookTriggerTemplate
 	var count int64
 	var err error
+
 	if status > pb.TriggerStatus_UNKNOWN_UNSPECIFIED && status <= pb.TriggerStatus_MAX_AGE {
 		res, count, err = sql.WebhookTriggerTemplate.WithContext(ctx).
 			Where(sql.WebhookTriggerTemplate.Status.Eq(int32(status))).FindByPage(p.Offset, p.Limit)
@@ -66,16 +65,11 @@ func (dao *webhookTemplate) PageQuery(ctx context.Context, p *constants.PageQuer
 		return nil, 0, err
 	}
 	return res, count, nil
-
 }
 
 // Insert create a Webhook template
 func (dao *webhookTemplate) Insert(ctx context.Context, p *po.WebhookTriggerTemplate) error {
-	if err := sql.WebhookTriggerTemplate.WithContext(ctx).Create(p); err != nil {
-		return err
-	}
-
-	return nil
+	return sql.WebhookTriggerTemplate.WithContext(ctx).Create(p)
 }
 
 // UpdateStatus update the status of a Webhook template

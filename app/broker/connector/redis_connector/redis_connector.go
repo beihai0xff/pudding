@@ -62,7 +62,6 @@ func (q *RealTimeQueue) NewConsumer(topic, group string, batchSize int, fn type2
 // handlerRealTimeMessage handle Messages from the queue in real time
 func (q *RealTimeQueue) handlerRealTimeMessage(ctx context.Context, msgs []redis.XMessage, topic, group string,
 	fn type2.HandleMessage) {
-
 	// 遍历处理消息
 	for _, msg := range msgs {
 		var m *types.Message

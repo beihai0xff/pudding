@@ -36,7 +36,6 @@ type WebhookTemplateDAO interface {
 }
 
 func main() {
-
 	g := gen.NewGenerator(gen.Config{
 		OutPath: "../sql",
 		Mode:    gen.WithDefaultQuery,

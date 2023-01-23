@@ -21,7 +21,6 @@ var grpcBlackList = []string{"/grpc.health.v1.Health/Check"}
 func unaryServerRequestLog() grpc.UnaryServerInterceptor {
 	return func(ctx context.Context, req interface{}, info *grpc.UnaryServerInfo,
 		handler grpc.UnaryHandler) (interface{}, error) {
-
 		rsp, err := handler(ctx, req)
 		if !lo.Contains(grpcBlackList, info.FullMethod) {
 			recordGRPCRequestLog(ctx, req, rsp, info, err)
