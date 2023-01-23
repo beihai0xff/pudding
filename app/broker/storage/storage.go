@@ -1,3 +1,4 @@
+// Package storage provides the storage of the broker.
 package storage
 
 import (

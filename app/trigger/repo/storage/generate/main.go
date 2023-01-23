@@ -1,3 +1,4 @@
+// Package main provides the gorm gen code
 package main
 
 import (

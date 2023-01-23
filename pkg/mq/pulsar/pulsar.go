@@ -1,3 +1,4 @@
+// Package pulsar implements a pulsar client.
 package pulsar
 
 import (
@@ -157,7 +158,7 @@ func (c *Client) getConsumerName(topic, group string) string {
 func (c *Client) Close() {
 	//  close all producers
 	for _, producer := range c.producers {
-		producer.Flush()
+		_ = producer.Flush()
 		producer.Close()
 	}
 	// close all consumers

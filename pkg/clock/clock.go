@@ -1,3 +1,4 @@
+// Package clock provides a clock interface and a real clock implementation.
 package clock
 
 import (

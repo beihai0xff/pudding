@@ -1,3 +1,4 @@
+// Package redis_storage implements a storage with redis.
 package redis_storage
 
 import "github.com/go-redis/redis/v9"

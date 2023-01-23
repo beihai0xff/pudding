@@ -1,3 +1,4 @@
+// Package configs provides the config of the broker.
 package configs
 
 import (

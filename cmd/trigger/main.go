@@ -1,3 +1,4 @@
+// Package main provides the main function of the trigger
 package main
 
 import (
