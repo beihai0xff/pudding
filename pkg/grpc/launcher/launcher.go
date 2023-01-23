@@ -44,7 +44,6 @@ func getListen(port int) net.Listener {
 // It serves the given gRPC service and the gRPC-healthz.
 func StartGRPCServer(config *configs.BaseConfig, opts ...StartServiceFunc) (
 	*grpc.Server, *health.Server) {
-
 	log.Info("starting grpc server ...")
 
 	server := createGRPCServer(config)

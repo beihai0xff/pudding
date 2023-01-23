@@ -55,17 +55,59 @@ linters:
 
 linters-settings: # please keep this alphabetized
   revive:
-    ignore-generated-header: false
+    ignore-generated-header: true
     severity: warning
+    confidence: 0.8
+    errorCode: 2
+    warningCode: 1
     rules:
       - name: atomic
         severity: warning
-      - name: exported
-        arguments : ["checkPrivateReceivers","disableStutteringCheck"]
+
       - name: package-comments
         severity: error
       - name: unhandled-error
         arguments : ["fmt.Printf", "myFunction"]
+      - name: blank-imports
+      - name: context-as-argument
+      - name: context-keys-type
+      - name: dot-imports
+      - name: error-return
+      - name: error-strings
+      - name: error-naming
+      - name: exported
+      - name: if-return
+      - name: increment-decrement
+      - name: var-naming
+      - name: var-declaration
+      - name: package-comments
+      - name: range
+      - name: receiver-naming
+      - name: time-naming
+      - name: unexported-return
+      - name: indent-error-flow
+      - name: errorf
+      - name: argument-limit
+        arguments:
+          - 6
+      - name: function-result-limit
+        arguments:
+          - 3
+      - name: empty-block
+      - name: confusing-naming
+      - name: superfluous-else
+#      - name: unused-parameter
+      - name: unreachable-code
+      - name: unnecessary-stmt
+      - name: struct-tag
+      - name: atomic
+      - name: empty-lines
+      - name: duplicated-imports
+#      - name: import-shadowing
+      - name: confusing-results
+      - name: modifies-parameter
+      - name: redefines-builtin-id
+
   staticcheck:
     checks:
       - "all"

@@ -56,9 +56,7 @@ func WithRequestLog(h http.Handler) http.Handler {
 		h.ServeHTTP(rspProxy, r)
 
 		requestLog(rspProxy, r)
-
 	})
-
 }
 
 func requestLog(p *responseProxy, r *http.Request) {

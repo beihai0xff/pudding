@@ -78,6 +78,7 @@ func (s *scheduler) tryProduceToken() {
 // try to consume token and send to token channel
 func (s *scheduler) getToken() {
 	log.Infof("start consume token")
+
 	if err := s.connector.NewConsumer(type2.TokenTopic, type2.TokenGroup, 1,
 		func(ctx context.Context, msg *types.Message) error {
 			log.Infof("get token: %s", string(msg.Payload))
@@ -92,7 +93,6 @@ func (s *scheduler) getToken() {
 		log.Errorf("failed to get token, caused by %v", err)
 		panic(err)
 	}
-
 }
 
 func (s *scheduler) formatTokenName(time int64) string {

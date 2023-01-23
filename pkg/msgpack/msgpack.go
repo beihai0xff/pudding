@@ -136,7 +136,6 @@ func S2Compress(data []byte) []byte {
 }
 
 func S2Decompress(b []byte) ([]byte, error) {
-
 	switch c := b[len(b)-1]; c {
 	case noCompression:
 		b = b[:len(b)-1]

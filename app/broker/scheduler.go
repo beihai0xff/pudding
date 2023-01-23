@@ -84,7 +84,6 @@ func (s *scheduler) Run() {
 	go s.tryProduceToken()
 	s.getToken()
 	go s.startSchedule()
-
 }
 
 /*
@@ -172,14 +171,12 @@ func (s *scheduler) startSchedule() {
 				if err := locker.Release(ctx); err != nil {
 					log.Errorf("failed to release time locker: %s, caused by %v", name, err)
 				}
-
 			}()
 
 		case <-s.quit:
 			break
 		}
 	}
-
 }
 
 func (s *scheduler) getLockerName(t int64) string {

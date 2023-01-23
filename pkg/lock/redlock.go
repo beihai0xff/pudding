@@ -14,8 +14,8 @@ import (
 var r *redislock.Client
 
 // Init init the lock module
-func Init(rdb *rdb.Client) {
-	r = redislock.New(rdb.GetClient())
+func Init(client *rdb.Client) {
+	r = redislock.New(client.GetClient())
 }
 
 // RedLock is the redis distributed lock implement

@@ -67,8 +67,8 @@ func (q *DelayQueue) pushToZSet(ctx context.Context, timeSlice string, msg *type
 
 func (q *DelayQueue) Consume(ctx context.Context, now, batchSize int64,
 	fn type2.HandleMessage) error {
-
 	timeSlice := q.getTimeSlice(now)
+
 	for {
 		// batch get messages which are ready to execute
 		messages, err := q.getFromZSetByScore(timeSlice, now, batchSize)
@@ -171,6 +171,5 @@ func (q *DelayQueue) getHashtableName(timeSlice string) string {
 }
 
 func (q *DelayQueue) getBucket(timeSlice string) int8 {
-
 	return 1
 }
