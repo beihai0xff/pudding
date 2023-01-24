@@ -1,3 +1,4 @@
+// Package msgpack provides a msgpack codec for encoding and decoding
 package msgpack
 
 import (

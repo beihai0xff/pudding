@@ -1,3 +1,4 @@
+// Package swagger contains the generated swagger files.
 package swagger
 
 import (

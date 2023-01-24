@@ -2,6 +2,10 @@
 run:
   # The default concurrency value is the number of available CPU.
   concurrency: 4
+
+  # Include test files or not.
+  # Default: true
+  tests: false
   # Which dirs to skip: issues from them won't be reported.
   skip-dirs:
     - api
@@ -56,18 +60,16 @@ linters:
 linters-settings: # please keep this alphabetized
   revive:
     ignore-generated-header: true
-    severity: warning
+    severity: error
     confidence: 0.8
     errorCode: 2
-    warningCode: 1
+    warningCode: 0
     rules:
       - name: atomic
         severity: warning
-
       - name: package-comments
-        severity: error
       - name: unhandled-error
-        arguments : ["fmt.Printf", "myFunction"]
+        arguments : ["fmt.Printf"]
       - name: blank-imports
       - name: context-as-argument
       - name: context-keys-type
@@ -76,6 +78,9 @@ linters-settings: # please keep this alphabetized
       - name: error-strings
       - name: error-naming
       - name: exported
+        severity: warning
+        arguments:
+          - disableStutteringCheck
       - name: if-return
       - name: increment-decrement
       - name: var-naming
@@ -129,7 +134,11 @@ linters-settings: # please keep this alphabetized
 
 issues:
   # List of regexps of issue texts to exclude.
-
+  include:
+#    - EXC0012  # EXC0012 revive: exported (.+) should have comment( \(or a comment on this block\))? or be unexported
+    - EXC0013  # EXC0013 revive: package comment should be of the form "(.+)...
+#    - EXC0014  # EXC0014 revive: comment on exported (.+) should be of the form "(.+)..."
+    - EXC0015  # EXC005 revive: should have a package comment
   # Excluding configuration per-path, per-linter, per-text and per-source
   exclude-rules:
 
@@ -140,7 +149,10 @@ issues:
     - linters:
         - revive
       text: "var-naming: don't use an underscore in package name"
-
+    # Exclude `lll` issues for long lines with `go:generate`.
+    - linters:
+        - lll
+      source: "^//go:generate "
 # output configuration options
 output:
   # Format: colored-line-number|line-number|json|tab|checkstyle|code-climate|junit-xml|github-actions
@@ -151,10 +163,10 @@ output:
   # Example: "checkstyle:report.json,colored-line-number"
   #
   # Default: colored-line-number
-  format: colored-line-number
+  format: colored-line-number,github-actions
   # Print lines of code with issue.
   # Default: true
-  print-issued-lines: true
+  print-issued-lines: false
   # Print linter name in the end of issue text.
   # Default: true
   print-linter-name: true
@@ -178,10 +190,10 @@ severity:
   # - GitHub: https://help.github.com/en/actions/reference/workflow-commands-for-github-actions#setting-an-error-message
   #
   # Default value is an empty string.
-  default-severity: warning
+  default-severity: error
   # If set to true `severity-rules` regular expressions become case-sensitive.
   # Default: false
-  case-sensitive: false
+  case-sensitive: true
   # When a list of severity rules are provided, severity information will be added to lint issues.
   # Severity rules have the same filtering capability as exclude rules
   # except you are allowed to specify one matcher per severity rule.
@@ -190,5 +202,5 @@ severity:
   # Default: []
   rules:
     - linters:
-        - dupl
-      severity: info
+        - revive
+      severity: error

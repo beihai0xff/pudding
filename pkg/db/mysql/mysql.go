@@ -1,3 +1,4 @@
+// Package mysql provides a MySQL client.
 package mysql
 
 import (

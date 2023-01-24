@@ -1,3 +1,4 @@
+// Package constants provides the constants of the trigger
 package constants
 
 import "time"

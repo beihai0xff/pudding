@@ -1,3 +1,4 @@
+// Package types provides the types of the broker.
 package types
 
 import (

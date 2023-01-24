@@ -1,4 +1,5 @@
-package redis_broker
+// Package redis_connector implements a connector with redis
+package redis_connector
 
 import (
 	"context"

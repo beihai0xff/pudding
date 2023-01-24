@@ -1,3 +1,4 @@
+// Package configs defines the config of the pudding.
 package configs
 
 import conf "github.com/beihai0xff/pudding/configs"

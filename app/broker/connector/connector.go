@@ -1,3 +1,4 @@
+// Package connector provides the connector of the broker.
 package connector
 
 import (

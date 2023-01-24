@@ -1,3 +1,4 @@
+// Package pulsar_connector implements a connector with pulsar
 package pulsar_connector
 
 import (

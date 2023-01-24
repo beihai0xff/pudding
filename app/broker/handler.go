@@ -1,3 +1,4 @@
+// Package broker implements a broker server.
 package broker
 
 import (

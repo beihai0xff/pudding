@@ -1,5 +1,4 @@
-// package shutdown provides a graceful shutdown mechanism.
-
+// Package shutdown provides a graceful shutdown mechanism.
 package shutdown
 
 import (

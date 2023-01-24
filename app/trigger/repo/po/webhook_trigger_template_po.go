@@ -1,5 +1,5 @@
-// package po is the package of persistent object
-
+// Package po is the package of persistent object
+//
 //nolint:lll
 package po
 
