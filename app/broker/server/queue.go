@@ -38,12 +38,12 @@ func newDelayStorage(broker string) storage.DelayStorage {
 }
 
 // newConnector create a new RealTime Queue Connector
-func newConnector(connector string) connector.RealTimeConnector {
-	switch connector {
+func newConnector(connectorType string) connector.RealTimeConnector {
+	switch connectorType {
 	case "pulsar":
 		return pulsar_connector.NewRealTimeQueue(pulsar.New(configs.GetPulsarConfig()))
 	default:
-		log.Fatalf("unknown connector type: [%s]", connector)
+		log.Fatalf("unknown connectorType type: [%s]", connectorType)
 	}
 	return nil
 }

@@ -29,9 +29,9 @@ type DelayQueue struct {
 	bucket map[string]int8
 }
 
-func NewDelayQueue(rdb *rdb.Client, interval int64) *DelayQueue {
+func NewDelayQueue(client *rdb.Client, interval int64) *DelayQueue {
 	return &DelayQueue{
-		rdb:      rdb,
+		rdb:      client,
 		interval: interval,
 	}
 }
