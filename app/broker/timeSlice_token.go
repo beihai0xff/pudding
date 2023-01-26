@@ -95,12 +95,12 @@ func (s *scheduler) getToken() {
 	}
 }
 
-func (s *scheduler) formatTokenName(time int64) string {
-	return fmt.Sprintf(prefixToken+"%d", time)
+func (s *scheduler) formatTokenName(timestamp int64) string {
+	return fmt.Sprintf(prefixToken+"%d", timestamp)
 }
 
-func (s *scheduler) formatTokenLockerName(time int64) string {
-	return fmt.Sprintf(prefixTokenLocker+"%d", time)
+func (s *scheduler) formatTokenLockerName(timestamp int64) string {
+	return fmt.Sprintf(prefixTokenLocker+"%d", timestamp)
 }
 
 // parseNowFromToken parse token from token name

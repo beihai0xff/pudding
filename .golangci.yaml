@@ -108,7 +108,7 @@ linters-settings: # please keep this alphabetized
       - name: atomic
       - name: empty-lines
       - name: duplicated-imports
-#      - name: import-shadowing
+      - name: import-shadowing
       - name: confusing-results
       - name: modifies-parameter
       - name: redefines-builtin-id
