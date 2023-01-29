@@ -8,6 +8,7 @@ import (
 	conf "github.com/beihai0xff/pudding/configs"
 )
 
+// JSON returns the json format of the config
 func (c *Config) JSON() []byte {
 	b, err := json.Marshal(c)
 	if err != nil {
@@ -18,6 +19,7 @@ func (c *Config) JSON() []byte {
 	return b
 }
 
+// Init initializes the config
 func Init(filePath string, opts ...OptionFunc) {
 	conf.Parse(filePath, "yaml", c, conf.ReadFromFile)
 	c.ServerConfig.SetFlags()
@@ -31,8 +33,10 @@ func Init(filePath string, opts ...OptionFunc) {
 	log.Printf("pudding trigger config:\n %s \n", str.String())
 }
 
+// OptionFunc is the type of option function
 type OptionFunc func(config *Config)
 
+// WithMySQLDSN sets the MySQL dsn
 func WithMySQLDSN(dsn string) OptionFunc {
 	return func(config *Config) {
 		if dsn != "" {
@@ -41,6 +45,7 @@ func WithMySQLDSN(dsn string) OptionFunc {
 	}
 }
 
+// WithWebhookPrefix sets the webhook prefix
 func WithWebhookPrefix(webhookPrefix string) OptionFunc {
 	return func(config *Config) {
 		if webhookPrefix != "" {

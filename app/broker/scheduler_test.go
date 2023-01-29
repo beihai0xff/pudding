@@ -23,7 +23,7 @@ var s *scheduler
 func TestMain(m *testing.M) {
 
 	s = &scheduler{
-		delay:        redis_storage.NewDelayQueue(rdb.NewMockRdb(), 60),
+		delay:        redis_storage.NewDelayStorage(rdb.NewMockRdb(), 60),
 		messageTopic: DefaultTopic,
 		tokenTopic:   TokenTopic,
 		wallClock:    clock.NewFakeClock(time.Date(2022, 1, 1, 0, 0, 0, 0, time.UTC)),

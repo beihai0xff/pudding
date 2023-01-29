@@ -25,14 +25,20 @@ var defaultPack = &MsgPack{
 }
 
 type (
-	MarshalFunc    func(interface{}) ([]byte, error)
-	UnmarshalFunc  func([]byte, interface{}) error
-	CompressFunc   func(data []byte) []byte
+	// MarshalFunc is a function that marshals a value into a byte array.
+	MarshalFunc func(interface{}) ([]byte, error)
+	// UnmarshalFunc is a function that unmarshals a byte array into a value.
+	UnmarshalFunc func([]byte, interface{}) error
+	// CompressFunc is a function that compresses a byte array.
+	CompressFunc func(data []byte) []byte
+	// DecompressFunc is a function that decompresses a byte array.
 	DecompressFunc func(b []byte) ([]byte, error)
 
+	// OptionFunc is a function that configures a MsgPack.
 	OptionFunc func(*MsgPack)
 )
 
+// MsgPack is a msgpack codec.
 type MsgPack struct {
 	marshal    MarshalFunc
 	unmarshal  UnmarshalFunc
@@ -40,6 +46,7 @@ type MsgPack struct {
 	decompress DecompressFunc
 }
 
+// New creates a new MsgPack.
 func New(opts ...OptionFunc) *MsgPack {
 	pack := *defaultPack
 	for _, opt := range opts {
@@ -52,6 +59,7 @@ func New(opts ...OptionFunc) *MsgPack {
 	Functional Options Pattern
 */
 
+// WithMarshalFunc sets the marshal function.
 func WithMarshalFunc(fnm MarshalFunc, fnu UnmarshalFunc) OptionFunc {
 	return func(p *MsgPack) {
 		p.marshal = fnm
@@ -59,6 +67,7 @@ func WithMarshalFunc(fnm MarshalFunc, fnu UnmarshalFunc) OptionFunc {
 	}
 }
 
+// WithCompressFunc sets the compress function.
 func WithCompressFunc(fnc CompressFunc, fnd DecompressFunc) OptionFunc {
 	return func(p *MsgPack) {
 		p.compress = fnc
@@ -118,6 +127,7 @@ func (p *MsgPack) Decode(b []byte, value interface{}) error {
 	compress and decompress like below:
 */
 
+// S2Compress compresses a byte array using s2.
 func S2Compress(data []byte) []byte {
 	// if data length is less than compressionThreshold, skip compress.
 	if len(data) < compressionThreshold {
@@ -136,6 +146,7 @@ func S2Compress(data []byte) []byte {
 	return b
 }
 
+// S2Decompress decompresses a byte array using s2.
 func S2Decompress(b []byte) ([]byte, error) {
 	switch c := b[len(b)-1]; c {
 	case noCompression:

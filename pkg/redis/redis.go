@@ -169,6 +169,7 @@ func (c *Client) XGroupDelConsumer(ctx context.Context, topic, group, consumerNa
 	return err
 }
 
+// XAck acknowledges messages
 func (c *Client) XAck(ctx context.Context, topic, group string, ids ...string) error {
 	return c.client.XAck(ctx, topic, group, ids...).Err()
 }

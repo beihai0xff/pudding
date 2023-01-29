@@ -71,7 +71,7 @@ func LogSync() OptionFunc {
 	}
 }
 
-// GracefulShutdown
+// GracefulShutdown gracefully shutdown the server.
 // 1. tell the load balancer this node is offline, and stop sending new requests
 // 2. set the healthcheck status to unhealthy
 // 3. stop accepting new HTTP requests and wait for existing HTTP requests to finish

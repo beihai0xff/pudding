@@ -40,6 +40,7 @@ var (
 	defaultLastExecutionTime = time.Unix(1, 0).UTC()
 )
 
+// Trigger is the cron trigger
 type Trigger struct {
 	schedulerClient broker.SchedulerServiceClient
 	repo            repo.CronTemplateDAO
@@ -47,6 +48,7 @@ type Trigger struct {
 	wallClock clock.Clock
 }
 
+// NewTrigger create a new cron trigger
 func NewTrigger(db *mysql.Client, client broker.SchedulerServiceClient) *Trigger {
 	return &Trigger{
 		schedulerClient: client,

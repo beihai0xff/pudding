@@ -14,13 +14,14 @@ import (
 	type2 "github.com/beihai0xff/pudding/types"
 )
 
-type RealTimeQueue struct {
+// Connector is a redis connector
+type Connector struct {
 	rdb          *rdb.Client // Redis客户端
 	consumerName string
 }
 
 // Produce produce a Message to the queue in realtime
-func (q *RealTimeQueue) Produce(ctx context.Context, msg *types.Message) error {
+func (q *Connector) Produce(ctx context.Context, msg *types.Message) error {
 	b, err := msgpack.Encode(msg)
 	if err != nil {
 		log.Errorf("msgpack encode message error: %v", err)
@@ -30,7 +31,7 @@ func (q *RealTimeQueue) Produce(ctx context.Context, msg *types.Message) error {
 }
 
 // NewConsumer consume Messages from the queue in real time
-func (q *RealTimeQueue) NewConsumer(topic, group string, batchSize int, fn type2.HandleMessage) error {
+func (q *Connector) NewConsumer(topic, group string, batchSize int, fn type2.HandleMessage) error {
 	go func() {
 		for {
 			ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
@@ -61,7 +62,7 @@ func (q *RealTimeQueue) NewConsumer(topic, group string, batchSize int, fn type2
 }
 
 // handlerRealTimeMessage handle Messages from the queue in real time
-func (q *RealTimeQueue) handlerRealTimeMessage(ctx context.Context, msgs []redis.XMessage, topic, group string,
+func (q *Connector) handlerRealTimeMessage(ctx context.Context, msgs []redis.XMessage, topic, group string,
 	fn type2.HandleMessage) {
 	// 遍历处理消息
 	for _, msg := range msgs {
@@ -88,6 +89,6 @@ func (q *RealTimeQueue) handlerRealTimeMessage(ctx context.Context, msgs []redis
 }
 
 // Close close the queue
-func (q *RealTimeQueue) Close() error {
+func (q *Connector) Close() error {
 	return q.rdb.Close()
 }
