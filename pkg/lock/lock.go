@@ -14,6 +14,7 @@ var (
 	ErrLockNotHeld = errors.New("locker: lock not held")
 )
 
+// Lock is a distributed lock.
 type Lock interface {
 	// Release manually releases the lock.
 	// May return ErrLockNotHeld.

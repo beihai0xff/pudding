@@ -11,10 +11,12 @@ import (
 	type2 "github.com/beihai0xff/pudding/types"
 )
 
+// RealTimeQueue impl the connector interface
 type RealTimeQueue struct {
 	pulsar *pulsar.Client
 }
 
+// NewRealTimeQueue create a pulsar connector
 func NewRealTimeQueue(client *pulsar.Client) *RealTimeQueue {
 	return &RealTimeQueue{
 		pulsar: client,

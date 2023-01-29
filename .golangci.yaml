@@ -135,9 +135,9 @@ linters-settings: # please keep this alphabetized
 issues:
   # List of regexps of issue texts to exclude.
   include:
-#    - EXC0012  # EXC0012 revive: exported (.+) should have comment( \(or a comment on this block\))? or be unexported
+    - EXC0012  # EXC0012 revive: exported (.+) should have comment( \(or a comment on this block\))? or be unexported
     - EXC0013  # EXC0013 revive: package comment should be of the form "(.+)...
-#    - EXC0014  # EXC0014 revive: comment on exported (.+) should be of the form "(.+)..."
+    - EXC0014  # EXC0014 revive: comment on exported (.+) should be of the form "(.+)..."
     - EXC0015  # EXC005 revive: should have a package comment
   # Excluding configuration per-path, per-linter, per-text and per-source
   exclude-rules:

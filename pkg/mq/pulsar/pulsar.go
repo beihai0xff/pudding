@@ -17,12 +17,14 @@ import (
 // HandleMessage is the function type for handling message
 type HandleMessage func(ctx context.Context, msg pulsar.Message) error
 
+// Client is a wrapper of pulsar client
 type Client struct {
 	client    pulsar.Client
 	producers map[string]pulsar.Producer
 	consumers map[string]pulsar.Consumer
 }
 
+// New creates a new pulsar client
 func New(config *configs.PulsarConfig) *Client {
 	log.Infof("create pulsar client: %+v", config)
 	// create pulsar client
@@ -66,6 +68,7 @@ func New(config *configs.PulsarConfig) *Client {
 	return client
 }
 
+// Produce sends a message to pulsar
 func (c *Client) Produce(ctx context.Context, topic string, msg *pulsar.ProducerMessage) error {
 	log.Debugf("produce message to topic %s: %s", topic, string(msg.Payload))
 	produce, ok := c.producers[topic]
@@ -76,6 +79,7 @@ func (c *Client) Produce(ctx context.Context, topic string, msg *pulsar.Producer
 	return err
 }
 
+// NewConsumer creates a new consumer
 func (c *Client) NewConsumer(topic, group string, fn HandleMessage) error {
 	if topic == "" || group == "" {
 		return fmt.Errorf("topic and group can not be empty")
@@ -155,6 +159,7 @@ func (c *Client) getConsumerName(topic, group string) string {
 	return fmt.Sprintf("%s-%s-%s", topic, group, hostname)
 }
 
+// Close closes the client
 func (c *Client) Close() {
 	//  close all producers
 	for _, producer := range c.producers {

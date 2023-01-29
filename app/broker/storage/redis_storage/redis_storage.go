@@ -21,7 +21,8 @@ const (
 	hashtableNameFormat = "hashTable_timeSlice_%s_bucket_%d"
 )
 
-type DelayQueue struct {
+// DelayStorage is a delay queue based on redis
+type DelayStorage struct {
 	rdb *rdb.Client // Redis Client
 	// interval timeSlice interval (Seconds)
 	interval int64
@@ -29,21 +30,23 @@ type DelayQueue struct {
 	bucket map[string]int8
 }
 
-func NewDelayQueue(client *rdb.Client, interval int64) *DelayQueue {
-	return &DelayQueue{
+// NewDelayStorage create a new DelayStorage
+func NewDelayStorage(client *rdb.Client, interval int64) *DelayStorage {
+	return &DelayStorage{
 		rdb:      client,
 		interval: interval,
 	}
 }
 
-func (q *DelayQueue) Produce(ctx context.Context, msg *types.Message) error {
+// Produce produce a Message to DelayStorage
+func (q *DelayStorage) Produce(ctx context.Context, msg *types.Message) error {
 	// member := &redis.Z{Score: float64(msg.DeliverAt.Unix()), Member: msg.Key}
 
 	timeSlice := q.getTimeSlice(msg.DeliverAt)
 	return q.pushToZSet(ctx, timeSlice, msg)
 }
 
-func (q *DelayQueue) pushToZSet(ctx context.Context, timeSlice string, msg *types.Message) error {
+func (q *DelayStorage) pushToZSet(ctx context.Context, timeSlice string, msg *types.Message) error {
 	/*	err := q.rdb.ZAddNX(ctx, q.getZSetName(timeSlice), *member)
 		if err != nil {
 			return fmt.Errorf("pushToZSet failed: %v", err)
@@ -65,7 +68,8 @@ func (q *DelayQueue) pushToZSet(ctx context.Context, timeSlice string, msg *type
 	return nil
 }
 
-func (q *DelayQueue) Consume(ctx context.Context, now, batchSize int64,
+// Consume consume Messages from the queue
+func (q *DelayStorage) Consume(ctx context.Context, now, batchSize int64,
 	fn type2.HandleMessage) error {
 	timeSlice := q.getTimeSlice(now)
 
@@ -102,7 +106,7 @@ func (q *DelayQueue) Consume(ctx context.Context, now, batchSize int64,
 	return nil
 }
 
-func (q *DelayQueue) getFromZSetByScore(timeSlice string, now, batchSize int64) ([]*types.Message, error) {
+func (q *DelayStorage) getFromZSetByScore(timeSlice string, now, batchSize int64) ([]*types.Message, error) {
 	// 批量获取已经准备好执行的消息
 	zs, err := q.rdb.ZRangeByScore(context.Background(), q.getZSetName(timeSlice), &redis.ZRangeBy{
 		Min:    strconv.FormatInt(now, 10),
@@ -146,7 +150,7 @@ func (q *DelayQueue) getFromZSetByScore(timeSlice string, now, batchSize int64) 
 }
 
 // Close the queue
-func (q *DelayQueue) Close() error {
+func (q *DelayStorage) Close() error {
 	return nil
 }
 
@@ -156,20 +160,20 @@ func (q *DelayQueue) Close() error {
 // 59 => 0~60
 // 60 => 60~120
 // 61 => 60~120
-func (q *DelayQueue) getTimeSlice(readyTime int64) string {
+func (q *DelayStorage) getTimeSlice(readyTime int64) string {
 	startAt := (readyTime / q.interval) * q.interval
 	endAt := startAt + q.interval
 	return fmt.Sprintf(timeSliceNameFormat, startAt, endAt)
 }
 
-func (q *DelayQueue) getZSetName(timeSlice string) string {
+func (q *DelayStorage) getZSetName(timeSlice string) string {
 	return fmt.Sprintf(zsetNameFormat, timeSlice, q.getBucket(timeSlice))
 }
 
-func (q *DelayQueue) getHashtableName(timeSlice string) string {
+func (q *DelayStorage) getHashtableName(timeSlice string) string {
 	return fmt.Sprintf(hashtableNameFormat, timeSlice, q.getBucket(timeSlice))
 }
 
-func (q *DelayQueue) getBucket(timeSlice string) int8 {
+func (q *DelayStorage) getBucket(timeSlice string) int8 {
 	return 1
 }

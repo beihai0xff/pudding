@@ -12,11 +12,11 @@ import (
 	rdb "github.com/beihai0xff/pudding/pkg/redis"
 )
 
-var q *DelayQueue
+var q *DelayStorage
 
 func TestMain(m *testing.M) {
 
-	q = &DelayQueue{
+	q = &DelayStorage{
 		rdb:      rdb.NewMockRdb(),
 		interval: 60,
 		bucket:   map[string]int8{},

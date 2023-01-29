@@ -12,10 +12,12 @@ import (
 	"github.com/beihai0xff/pudding/pkg/log/logger"
 )
 
+// Client is a MySQL client.
 type Client struct {
 	*gorm.DB
 }
 
+// New returns a new MySQL client.
 func New(c *configs.MySQLConfig) *Client {
 	db, err := gorm.Open(mysql.Open(c.DSN),
 		&gorm.Config{
@@ -51,6 +53,7 @@ func setConnPool(db *gorm.DB) {
 	sqlDB.SetConnMaxLifetime(time.Hour)
 }
 
+// GetDB returns the underlying gorm.DB.
 func (c *Client) GetDB() *gorm.DB {
 	return c.DB
 }

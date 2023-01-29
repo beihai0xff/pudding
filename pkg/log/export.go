@@ -5,6 +5,7 @@ import (
 	"syscall"
 )
 
+// Logger is the interface that wraps the basic log methods.
 type Logger interface {
 	// Debug logs to DEBUG log
 	Debug(args ...interface{})

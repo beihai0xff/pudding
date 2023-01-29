@@ -15,15 +15,18 @@ import (
 
 const puddingScheduler = "pudding.scheduler"
 
+// Handler implements the broker grpc server.
 type Handler struct {
 	s Scheduler
 	pb.UnimplementedSchedulerServiceServer
 }
 
+// NewHandler create a broker grpc server.
 func NewHandler(s Scheduler) *Handler {
 	return &Handler{s: s, UnimplementedSchedulerServiceServer: pb.UnimplementedSchedulerServiceServer{}}
 }
 
+// SendDelayMessage send a delay message to the broker.
 func (s *Handler) SendDelayMessage(ctx context.Context, req *pb.SendDelayMessageRequest) (*emptypb.Empty, error) {
 	msg := s.convPBToMessage(req)
 	if msg.DeliverAt <= 0 && msg.DeliverAfter <= 0 {
