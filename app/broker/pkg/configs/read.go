@@ -6,9 +6,9 @@ import (
 
 	"github.com/samber/lo"
 
+	"github.com/beihai0xff/pudding/app/broker/pkg/types"
 	conf "github.com/beihai0xff/pudding/configs"
 	"github.com/beihai0xff/pudding/pkg/log"
-	"github.com/beihai0xff/pudding/types"
 )
 
 // ReadFrom read the config from the given configPath.

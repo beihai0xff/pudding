@@ -9,9 +9,9 @@ import (
 	"time"
 
 	"github.com/beihai0xff/pudding/api/gen/pudding/types/v1"
+	type2 "github.com/beihai0xff/pudding/app/broker/pkg/types"
 	"github.com/beihai0xff/pudding/pkg/lock"
 	"github.com/beihai0xff/pudding/pkg/log"
-	type2 "github.com/beihai0xff/pudding/types"
 )
 
 // token is the time of the token bucket

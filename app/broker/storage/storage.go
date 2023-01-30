@@ -5,7 +5,7 @@ import (
 	"context"
 
 	"github.com/beihai0xff/pudding/api/gen/pudding/types/v1"
-	type2 "github.com/beihai0xff/pudding/types"
+	type2 "github.com/beihai0xff/pudding/app/broker/pkg/types"
 )
 
 // DelayStorage is a queue to store messages with delay time

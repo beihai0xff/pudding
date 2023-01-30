@@ -11,11 +11,11 @@ import (
 	"golang.org/x/net/context"
 
 	"github.com/beihai0xff/pudding/api/gen/pudding/types/v1"
+	. "github.com/beihai0xff/pudding/app/broker/pkg/types"
 	"github.com/beihai0xff/pudding/app/broker/storage/redis_storage"
 	"github.com/beihai0xff/pudding/pkg/clock"
 	rdb "github.com/beihai0xff/pudding/pkg/redis"
 	mock "github.com/beihai0xff/pudding/test/mock/app/broker/connector"
-	. "github.com/beihai0xff/pudding/types"
 )
 
 var s *scheduler

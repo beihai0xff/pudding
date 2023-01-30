@@ -7,8 +7,8 @@ import (
 	p "github.com/apache/pulsar-client-go/pulsar"
 
 	"github.com/beihai0xff/pudding/api/gen/pudding/types/v1"
+	type2 "github.com/beihai0xff/pudding/app/broker/pkg/types"
 	"github.com/beihai0xff/pudding/pkg/mq/pulsar"
-	type2 "github.com/beihai0xff/pudding/types"
 )
 
 // RealTimeQueue impl the connector interface
