@@ -10,13 +10,13 @@ import (
 
 	"github.com/beihai0xff/pudding/api/gen/pudding/types/v1"
 	"github.com/beihai0xff/pudding/app/broker/connector"
+	type2 "github.com/beihai0xff/pudding/app/broker/pkg/types"
 	"github.com/beihai0xff/pudding/app/broker/storage"
 	"github.com/beihai0xff/pudding/configs"
 	"github.com/beihai0xff/pudding/pkg/clock"
 	"github.com/beihai0xff/pudding/pkg/errno"
 	"github.com/beihai0xff/pudding/pkg/lock"
 	"github.com/beihai0xff/pudding/pkg/log"
-	type2 "github.com/beihai0xff/pudding/types"
 )
 
 var (

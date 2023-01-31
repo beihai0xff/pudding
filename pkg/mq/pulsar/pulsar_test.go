@@ -10,8 +10,8 @@ import (
 	"github.com/apache/pulsar-client-go/pulsar"
 	"github.com/stretchr/testify/assert"
 
+	"github.com/beihai0xff/pudding/app/broker/pkg/types"
 	"github.com/beihai0xff/pudding/configs"
-	"github.com/beihai0xff/pudding/types"
 )
 
 var testPulsar *Client
