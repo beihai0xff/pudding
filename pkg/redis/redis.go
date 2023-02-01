@@ -17,7 +17,6 @@ import (
 )
 
 var (
-
 	// ErrConsumerGroupExists is returned when the consumer group already exists
 	ErrConsumerGroupExists = errors.New("BUSYGROUP Consumer Group name already exists")
 	clientOnce             sync.Once
