@@ -8,8 +8,8 @@ import (
 	"sync"
 	"time"
 
-	"github.com/go-redis/redis/extra/redisotel/v9"
-	"github.com/go-redis/redis/v9"
+	"github.com/redis/go-redis/extra/redisotel/v9"
+	"github.com/redis/go-redis/v9"
 
 	"github.com/beihai0xff/pudding/configs"
 	"github.com/beihai0xff/pudding/pkg/log"
@@ -17,7 +17,6 @@ import (
 )
 
 var (
-
 	// ErrConsumerGroupExists is returned when the consumer group already exists
 	ErrConsumerGroupExists = errors.New("BUSYGROUP Consumer Group name already exists")
 	clientOnce             sync.Once
