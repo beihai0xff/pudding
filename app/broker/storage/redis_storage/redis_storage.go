@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"strconv"
 
-	"github.com/go-redis/redis/v9"
+	"github.com/redis/go-redis/v9"
 
 	"github.com/beihai0xff/pudding/api/gen/pudding/types/v1"
 	type2 "github.com/beihai0xff/pudding/app/broker/pkg/types"

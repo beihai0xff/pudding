@@ -1,7 +1,7 @@
 // Package redis_storage implements a storage with redis.
 package redis_storage
 
-import "github.com/go-redis/redis/v9"
+import "github.com/redis/go-redis/v9"
 
 var (
 	pushScript = redis.NewScript(`
