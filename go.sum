@@ -1246,8 +1246,8 @@ gorm.io/driver/sqlite v1.3.1/go.mod h1:wJx0hJspfycZ6myN38x1O/AqLtNS6c5o9TndewFbE
 gorm.io/driver/sqlite v1.4.1 h1:ThZ3dRIbTbWGvaMHSVjgf0sb6SRJMNRyQAwfLo25+cM=
 gorm.io/driver/sqlserver v1.3.1/go.mod h1:w25Vrx2BG+CJNUu/xKbFhaKlGxT/nzRkhWCCoptX8tQ=
 gorm.io/driver/sqlserver v1.4.0 h1:3fjbsNkr/YqocSBW5CP16Lq6+APjRrWMzu7NbkXr9QU=
-gorm.io/gen v0.3.19 h1:GX+KLUrycBzy6UsM1svLgC7wBoZVN1XSvbSCZDnuXEE=
-gorm.io/gen v0.3.19/go.mod h1:aWgvoKdG9f8Des4TegSa0N5a+gwhGsFo0JJMaLwokvk=
+gorm.io/gen v0.3.20 h1:f1NAzzkdB5xwSyzAcggKqsiufM1huGtQur7ZewifuoM=
+gorm.io/gen v0.3.20/go.mod h1:aWgvoKdG9f8Des4TegSa0N5a+gwhGsFo0JJMaLwokvk=
 gorm.io/gorm v1.21.15/go.mod h1:F+OptMscr0P2F2qU97WT1WimdH9GaQPoDW7AYd5i2Y0=
 gorm.io/gorm v1.22.2/go.mod h1:F+OptMscr0P2F2qU97WT1WimdH9GaQPoDW7AYd5i2Y0=
 gorm.io/gorm v1.23.1/go.mod h1:l2lP/RyAtc1ynaTjFksBde/O8v9oOGIApu2/xRitmZk=
