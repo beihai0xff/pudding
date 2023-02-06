@@ -39,7 +39,7 @@ require (
 	gopkg.in/natefinch/lumberjack.v2 v2.0.0
 	gorm.io/driver/mysql v1.4.5
 	gorm.io/gen v0.3.20
-	gorm.io/gorm v1.24.3
+	gorm.io/gorm v1.24.5
 	gorm.io/plugin/dbresolver v1.4.1
 )
 
