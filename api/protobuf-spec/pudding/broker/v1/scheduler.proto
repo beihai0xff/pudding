@@ -38,7 +38,7 @@ message SendDelayMessageRequest {
   // Message Payload
   bytes payload  = 3;
   // Message Delay Time (Seconds)
-  int64 deliver_after = 4;
+  uint64 deliver_after = 4;
   // Message Ready Time（now + delay, Unix Timestamp, Seconds）
-  int64 deliver_at  = 5;
+  uint64 deliver_at  = 5;
 }

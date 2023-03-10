@@ -41,7 +41,7 @@ func (s *scheduler) tryProduceToken() {
 		select {
 		case t := <-tick.C:
 			// get token name
-			tokenName := s.formatTokenName(t.Unix())
+			tokenName := s.formatTokenName(uint64(t.Unix()))
 
 			// try to lock the token
 			ctx, cancel := context.WithTimeout(context.Background(), time.Second)
@@ -95,7 +95,7 @@ func (s *scheduler) getToken() {
 	}
 }
 
-func (s *scheduler) formatTokenName(timestamp int64) string {
+func (s *scheduler) formatTokenName(timestamp uint64) string {
 	return fmt.Sprintf(prefixToken+"%d", timestamp)
 }
 
@@ -105,16 +105,16 @@ func (s *scheduler) formatTokenLockerName(timestamp int64) string {
 
 // parseNowFromToken parse token from token name
 // if return value is -1, means parse failed
-func (s *scheduler) parseNowFromToken(token string) int64 {
+func (s *scheduler) parseNowFromToken(token string) uint64 {
 	if strings.HasPrefix(token, prefixToken) {
-		t, err := strconv.ParseInt(token[len(prefixToken):], 10, 64)
+		t, err := strconv.ParseUint(token[len(prefixToken):], 10, 64)
 		if err != nil {
 			log.Errorf("failed to parse token token: %s, caused by %v", token, err)
-			return -1
+			return 0
 		}
 		return t
 	}
 
 	log.Errorf("failed to parse token, token token: %s is invalid", token)
-	return -1
+	return 0
 }

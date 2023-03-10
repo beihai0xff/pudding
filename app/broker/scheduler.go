@@ -59,7 +59,7 @@ type scheduler struct {
 	tokenTopic string
 
 	// token timeSlice token channel
-	token chan int64
+	token chan uint64
 	// quit signal quit channel
 	quit chan int64
 }
@@ -72,7 +72,7 @@ func New(config *configs.BrokerConfig, delay storage.DelayStorage, realtime conn
 		wallClock:    clock.New(),
 		messageTopic: config.MessageTopic,
 		tokenTopic:   config.TokenTopic,
-		token:        make(chan int64),
+		token:        make(chan uint64),
 		quit:         make(chan int64),
 	}
 
@@ -124,8 +124,8 @@ func (s *scheduler) checkParams(msg *types.Message) error {
 		if msg.DeliverAfter <= 0 {
 			return errInvalidMessageDelay
 		}
-		msg.DeliverAt = s.wallClock.Now().Unix() + msg.DeliverAfter
-	} else if time.Unix(msg.DeliverAt, 0).Before(s.wallClock.Now()) {
+		msg.DeliverAt = uint64(s.wallClock.Now().Unix()) + msg.DeliverAfter
+	} else if time.Unix(int64(msg.DeliverAt), 0).Before(s.wallClock.Now()) {
 		return errInvalidMessageReady
 	}
 
@@ -179,7 +179,7 @@ func (s *scheduler) startSchedule() {
 	}
 }
 
-func (s *scheduler) getLockerName(t int64) string {
+func (s *scheduler) getLockerName(t uint64) string {
 	return fmt.Sprintf(prefixTimeLocker, t)
 }
 

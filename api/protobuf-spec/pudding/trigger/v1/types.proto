@@ -41,7 +41,7 @@ message WebhookTriggerTemplate {
   // payload the message payload
   bytes payload = 3;
   // deliver_after Message DeliverAfter time (Seconds)
-  int64 deliver_after = 4;
+  uint64 deliver_after = 4;
 
   // looped_times already loop times
   uint64 looped_times = 5;

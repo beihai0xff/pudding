@@ -97,7 +97,7 @@ func (t *Trigger) Tracking(temp *po.CronTriggerTemplate) error {
 		Topic:     temp.Topic,
 		Key:       t.formatMessageKey(temp.ID, temp.LoopedTimes),
 		Payload:   temp.Payload,
-		DeliverAt: nextTime.Unix(),
+		DeliverAt: uint64(nextTime.Unix()),
 	}
 
 	if _, err = t.schedulerClient.SendDelayMessage(context.Background(), msg); err != nil {
