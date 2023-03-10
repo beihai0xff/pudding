@@ -18,7 +18,7 @@ type TriggerTemplate struct {
 	// Payload the message payload
 	Payload []byte `validate:"required"`
 	// Message DeliverAfter time (Seconds)
-	DeliverAfter int64 `json:"deliver_after" validate:"required"`
+	DeliverAfter uint64 `json:"deliver_after" validate:"required"`
 
 	// LoopedTimes already loop times
 	LoopedTimes uint64 `json:"looped_times"`

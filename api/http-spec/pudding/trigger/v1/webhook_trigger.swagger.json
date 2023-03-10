@@ -338,7 +338,7 @@
         },
         "deliverAfter": {
           "type": "string",
-          "format": "int64"
+          "format": "uint64"
         },
         "exceptedEndTime": {
           "type": "string",
@@ -369,7 +369,7 @@
         },
         "deliverAfter": {
           "type": "string",
-          "format": "int64",
+          "format": "uint64",
           "title": "deliver_after Message DeliverAfter time (Seconds)"
         },
         "loopedTimes": {

@@ -74,7 +74,7 @@ func TestSchedule_checkParams(t *testing.T) {
 	err = s.checkParams(msg)
 	assert.NoError(t, err)
 	// test DeliverAt
-	assert.Equal(t, int64(60000000000), msg.DeliverAt)
+	assert.Equal(t, uint64(60000000000), msg.DeliverAt)
 	// test no topic set
 	assert.Equalf(t, DefaultTopic, msg.Topic, "msg.topic: %s", msg.Topic)
 	// test no uuid set
@@ -84,7 +84,7 @@ func TestSchedule_checkParams(t *testing.T) {
 	err = s.checkParams(msg)
 	assert.NoError(t, err)
 	// test DeliverAt
-	assert.Equal(t, int64(60000000000), msg.DeliverAt)
+	assert.Equal(t, uint64(60000000000), msg.DeliverAt)
 	// test no topic set
 	assert.Equalf(t, "test_topic", msg.Topic, "msg.topic: %s", msg.Topic)
 	// test no uuid set
@@ -117,7 +117,7 @@ func TestSchedule_Produce(t *testing.T) {
 	err = s.Produce(ctx, msg)
 	assert.NoError(t, err)
 	// test DeliverAt
-	assert.Equal(t, int64(60000000000), msg.DeliverAt)
+	assert.Equal(t, uint64(60000000000), msg.DeliverAt)
 	// test no topic set
 	assert.Equalf(t, DefaultTopic, msg.Topic, "msg.topic: %s", msg.Topic)
 	// test no uuid set
@@ -127,7 +127,7 @@ func TestSchedule_Produce(t *testing.T) {
 	err = s.Produce(ctx, msg)
 	assert.NoError(t, err)
 	// test DeliverAt
-	assert.Equal(t, int64(60000000000), msg.DeliverAt)
+	assert.Equal(t, uint64(60000000000), msg.DeliverAt)
 	// test no topic set
 	assert.Equalf(t, "test_topic", msg.Topic, "msg.topic: %s", msg.Topic)
 	// test no uuid set

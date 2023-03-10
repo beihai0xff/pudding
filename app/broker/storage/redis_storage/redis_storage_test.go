@@ -38,7 +38,7 @@ func TestRealTimeQueue_Produce(t *testing.T) {
 
 	for i := 1; i <= 100; i++ {
 		msg.Key = uuid.New().String()
-		msg.DeliverAt = int64(i)
+		msg.DeliverAt = uint64(i)
 		assert.Equal(t, nil, q.Produce(context.Background(), msg))
 	}
 
@@ -66,7 +66,7 @@ func TestDelayQueue_getTimeSlice(t *testing.T) {
 		{"test61", args{readyTime: 61}, "60~120"},
 	}
 	for _, tt := range tests {
-		assert.Equal(t, tt.want, q.getTimeSlice(tt.args.readyTime))
+		assert.Equal(t, tt.want, q.getTimeSlice(uint64(tt.args.readyTime)))
 	}
 }
 
@@ -79,7 +79,7 @@ func TestDelayQueue_getFromZSetByScore(t *testing.T) {
 	for i := 120; i <= 180; i++ {
 		testm := *msg
 		testm.Key = uuid.New().String()
-		testm.DeliverAt = int64(i)
+		testm.DeliverAt = uint64(i)
 		assert.Equal(t, nil, q.Produce(context.Background(), &testm))
 	}
 

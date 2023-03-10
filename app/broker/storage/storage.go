@@ -14,7 +14,7 @@ type DelayStorage interface {
 	// Produce produce a Message to DelayStorage
 	Produce(ctx context.Context, msg *types.Message) error
 	// Consume consume Messages from the queue
-	Consume(ctx context.Context, now, batchSize int64, fn type2.HandleMessage) error
+	Consume(ctx context.Context, now uint64, batchSize int64, fn type2.HandleMessage) error
 	// Close the queue
 	Close() error
 }
