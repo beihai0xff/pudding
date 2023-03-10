@@ -25,13 +25,13 @@ const (
 type DelayStorage struct {
 	rdb *rdb.Client // Redis Client
 	// interval timeSlice interval (Seconds)
-	interval int64
+	interval uint64
 	// key is timeSlice name, value is the bucket nums in the partition
 	bucket map[string]int8
 }
 
 // NewDelayStorage create a new DelayStorage
-func NewDelayStorage(client *rdb.Client, interval int64) *DelayStorage {
+func NewDelayStorage(client *rdb.Client, interval uint64) *DelayStorage {
 	return &DelayStorage{
 		rdb:      client,
 		interval: interval,
@@ -69,7 +69,7 @@ func (q *DelayStorage) pushToZSet(ctx context.Context, timeSlice string, msg *ty
 }
 
 // Consume consume Messages from the queue
-func (q *DelayStorage) Consume(ctx context.Context, now, batchSize int64,
+func (q *DelayStorage) Consume(ctx context.Context, now uint64, batchSize int64,
 	fn type2.HandleMessage) error {
 	timeSlice := q.getTimeSlice(now)
 
@@ -106,11 +106,11 @@ func (q *DelayStorage) Consume(ctx context.Context, now, batchSize int64,
 	return nil
 }
 
-func (q *DelayStorage) getFromZSetByScore(timeSlice string, now, batchSize int64) ([]*types.Message, error) {
+func (q *DelayStorage) getFromZSetByScore(timeSlice string, now uint64, batchSize int64) ([]*types.Message, error) {
 	// 批量获取已经准备好执行的消息
 	zs, err := q.rdb.ZRangeByScore(context.Background(), q.getZSetName(timeSlice), &redis.ZRangeBy{
-		Min:    strconv.FormatInt(now, 10),
-		Max:    strconv.FormatInt(now, 10),
+		Min:    strconv.FormatUint(now, 10),
+		Max:    strconv.FormatUint(now, 10),
 		Offset: 0,
 		Count:  batchSize,
 	})
@@ -160,7 +160,7 @@ func (q *DelayStorage) Close() error {
 // 59 => 0~60
 // 60 => 60~120
 // 61 => 60~120
-func (q *DelayStorage) getTimeSlice(readyTime int64) string {
+func (q *DelayStorage) getTimeSlice(readyTime uint64) string {
 	startAt := (readyTime / q.interval) * q.interval
 	endAt := startAt + q.interval
 	return fmt.Sprintf(timeSliceNameFormat, startAt, endAt)

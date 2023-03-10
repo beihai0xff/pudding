@@ -102,12 +102,12 @@
         },
         "deliverAfter": {
           "type": "string",
-          "format": "int64",
+          "format": "uint64",
           "title": "Message Delay Time (Seconds)"
         },
         "deliverAt": {
           "type": "string",
-          "format": "int64",
+          "format": "uint64",
           "title": "Message Ready Time（now + delay, Unix Timestamp, Seconds）"
         }
       },
