@@ -13,7 +13,7 @@ const (
 type Storage interface {
 	// View to get message log
 	// Read-Only transactions
-	View(segmentID, sequence uint64) (*types.Message, error)
+	View(segmentID, timestamp, sequence uint64) (*types.Message, error)
 	// Insert Create or update a key
 	// If the key already exist it will return
 	Insert(msg *types.Message) (uint64, error)

@@ -32,7 +32,7 @@ const (
 )
 
 var (
-	defaultBucketName      = []byte{0x30}
+	defaultBucketName      = byte(0x30)
 	defaultIndexBucketName = []byte("index")
 )
 
@@ -42,7 +42,7 @@ var DefaultConfig = &Config{
 	SegmentInterval: defaultSegmentInterval,
 	BatchInterval:   defaultBatchInterval,
 	BatchLimit:      defaultBatchLimit,
-	MmapSize:        defaultInitialMmapSize,
+	MMapSize:        defaultInitialMmapSize,
 }
 
 // Config is the config of aofStorage
@@ -57,9 +57,9 @@ type Config struct {
 	// BatchLimit is the maximum puts before flushing the BatchTx.
 	// if puts >= BatchLimit, the BatchTx will be flushed.
 	BatchLimit int
-	// MmapSize is the initial size of the mmapped region. Setting this larger than
+	// MMapSize is the initial size of the mmapped region. Setting this larger than
 	// the potential max db size can prevent writer from blocking reader.
-	MmapSize int
+	MMapSize int
 	// MustBeNewBucket if is true, will return error when create an exist segmentID
 	MustBeNewBucket bool
 }
@@ -114,10 +114,10 @@ func newStorage(c *Config) (*aofStorage, error) {
 }
 
 // View a k/v pairs in Read-Only transactions.
-func (s *aofStorage) View(segmentID, sequence uint64) (*types.Message, error) {
+func (s *aofStorage) View(segmentID, timestamp, sequence uint64) (*types.Message, error) {
 	msg := types.Message{}
 	return &msg, s.db[segmentID].View(func(tx *bolt.Tx) error {
-		b := tx.Bucket(defaultBucketName)
+		b := tx.Bucket(s.getBucketName(segmentID, timestamp))
 		if b == nil {
 			return ErrBucketNotFound
 		}
@@ -132,20 +132,29 @@ func (s *aofStorage) Insert(msg *types.Message) (uint64, error) {
 	var sequence uint64
 	segmentID := getSegmentID(msg.DeliverAt, s.segmentInterval)
 
-	if _, ok := s.db[segmentID]; !ok {
-		err := s.CreateSegment(segmentID)
-		if err != nil {
-			log.Errorf("create segment [%d] error: %v", segmentID, err)
-			return 0, err
+	db, ok := s.db[segmentID]
+	if !ok {
+		var err error
+		if db, err = s.createSegment(segmentID); err != nil {
+			log.Errorf("create segment db [%d] error: %v", segmentID, err)
+			return sequence, err
 		}
 	}
 
-	return sequence, s.db[segmentID].Update(func(tx *bolt.Tx) error {
+	bucketName := s.getBucketName(segmentID, msg.DeliverAt)
+	if err := s.tryCreateDataBucket(db, bucketName); err != nil {
+		log.Errorf("failed to create segment [%d] bucket [%b]", segmentID, defaultBucketName)
+		return sequence, ErrBucketCreateFailed
+	} else {
+		log.Infof("create segment [%d] bucket [%b] success", segmentID, defaultBucketName)
+	}
+
+	return sequence, db.Update(func(tx *bolt.Tx) error {
 		var err error
-		bucketName := defaultBucketName
+
 		b := tx.Bucket(bucketName)
 		if b == nil {
-			log.Errorf("failed to get segment [%d] bucket [%b]", segmentID, defaultBucketName)
+			log.Errorf("failed to get segment [%d] bucket [%b]", segmentID, bucketName)
 			return ErrBucketNotFound
 		}
 
@@ -161,19 +170,60 @@ func (s *aofStorage) Insert(msg *types.Message) (uint64, error) {
 			_ = tx.Rollback()
 			return err
 		}
+
 		entry, err := proto.Marshal(msg)
 		if err != nil {
 			log.Errorf("failed to marshal message: %v", err)
 			_ = tx.Rollback()
 			return err
 		}
+
 		if err = b.Put(sq, entry); err != nil {
-			log.Errorf("failed to put segment [%d] bucket [%b] key [%d] value: %v", segmentID, bucketName, sequence, err)
+			log.Errorf("failed to put segment [%d] bucket [%b] key [%d] value: %v", segmentID, bucketName, msg.Key, err)
 			_ = tx.Rollback()
 			return err
 		}
 
 		// will auto commit in Update()
+		return nil
+	})
+}
+
+// tryCreateSegmentDB will create a db if it not exists
+func (s *aofStorage) tryCreateDataBucket(db *bolt.DB, bucketName []byte) error {
+	return db.Update(func(tx *bolt.Tx) error {
+		if tx.Bucket(bucketName) != nil {
+			return nil
+		}
+		var err error
+		var b *bolt.Bucket
+		if b, err = tx.CreateBucket(bucketName); err != nil {
+			log.Errorf("create [%s] data bucket [%s] error: %v", db.String(), bucketName, err)
+			_ = tx.Rollback()
+			return err
+		}
+		log.Infof("create [%s] data bucket [%s] success", db.String(), bucketName)
+
+		if err = b.SetSequence(StartID); err != nil {
+			log.Errorf("set [%s] data bucket sequence: %v", db.String(), err)
+			_ = tx.Rollback()
+			return err
+		}
+		log.Infof("set [%s] data bucket sequence from [%d] success", db.String(), StartID)
+
+		return nil
+	})
+}
+
+// tryCreateSegmentDB will create a db if it not exists
+func (s *aofStorage) tryCreateIndexBucket(db *bolt.DB) error {
+	return db.Update(func(tx *bolt.Tx) error {
+		var err error
+		if _, err = tx.CreateBucket(defaultIndexBucketName); err != nil {
+			log.Errorf("create [%s] index bucket [%s] error: %v", db.String(), defaultIndexBucketName, err)
+			return err
+		}
+		log.Infof("create [%s] index bucket [%s] success", db.String(), defaultIndexBucketName)
 		return nil
 	})
 }
@@ -202,15 +252,22 @@ func (s *aofStorage) Delete(bucket, key []byte) error {
 
 // CreateSegment create a segmentID
 func (s *aofStorage) CreateSegment(segmentID uint64) error {
+	_, err := s.createSegment(segmentID)
+	return err
+}
+
+// CreateSegment create a segmentID
+func (s *aofStorage) createSegment(segmentID uint64) (*bolt.DB, error) {
 	db, err := s.tryCreateSegmentDB(segmentID)
 	if err != nil {
-		return err
+		log.Errorf("create segment [%d] db error: %v", segmentID, err)
+		return nil, err
 	}
-	if err := s.tryCreateBucket(db); err != nil {
-		return err
+	if err := s.tryCreateIndexBucket(db); err != nil {
+		log.Errorf("create segment [%d] index bucket error: %v", segmentID, err)
 	}
 	s.db[segmentID] = db
-	return nil
+	return db, nil
 }
 
 // tryCreateSegmentDB will open an exist db file, or create a db if it not exists
@@ -226,38 +283,14 @@ func (s *aofStorage) tryCreateSegmentDB(segmentID uint64) (*bolt.DB, error) {
 	return db, nil
 }
 
-// tryCreateSegmentDB will create a db if it not exists
-func (s *aofStorage) tryCreateBucket(db *bolt.DB) error {
-	return db.Update(func(tx *bolt.Tx) error {
-		var err error
-		if _, err = tx.CreateBucket(defaultIndexBucketName); err != nil {
-			log.Errorf("create [%s] index bucket [%s] error: %v", db.String(), defaultIndexBucketName, err)
-			return err
-		}
-		log.Infof("create [%s] index bucket [%s] success", db.String(), defaultIndexBucketName)
-
-		var b *bolt.Bucket
-		if b, err = tx.CreateBucket(defaultBucketName); err != nil {
-			log.Errorf("create [%s] data bucket [%s] error: %v", db.String(), defaultBucketName, err)
-			_ = tx.Rollback()
-			return err
-		}
-		log.Infof("create [%s] data bucket [%s] success", db.String(), defaultBucketName)
-
-		if err = b.SetSequence(StartID); err != nil {
-			log.Errorf("set [%s] data bucket sequence: %v", db.String(), err)
-			_ = tx.Rollback()
-			return err
-		}
-		log.Infof("set [%s] data bucket sequence from [%d] success", db.String(), StartID)
-
-		return nil
-	})
-}
-
 // DeleteSegment the given segmentID
 func (s *aofStorage) DeleteSegment(segmentID uint64) error {
 	path := getFilePath(segmentID, s.segmentInterval, s.dir)
 	delete(s.db, segmentID)
 	return os.Remove(path)
+}
+
+// getBucketName get bucket name by segmentID and deliverAt
+func (s *aofStorage) getBucketName(segmentID, deliverAt uint64) []byte {
+	return []byte{defaultBucketName + byte(deliverAt-segmentID)}
 }

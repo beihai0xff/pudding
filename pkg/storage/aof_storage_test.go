@@ -40,11 +40,11 @@ func Test_aofStorage_View(t *testing.T) {
 		want                *types.Message
 		wantErr             assert.ErrorAssertionFunc
 	}{
-		{"test_short_url", 120, sequence, testMsg, assert.NoError},
+		{"test_View", 120, sequence, testMsg, assert.NoError},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got, err := testAof.View(tt.segmentID, tt.sequence)
+			got, err := testAof.View(tt.segmentID, 120, tt.sequence)
 			tt.wantErr(t, err)
 			if !proto.Equal(got, tt.want) {
 				t.Errorf("View() got = %v, want %v", got, tt.want)
@@ -98,7 +98,7 @@ func Test_aofStorage_CreateSegment(t *testing.T) {
 				DeliverAt:    123456,
 			}
 			sequence, _ := testAof.Insert(msg)
-			value, _ := testAof.View(tt.segmentID, sequence)
+			value, _ := testAof.View(tt.segmentID, 123456, sequence)
 			if !proto.Equal(value, msg) {
 				t.Errorf("CreateSegment get value = %v, want %v", value, msg)
 			}
@@ -111,14 +111,15 @@ func Test_aofStorage_tryCreateBucket(t *testing.T) {
 	tests := []struct {
 		name           string
 		db             *bolt.DB
+		bucketName     []byte
 		errorAssertion assert.ErrorAssertionFunc
 	}{
-		{"test_CreateBucket_no_exist", db, assert.NoError},
-		{"test_CreateBucket_exist", db, assert.Error},
+		{"test_CreateBucket_no_exist", db, []byte("test_bucket"), assert.NoError},
+		{"test_CreateBucket_exist", db, []byte("test_bucket"), assert.NoError},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			tt.errorAssertion(t, testAof.tryCreateBucket(tt.db))
+			tt.errorAssertion(t, testAof.tryCreateDataBucket(tt.db, tt.bucketName))
 		})
 	}
 	_ = testAof.DeleteSegment(123)
