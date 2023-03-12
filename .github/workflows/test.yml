@@ -12,8 +12,6 @@ jobs:
 
     steps:
       - uses: actions/checkout@v3.3.0
-      - name: Set up Apache Pulsar
-        uses: reugn/github-action-pulsar@v1
 
       - uses: shogo82148/actions-setup-mysql@v1
         with:

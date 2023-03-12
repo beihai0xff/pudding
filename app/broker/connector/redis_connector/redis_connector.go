@@ -20,6 +20,14 @@ type Connector struct {
 	consumerName string
 }
 
+// NewConnector create a new redis connector
+func NewConnector(client *rdb.Client) *Connector {
+	return &Connector{
+		rdb:          client,
+		consumerName: "pudding",
+	}
+}
+
 // Produce produce a Message to the queue in realtime
 func (q *Connector) Produce(ctx context.Context, msg *types.Message) error {
 	b, err := msgpack.Encode(msg)

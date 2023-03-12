@@ -1,7 +1,7 @@
 name: pudding.broker
 server_config:
   broker: redis
-  connector: pulsar
+  connector: redis
   time_slice_interval: 60s
   message_topic: default
   token_topic: token
