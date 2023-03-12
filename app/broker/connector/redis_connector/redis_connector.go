@@ -21,9 +21,9 @@ type Connector struct {
 }
 
 // NewConnector create a new redis connector
-func NewConnector(rdb *rdb.Client) *Connector {
+func NewConnector(client *rdb.Client) *Connector {
 	return &Connector{
-		rdb:          rdb,
+		rdb:          client,
 		consumerName: "pudding",
 	}
 }
