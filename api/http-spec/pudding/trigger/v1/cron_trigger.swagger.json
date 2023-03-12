@@ -201,6 +201,7 @@
         "details": {
           "type": "array",
           "items": {
+            "type": "object",
             "$ref": "#/definitions/protobufAny"
           }
         }
@@ -225,6 +226,7 @@
         "body": {
           "type": "array",
           "items": {
+            "type": "object",
             "$ref": "#/definitions/v1CronTriggerTemplate"
           }
         }
