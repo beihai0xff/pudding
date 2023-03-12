@@ -135,7 +135,7 @@ func (s *aofStorage) Insert(msg *types.Message) (uint64, error) {
 	db, ok := s.db[segmentID]
 	if !ok {
 		var err error
-		if db, err = s.createSegment(segmentID); err != nil {
+		if db, err = s.createSegmentDB(segmentID); err != nil {
 			log.Errorf("create segment db [%d] error: %v", segmentID, err)
 			return sequence, err
 		}
@@ -145,8 +145,6 @@ func (s *aofStorage) Insert(msg *types.Message) (uint64, error) {
 	if err := s.tryCreateDataBucket(db, bucketName); err != nil {
 		log.Errorf("failed to create segment [%d] bucket [%b]", segmentID, defaultBucketName)
 		return sequence, ErrBucketCreateFailed
-	} else {
-		log.Infof("create segment [%d] bucket [%b] success", segmentID, defaultBucketName)
 	}
 
 	return sequence, db.Update(func(tx *bolt.Tx) error {
@@ -252,17 +250,18 @@ func (s *aofStorage) Delete(bucket, key []byte) error {
 
 // CreateSegment create a segmentID
 func (s *aofStorage) CreateSegment(segmentID uint64) error {
-	_, err := s.createSegment(segmentID)
+	_, err := s.createSegmentDB(segmentID)
 	return err
 }
 
 // CreateSegment create a segmentID
-func (s *aofStorage) createSegment(segmentID uint64) (*bolt.DB, error) {
+func (s *aofStorage) createSegmentDB(segmentID uint64) (*bolt.DB, error) {
 	db, err := s.tryCreateSegmentDB(segmentID)
 	if err != nil {
 		log.Errorf("create segment [%d] db error: %v", segmentID, err)
 		return nil, err
 	}
+
 	if err := s.tryCreateIndexBucket(db); err != nil {
 		log.Errorf("create segment [%d] index bucket error: %v", segmentID, err)
 	}

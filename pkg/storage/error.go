@@ -9,6 +9,7 @@ import (
 )
 
 var (
+	// ErrBucketCreateFailed is the error when create bucket failed
 	ErrBucketCreateFailed = errors.New("create bucket failed")
 	// ErrBucketNotFound is the error when the bucket not found
 	ErrBucketNotFound = bolt.ErrBucketNotFound
