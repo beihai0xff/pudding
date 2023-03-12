@@ -27,9 +27,9 @@ require (
 	github.com/vmihailenco/msgpack/v5 v5.3.5
 	go.etcd.io/bbolt v1.3.7
 	go.opentelemetry.io/contrib/instrumentation/google.golang.org/grpc/otelgrpc v0.38.0
-	go.opentelemetry.io/otel/exporters/prometheus v0.35.0
-	go.opentelemetry.io/otel/metric v0.35.0
-	go.opentelemetry.io/otel/sdk/metric v0.35.0
+	go.opentelemetry.io/otel/exporters/prometheus v0.37.0
+	go.opentelemetry.io/otel/metric v0.37.0
+	go.opentelemetry.io/otel/sdk/metric v0.37.0
 	go.uber.org/automaxprocs v1.5.1
 	go.uber.org/zap v1.24.0
 	golang.org/x/net v0.8.0
