@@ -8,10 +8,9 @@ import (
 	context "context"
 	reflect "reflect"
 
-	gomock "github.com/golang/mock/gomock"
-
 	types "github.com/beihai0xff/pudding/api/gen/pudding/types/v1"
 	types0 "github.com/beihai0xff/pudding/app/broker/pkg/types"
+	gomock "github.com/golang/mock/gomock"
 )
 
 // MockScheduler is a mock of Scheduler interface.
@@ -35,6 +34,20 @@ func NewMockScheduler(ctrl *gomock.Controller) *MockScheduler {
 // EXPECT returns an object that allows the caller to indicate expected use.
 func (m *MockScheduler) EXPECT() *MockSchedulerMockRecorder {
 	return m.recorder
+}
+
+// Close mocks base method.
+func (m *MockScheduler) Close() error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "Close")
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// Close indicates an expected call of Close.
+func (mr *MockSchedulerMockRecorder) Close() *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Close", reflect.TypeOf((*MockScheduler)(nil).Close))
 }
 
 // NewConsumer mocks base method.

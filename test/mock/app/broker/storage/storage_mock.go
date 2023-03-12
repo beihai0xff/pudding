@@ -8,10 +8,9 @@ import (
 	context "context"
 	reflect "reflect"
 
-	gomock "github.com/golang/mock/gomock"
-
 	types "github.com/beihai0xff/pudding/api/gen/pudding/types/v1"
 	types0 "github.com/beihai0xff/pudding/app/broker/pkg/types"
+	gomock "github.com/golang/mock/gomock"
 )
 
 // MockDelayStorage is a mock of DelayStorage interface.
@@ -52,7 +51,7 @@ func (mr *MockDelayStorageMockRecorder) Close() *gomock.Call {
 }
 
 // Consume mocks base method.
-func (m *MockDelayStorage) Consume(ctx context.Context, now, batchSize int64, fn types0.HandleMessage) error {
+func (m *MockDelayStorage) Consume(ctx context.Context, now uint64, batchSize int64, fn types0.HandleMessage) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Consume", ctx, now, batchSize, fn)
 	ret0, _ := ret[0].(error)
