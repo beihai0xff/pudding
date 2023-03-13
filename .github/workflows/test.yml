@@ -11,13 +11,11 @@ jobs:
     runs-on: ${{ matrix.os }}
 
     steps:
-      - uses: actions/checkout@v3.3.0
-
-      - uses: shogo82148/actions-setup-mysql@v1
+      - name: Checkout code
+        uses: actions/checkout@v3.3.0
+      - uses: KengoTODA/actions-setup-docker-compose@v1
         with:
-          mysql-version: '8.0.31'
-          root-password: 'my-secret-pw'
-      - run: mysql -u root -h 127.0.0.1 -p'my-secret-pw' -e 'create database test;'
+          version: '2.15.1'
       - name: Install Go
         uses: actions/setup-go@v3.5.0
         with:
@@ -31,7 +29,6 @@ jobs:
           key: ${{ runner.os }}-go-${{ hashFiles('**/go.sum') }}
           restore-keys: |
             ${{ runner.os }}-go-
-      - name: Checkout code
-        uses: actions/checkout@v3.3.0
+
       - name: Test
-        run: go test ./...
+        run: make test

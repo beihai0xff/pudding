@@ -12,6 +12,10 @@ import (
 // ParseOptionFunc Parse config option func
 type ParseOptionFunc func(path, format string)
 
+const (
+	ConfigFormatYAML = "yaml"
+)
+
 // Parse ReadConfig read config from filePath with format
 func Parse(filePath, format string, c interface{}, opt ParseOptionFunc) {
 	opt(filePath, format)

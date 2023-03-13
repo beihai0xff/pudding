@@ -6,7 +6,7 @@ import (
 
 	"github.com/stretchr/testify/assert"
 
-	"github.com/beihai0xff/pudding/configs"
+	test_utils "github.com/beihai0xff/pudding/test/mock/utils"
 )
 
 // Example of how to implement a MySQL server based on a Engine:
@@ -27,11 +27,7 @@ func TestMain(m *testing.M) {
 }
 
 func TestNew(t *testing.T) {
-	c := &configs.MySQLConfig{
-		DSN: "root:my-secret-pw@tcp(localhost:3306)/test?charset=utf8mb4&parseTime=True&loc=Local",
-	}
-
-	client := New(c)
+	client := New(test_utils.TestMySQLConfig)
 
 	sqlDB, err := client.DB.DB()
 	assert.Equal(t, nil, err)

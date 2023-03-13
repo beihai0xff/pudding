@@ -6,13 +6,17 @@ IMAGE_NAME 			= pudding.${APP}:latest
 
 SWAGGER_UI_VERSION	:=v4.15.5
 
+WORKSPACE_DIR		?= $(shell pwd)
+
 # lint
 lint:
 	@cd api/protobuf-spec && buf mod update && buf lint
 	@golangci-lint run
 
 test: gen/mock
-	@go test ./...
+	@echo "Run unittest inside docker compose container"
+	WORKSPACE_DIR=${WORKSPACE_DIR} \
+    docker compose -f ./test/docker-compose.yml up --abort-on-container-exit --force-recreate
 
 
 # build binary app
@@ -45,10 +49,9 @@ gen/certs:
 .PHONY: build/binary build/docker gen/proto gen/struct_tag gen/mock gen/swagger-ui gen/certs
 
 # clean
-clean/docker:
-	@docker image prune
 
-clean/build:
+clean:
+	@echo "clean build dir"
 	@rm -rf ./build/bin
 
 
