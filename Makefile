@@ -13,7 +13,7 @@ lint:
 	@cd api/protobuf-spec && buf mod update && buf lint
 	@golangci-lint run
 
-test: gen/mock
+test:
 	@echo "Run unittest inside docker compose container"
 	WORKSPACE_DIR=${WORKSPACE_DIR} \
     docker compose -f ./test/docker-compose.yml up --abort-on-container-exit --force-recreate
