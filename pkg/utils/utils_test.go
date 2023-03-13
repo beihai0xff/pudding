@@ -1,7 +1,6 @@
 package utils
 
 import (
-	"fmt"
 	"os"
 	"testing"
 
@@ -40,7 +39,6 @@ func TestGetRand(t *testing.T) {
 				if got < tt.args.start || got > tt.args.end {
 					t.Errorf("got should less than %d and greater than %d, but got %d", tt.args.end, tt.args.start, got)
 				}
-				fmt.Println(got)
 			}
 		})
 	}

@@ -7,10 +7,10 @@ import (
 
 	"github.com/beihai0xff/pudding/app/trigger/repo"
 	"github.com/beihai0xff/pudding/app/trigger/repo/po"
-	"github.com/beihai0xff/pudding/configs"
 	"github.com/beihai0xff/pudding/pkg/clock"
 	"github.com/beihai0xff/pudding/pkg/db/mysql"
 	"github.com/beihai0xff/pudding/pkg/log"
+	test_utils "github.com/beihai0xff/pudding/test/mock/utils"
 )
 
 var testTrigger *Trigger
@@ -18,9 +18,8 @@ var testTrigger *Trigger
 const testHTTPDomain = "https://example.com"
 
 func TestMain(m *testing.M) {
-
 	// newMySQLServer()
-	db := newMySQLClient()
+	db := mysql.New(test_utils.TestMySQLConfig)
 	createTable(db)
 
 	testTrigger = &Trigger{
@@ -34,14 +33,6 @@ func TestMain(m *testing.M) {
 	dropTable(db)
 	os.Exit(code)
 
-}
-
-func newMySQLClient() *mysql.Client {
-	c := &configs.MySQLConfig{
-		DSN: "root:my-secret-pw@tcp(localhost:3306)/test?charset=utf8mb4&parseTime=True&loc=UTC",
-	}
-
-	return mysql.New(c)
 }
 
 func createTable(db *mysql.Client) {

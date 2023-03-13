@@ -3,6 +3,8 @@ broker: redis
 messageQueue: pulsar
 scheduler_config:
   time_slice_interval: 60s
+mysql_config:
+  dsn: root:my-secret-pw@tcp(mysql_host:3306)/test?charset=utf8mb4&parseTime=True&loc=Local
 redis_config:
   url: redis://default:default@localhost:6379/11
   dial_timeout: 20

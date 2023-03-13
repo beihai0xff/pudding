@@ -1,0 +1,42 @@
+version: "3.9"
+services:
+  unittest:
+    container_name: pudding-test
+    depends_on:
+      - redis_host
+      - mysql_host
+    image: pudding/unittest
+    build:
+      context: .
+      dockerfile: "./test.Dockerfile"
+    command: bash ./scripts/run_test.sh
+    privileged: false
+    volumes:
+      - "${WORKSPACE_DIR}:/workspace/pudding"
+    working_dir: "/workspace/pudding"
+    environment:
+      - TZ=UTC
+
+  redis_host:
+    restart: always
+    container_name: pudding-redis-host-test
+    image: "redis:latest"
+    deploy:
+      replicas: 1
+    ports:
+      - "6379:6379"
+    environment:
+      - TZ=UTC
+
+  mysql_host:
+    restart: always
+    container_name: pudding-mysql-host-test
+    image: "mysql:8.0.31"
+    deploy:
+      replicas: 1
+    ports:
+      - "3306:3306"
+    environment:
+      - MYSQL_ROOT_PASSWORD=my-secret-pw
+      - MYSQL_DATABASE=test
+      - TZ=UTC
