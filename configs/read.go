@@ -13,6 +13,7 @@ import (
 type ParseOptionFunc func(path, format string)
 
 const (
+	// ConfigFormatYAML config format type yaml
 	ConfigFormatYAML = "yaml"
 )
 
