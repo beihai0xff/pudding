@@ -3,8 +3,6 @@ run:
   # The default concurrency value is the number of available CPU.
   concurrency: 4
 
-  # Include test files or not.
-  # Default: true
   tests: false
   # Which dirs to skip: issues from them won't be reported.
   skip-dirs:
@@ -115,7 +113,6 @@ linters-settings: # please keep this alphabetized
     checks:
       - "all"
       - "-SA1019" # TODO(fix) Using a deprecated function, variable, constant or field
-      - "-SA2002"  # TODO(fix) Called testing.T.FailNow or SkipNow in a goroutine, which isn’t allowed
   stylecheck:
     checks:
       - "ST1019"  # Importing the same package multiple times.
@@ -125,10 +122,6 @@ linters-settings: # please keep this alphabetized
     check-type-assertions: true
     check-blank: true
     enable: all
-  goimports:
-    # put imports beginning with prefix after 3rd-party packages;
-    # it's a comma-separated list of prefixes
-    local-prefixes: github.com/beihai0xff/pudding
 
 issues:
   # List of regexps of issue texts to exclude.
@@ -136,10 +129,9 @@ issues:
     - EXC0012  # EXC0012 revive: exported (.+) should have comment( \(or a comment on this block\))? or be unexported
     - EXC0013  # EXC0013 revive: package comment should be of the form "(.+)...
     - EXC0014  # EXC0014 revive: comment on exported (.+) should be of the form "(.+)..."
-    - EXC0015  # EXC005 revive: should have a package comment
+    - EXC0015  # EXC0015 revive: should have a package comment
   # Excluding configuration per-path, per-linter, per-text and per-source
   exclude-rules:
-
     # Exclude some `typecheck` messages.
     - linters:
         - typecheck
