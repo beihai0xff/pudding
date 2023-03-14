@@ -1,3 +1,4 @@
+// Package: init_mysql_env.go init mysql env for test
 package main
 
 import (

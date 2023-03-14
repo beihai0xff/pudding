@@ -32,7 +32,6 @@ linters:
     - goconst
     - gocritic
     - gofmt
-    - goimports
 #    - gomnd
     - gocyclo
 #    - gosec
@@ -54,7 +53,6 @@ linters:
     - unparam
 #    - whitespace
 #    - wsl
-    # 后续添加
     # - unused
 
 linters-settings: # please keep this alphabetized
