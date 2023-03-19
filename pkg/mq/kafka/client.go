@@ -26,6 +26,7 @@ var (
 	kafkaClient     *client
 )
 
+// Client kafka client interface
 type Client interface {
 	SendMessage(ctx context.Context, msg *kafka.Message) (string, error)
 	NewConsumer(ctx context.Context, topic, group string,
@@ -42,7 +43,7 @@ type client struct {
 }
 
 // NewClient create a kafka client
-func NewClient(config *configs.KafkaConfig) *client {
+func NewClient(config *configs.KafkaConfig) Client {
 	kafkaClientOnce.Do(func() {
 		l := logger.NewMessageLogger()
 		kafkaClient = &client{
@@ -115,6 +116,7 @@ func (c *client) getReaderConfig(topic, group string, config *configs.KafkaConfi
 	}
 }
 
+// Consumer kafka consumer interface
 type Consumer interface {
 	Close() error
 	Run(ctx context.Context)
@@ -133,15 +135,15 @@ type consumer struct {
 
 // Run start a goroutine to consume kafka message
 func (c *consumer) Run(ctx context.Context) {
-	go c.run(ctx)
+	go c.worker(ctx)
 }
 
-// run start a goroutine to consume kafka message
-func (c *consumer) run(ctx context.Context) {
+// worker start a goroutine to consume kafka message
+func (c *consumer) worker(ctx context.Context) {
 	c.mutex.Lock()
 	defer c.mutex.Unlock()
 	for {
-		if c.isClosed == true {
+		if c.isClosed {
 			break
 		}
 		// read kafka message in blocking mode
@@ -204,7 +206,7 @@ func (c *consumer) Close() error {
 		return err
 	}
 	log.Infof("%s reader Closed", c.name)
-	// wait for the run() goroutine to exit
+	// wait for the worker() goroutine to exit
 
 	defer c.mutex.Unlock()
 	return nil
