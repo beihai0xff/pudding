@@ -8,4 +8,6 @@ const (
 	GRPCLoggerName = "grpc_log"
 	// BackendLoggerName is the name of the logger for gorm.
 	BackendLoggerName = "backend_log"
+	// KafkaLoggerName is the name of the logger for kafka.
+	KafkaLoggerName = "kafka_log"
 )
