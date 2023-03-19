@@ -5,10 +5,6 @@ import (
 	"math/rand"
 	"net"
 	"os"
-	"strings"
-	"time"
-
-	"github.com/beihai0xff/pudding/pkg/log"
 )
 
 const (
@@ -28,19 +24,44 @@ func GetEnv() string {
 
 // GetOutBoundIP get preferred outbound ip of this machine.
 func GetOutBoundIP() string {
-	conn, err := net.Dial("udp", "8.8.8.8:53")
+	ifaces, err := net.Interfaces()
 	if err != nil {
-		log.Fatalf("failed to get outbound ip: %v", err)
+		return ""
 	}
-	defer conn.Close()
-
-	localAddr := conn.LocalAddr().(*net.UDPAddr)
-	return strings.Split(localAddr.String(), ":")[0]
+	for _, iface := range ifaces {
+		if iface.Flags&net.FlagUp == 0 {
+			continue // interface down
+		}
+		if iface.Flags&net.FlagLoopback != 0 {
+			continue // loopback interface
+		}
+		addrs, err := iface.Addrs()
+		if err != nil {
+			return ""
+		}
+		for _, addr := range addrs {
+			var ip net.IP
+			switch v := addr.(type) {
+			case *net.IPNet:
+				ip = v.IP
+			case *net.IPAddr:
+				ip = v.IP
+			}
+			if ip == nil || ip.IsLoopback() {
+				continue
+			}
+			ip = ip.To4()
+			if ip == nil {
+				continue // not an ipv4 address
+			}
+			return ip.String()
+		}
+	}
+	return ""
 }
 
 // GetRand get a random number in [min, max).
 func GetRand(min, max int) int {
-	rand.Seed(time.Now().UnixNano())
 	return rand.Intn(max-min) + min
 }
 
