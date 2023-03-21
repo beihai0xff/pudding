@@ -209,9 +209,8 @@ func Test_consumer_Run(t *testing.T) {
 	c.CreateTopic(ctx, "test-consumer-topic", 1, 1)
 
 	handler := func(ctx context.Context, msg *Message) error {
-		log.Infof("success handle msg: %v", msg)
+		log.Infof("successfully handle msg: %v", msg)
 		assert.Equal(t, msg.Value, []byte("test-consumer-value"))
-		log.Infof("%d", count)
 		count++
 		return nil
 	}
@@ -227,7 +226,7 @@ func Test_consumer_Run(t *testing.T) {
 
 	consumerInst.Run(ctx)
 
-	time.Sleep(5 * time.Second)
+	time.Sleep(2 * time.Second)
 	assert.Equal(t, 10, count)
 	consumerInst.Close()
 }

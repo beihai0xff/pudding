@@ -68,21 +68,27 @@ func newClient(config *configs.KafkaConfig) *client {
 // SendMessage send kafka message
 func (c *client) SendMessage(ctx context.Context, msg *Message) (string, error) {
 	const retries = 3
+	var err error
 	for i := 0; i < retries; i++ {
 		ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 		defer cancel()
 
-		// attempt to create topic prior to publishing the message
-		if err := c.writer.WriteMessages(ctx, *msg); err != nil {
+		if err = c.writer.WriteMessages(ctx, *msg); err != nil {
 			if errors.Is(err, kafka.LeaderNotAvailable) || errors.Is(err, context.DeadlineExceeded) {
 				time.Sleep(time.Millisecond * 250)
 				continue
 			}
-			return "", errors.Wrapf(err, "failed to write messages, topic=%s, address=%s", msg.Topic, c.Address)
+		} else {
+			break
 		}
 
 	}
 
+	if err != nil {
+		return "", errors.Wrapf(err, "failed to write messages, topic=%s, address=%s", msg.Topic, c.Address)
+	}
+
+	log.Debugf("send message to kafka success: %s", msg)
 	return buildKafkaMsgID(msg), nil
 }
 
@@ -244,10 +250,11 @@ func (c *consumer) commitMsg(msg *kafka.Message) {
 // we wrap the reader.Close() to make it compatible with kafka.Close()
 func (c *consumer) Close() error {
 	c.isClosed = true
-	c.mutex.Lock()
 	if err := c.reader.Close(); err != nil {
 		return err
 	}
+	// if get mutex, it means the worker() goroutine has exited
+	c.mutex.Lock()
 	log.Infof("%s reader Closed", c.name)
 	// wait for the worker() goroutine to exit
 
