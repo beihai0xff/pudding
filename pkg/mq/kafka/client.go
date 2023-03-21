@@ -81,7 +81,6 @@ func (c *client) SendMessage(ctx context.Context, msg *Message) (string, error) 
 		} else {
 			break
 		}
-
 	}
 
 	if err != nil {
