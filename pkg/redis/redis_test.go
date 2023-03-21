@@ -15,20 +15,16 @@ var (
 	c *Client
 )
 
-// redis_test.go 测试文件对 Redis 客户端对外暴漏的方法进行了功能测试，连接的是 dev 环境的数据库 。
-// 下面的单元测试也可以作为使用范例参考
-
 func TestMain(m *testing.M) {
 
 	// initial Redis Client
 	c = NewMockRdb()
 
 	exitCode := m.Run()
-	// 退出
 	os.Exit(exitCode)
 }
 
-// TestClient_Set 测试 Set 方法
+// TestClient_Set
 func TestClient_Set(t *testing.T) {
 
 	type args struct {

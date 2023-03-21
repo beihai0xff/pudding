@@ -1,25 +1,9 @@
 version: "3.9"
 services:
-  unittest:
-    container_name: pudding-test
-    depends_on:
-      - redis_host
-      - mysql_host
-    image: pudding/unittest
-    build:
-      context: .
-      dockerfile: "./test.Dockerfile"
-    command: bash ./scripts/run_test.sh
-    privileged: false
-    volumes:
-      - "${WORKSPACE_DIR}:/workspace/pudding"
-    working_dir: "/workspace/pudding"
-    environment:
-      - TZ=UTC
 
   redis_host:
     restart: always
-    container_name: pudding-redis-host-test
+    container_name: pudding-test-redis-host
     image: "redis:latest"
     deploy:
       replicas: 1
@@ -30,7 +14,7 @@ services:
 
   mysql_host:
     restart: always
-    container_name: pudding-mysql-host-test
+    container_name: pudding-test-mysql-host
     image: "mysql:8.0.31"
     deploy:
       replicas: 1
@@ -40,3 +24,41 @@ services:
       - MYSQL_ROOT_PASSWORD=my-secret-pw
       - MYSQL_DATABASE=test
       - TZ=UTC
+    healthcheck:
+      test: ["CMD", "mysqladmin" ,"ping", "-h", "localhost", "-uroot", "-ppass"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+
+  kafka_host:
+    image: confluentinc/cp-kafka:7.3.0
+    hostname: kafka_host
+    container_name: pudding-test-kafka_host
+    ports:
+      - "9092:9092"
+      - "9101:9101"
+    environment:
+      KAFKA_BROKER_ID: 1
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: 'CONTROLLER:PLAINTEXT,PLAINTEXT:PLAINTEXT,PLAINTEXT_HOST:PLAINTEXT'
+      KAFKA_ADVERTISED_LISTENERS: 'PLAINTEXT://kafka_host:29092,PLAINTEXT_HOST://localhost:9092'
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+      KAFKA_GROUP_INITIAL_REBALANCE_DELAY_MS: 0
+      KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 1
+      KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 1
+      KAFKA_JMX_PORT: 9101
+      KAFKA_JMX_HOSTNAME: localhost
+      KAFKA_PROCESS_ROLES: 'broker,controller'
+      KAFKA_NODE_ID: 1
+      KAFKA_CONTROLLER_QUORUM_VOTERS: '1@kafka_host:29093'
+      KAFKA_LISTENERS: 'PLAINTEXT://kafka_host:29092,CONTROLLER://kafka_host:29093,PLAINTEXT_HOST://0.0.0.0:9092'
+      KAFKA_INTER_BROKER_LISTENER_NAME: 'PLAINTEXT'
+      KAFKA_CONTROLLER_LISTENER_NAMES: 'CONTROLLER'
+      KAFKA_LOG_DIRS: '/tmp/kraft-combined-logs'
+    volumes:
+      - ./scripts/run_kafka.sh:/tmp/run_kafka.sh
+    command: "bash -c '/tmp/run_kafka.sh && /etc/confluent/docker/run'"
+    healthcheck:
+      test: kafka-topics --bootstrap-server kafka_host:9092 --list
+      interval: 10s
+      timeout: 10s
+      retries: 3

@@ -15,12 +15,12 @@ var (
 	messageLogger     *MessageLogger
 )
 
-// MessageLogger 日志结构体
+// MessageLogger kafka logger
 type MessageLogger struct {
 	l log.Logger
 }
 
-// NewMessageLogger 构造一个自定义 Message Logger
+// NewMessageLogger create a kafka Message Logger
 func NewMessageLogger() *MessageLogger {
 	messageLoggerOnce.Do(func() {
 		messageLogger = &MessageLogger{

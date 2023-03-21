@@ -5,6 +5,8 @@ import (
 	"context"
 	"fmt"
 	"io"
+	"net"
+	"strconv"
 	"sync"
 	"time"
 
@@ -21,16 +23,11 @@ import (
 // Message kafka message body
 type Message = kafka.Message
 
-var (
-	kafkaClientOnce sync.Once
-	kafkaClient     *client
-)
-
 // Client kafka client interface
 type Client interface {
-	SendMessage(ctx context.Context, msg *kafka.Message) (string, error)
+	SendMessage(ctx context.Context, msg *Message) (string, error)
 	NewConsumer(ctx context.Context, topic, group string,
-		handle func(context.Context, *Message) error) (Consumer, error)
+		handler func(context.Context, *Message) error) (Consumer, error)
 	Close() error
 }
 
@@ -42,33 +39,48 @@ type client struct {
 	logger *logger.MessageLogger
 }
 
-// NewClient create a kafka client
-func NewClient(config *configs.KafkaConfig) Client {
-	kafkaClientOnce.Do(func() {
-		l := logger.NewMessageLogger()
-		kafkaClient = &client{
-			KafkaConfig: config,
-			logger:      l,
-			writer: &kafka.Writer{
-				Addr: kafka.TCP(getAddress(config.Host, config.Port)),
-				// the same key will be sent to the same partition
-				Balancer: &kafka.CRC32Balancer{},
-				// the minimum amount of time to wait before sending a batch of messages
-				BatchTimeout: time.Duration(config.ProducerBatchTimeout) * time.Millisecond,
-				BatchSize:    config.BatchSize,
-				Logger:       kafka.LoggerFunc(l.RecordMessageInfoLog),
-				ErrorLogger:  kafka.LoggerFunc(l.RecordMessageErrorLog),
-			},
-		}
-	})
-	return kafkaClient
+// New create a kafka client
+func New(config *configs.KafkaConfig) Client {
+	return newClient(config)
+}
+
+func newClient(config *configs.KafkaConfig) *client {
+	l := logger.NewMessageLogger()
+	return &client{
+		KafkaConfig: config,
+		logger:      l,
+		mutex:       sync.Mutex{},
+		writer: &kafka.Writer{
+			Addr: kafka.TCP(config.Address...),
+			// the same key will be sent to the same partition
+			Balancer: &kafka.CRC32Balancer{},
+			// the minimum amount of time to wait before sending a batch of messages
+			BatchTimeout: time.Duration(config.ProducerBatchTimeout) * time.Millisecond,
+			BatchSize:    config.BatchSize,
+			RequiredAcks: kafka.RequireAll,
+			Async:        true,
+			Logger:       kafka.LoggerFunc(l.RecordMessageInfoLog),
+			ErrorLogger:  kafka.LoggerFunc(l.RecordMessageErrorLog),
+		},
+	}
 }
 
 // SendMessage send kafka message
-func (c *client) SendMessage(ctx context.Context, msg *kafka.Message) (string, error) {
-	if err := c.writer.WriteMessages(ctx, *msg); err != nil {
-		return "", errors.Wrapf(err, "failed to write messages, topic=%s, host=%s, port=%d",
-			msg.Topic, c.Host, c.Port)
+func (c *client) SendMessage(ctx context.Context, msg *Message) (string, error) {
+	const retries = 3
+	for i := 0; i < retries; i++ {
+		ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+		defer cancel()
+
+		// attempt to create topic prior to publishing the message
+		if err := c.writer.WriteMessages(ctx, *msg); err != nil {
+			if errors.Is(err, kafka.LeaderNotAvailable) || errors.Is(err, context.DeadlineExceeded) {
+				time.Sleep(time.Millisecond * 250)
+				continue
+			}
+			return "", errors.Wrapf(err, "failed to write messages, topic=%s, address=%s", msg.Topic, c.Address)
+		}
+
 	}
 
 	return buildKafkaMsgID(msg), nil
@@ -76,18 +88,68 @@ func (c *client) SendMessage(ctx context.Context, msg *kafka.Message) (string, e
 
 // NewConsumer create a new consumer
 func (c *client) NewConsumer(ctx context.Context, topic, group string,
-	handle func(context.Context, *Message) error) (Consumer, error) {
+	handler func(context.Context, *Message) error) (Consumer, error) {
 	reader := kafka.NewReader(*c.getReaderConfig(topic, group, c.KafkaConfig))
 
 	kafkaConsumer := &consumer{
-		reader: reader,
-		name:   fmt.Sprintf("%s-%s-%s-%s", topic, group, utils.GetOutBoundIP(), uuid.NewString()),
-		mutex:  &sync.Mutex{},
-		logger: c.logger,
-		handle: handle,
+		reader:  reader,
+		name:    fmt.Sprintf("%s-%s-%s-%s", topic, group, utils.GetOutBoundIP(), uuid.NewString()),
+		mutex:   &sync.Mutex{},
+		logger:  c.logger,
+		handler: handler,
 	}
 
 	return kafkaConsumer, nil
+}
+
+func (c *client) getReaderConfig(topic, group string, config *configs.KafkaConfig) *kafka.ReaderConfig {
+	return &kafka.ReaderConfig{
+		Brokers:  c.Address,
+		Topic:    topic,
+		GroupID:  group,
+		MinBytes: 1,
+		MaxBytes: 10 * 1024,
+		MaxWait:  time.Duration(config.ConsumerMaxWaitTime) * time.Millisecond,
+		// if the broker has no offset for the consumer group, start with the FirstOffset
+		StartOffset:      kafka.LastOffset,
+		ReadBatchTimeout: 10 * time.Second,
+		Logger:           kafka.LoggerFunc(c.logger.RecordMessageInfoLog),
+		ErrorLogger:      kafka.LoggerFunc(c.logger.RecordMessageErrorLog),
+	}
+}
+
+// CreateTopic close kafka client
+func (c *client) CreateTopic(ctx context.Context, topic string, numPartitions, replicationFactor int) error {
+	if c.Address == nil || len(c.Address) == 0 {
+		return errors.New("kafka address is empty")
+	}
+
+	conn, err := kafka.DialContext(ctx, c.Network, c.Address[0])
+	if err != nil {
+		log.Errorf("failed to dial kafka, err=%v", err)
+		return err
+	}
+	defer conn.Close()
+
+	controller, err := conn.Controller()
+	if err != nil {
+		log.Errorf("failed to get controller, err=%v", err)
+		return err
+	}
+	controllerConn, err := kafka.DialContext(ctx, c.Network,
+		net.JoinHostPort(controller.Host, strconv.Itoa(controller.Port)))
+	if err != nil {
+		log.Errorf("failed to dial controller, err=%v", err)
+		return err
+	}
+	defer controllerConn.Close()
+
+	topicConfig := kafka.TopicConfig{Topic: topic, NumPartitions: numPartitions, ReplicationFactor: replicationFactor}
+	if err = controllerConn.CreateTopics(topicConfig); err != nil {
+		log.Errorf("failed to create topic, err=%v", err)
+		return err
+	}
+	return nil
 }
 
 // Close close kafka client
@@ -95,25 +157,6 @@ func (c *client) Close() error {
 	c.mutex.Lock()
 	defer c.mutex.Unlock()
 	return c.writer.Close()
-}
-
-func getAddress(host string, port int) string {
-	return fmt.Sprintf("%s:%d", host, port)
-}
-
-func (c *client) getReaderConfig(topic, group string, config *configs.KafkaConfig) *kafka.ReaderConfig {
-	return &kafka.ReaderConfig{
-		Brokers:  []string{getAddress(config.Host, config.Port)},
-		Topic:    topic,
-		GroupID:  group,
-		MinBytes: 1,
-		MaxBytes: 10e6,
-		MaxWait:  time.Duration(config.ConsumerMaxWaitTime) * time.Millisecond,
-		// if the broker has no offset for the consumer group, start with the FirstOffset
-		StartOffset: kafka.FirstOffset,
-		Logger:      kafka.LoggerFunc(c.logger.RecordMessageInfoLog),
-		ErrorLogger: kafka.LoggerFunc(c.logger.RecordMessageErrorLog),
-	}
 }
 
 // Consumer kafka consumer interface
@@ -130,7 +173,7 @@ type consumer struct {
 	reader   *kafka.Reader
 	logger   *logger.MessageLogger
 	isClosed bool
-	handle   func(context.Context, *Message) error
+	handler  func(context.Context, *Message) error
 }
 
 // Run start a goroutine to consume kafka message
@@ -172,8 +215,8 @@ func (c *consumer) worker(ctx context.Context) {
 
 // handleMsg process kafka message
 func (c *consumer) handleMsg(msg *kafka.Message) {
-	if err := c.handle(context.Background(), msg); err != nil {
-		log.Errorf("Failed to handle kafka msg: [%s] , caused by %s \n"+
+	if err := c.handler(context.Background(), msg); err != nil {
+		log.Errorf("Failed to handler kafka msg: [%s] , caused by %s \n"+
 			"\tTopic: %s\n\tpartition %d: %d",
 			msg.Value, err, msg.Topic, msg.Partition, msg.Offset)
 		return
@@ -187,9 +230,9 @@ func (c *consumer) commitMsg(msg *kafka.Message) {
 		Cancel()
 	}()
 
-	// commit 消息
+	// commit message
 	if err := c.reader.CommitMessages(ctx, *msg); err != nil {
-		// commit 失败
+		// commit failed
 		log.Errorf("Failed to commit kafka msg: [%s], caused by %s \n"+
 			"\tTopic: %s\n\tpartition %d: %d",
 			msg.Value, err, msg.Topic, msg.Partition, msg.Offset)

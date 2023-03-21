@@ -16,7 +16,9 @@ lint:
 test:
 	@echo "Run unittest inside docker compose container"
 	WORKSPACE_DIR=${WORKSPACE_DIR} \
-    docker compose -f ./test/docker-compose.yml up --abort-on-container-exit --force-recreate --renew-anon-volumes
+    docker compose -f ./test/docker-compose.yml up \
+    -d --force-recreate --renew-anon-volumes --wait
+	bash -x ./scripts/run_test.sh
 
 
 # build binary app
