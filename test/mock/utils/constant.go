@@ -19,5 +19,5 @@ var TestKafkaConfig = &configs.KafkaConfig{
 	Network:              "tcp",
 	ConsumerMaxWaitTime:  1000,
 	ProducerBatchTimeout: 1000,
-	BatchSize:            10,
+	BatchSize:            1,
 }

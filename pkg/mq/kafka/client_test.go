@@ -7,6 +7,7 @@ import (
 	"testing"
 	"time"
 
+	"github.com/google/uuid"
 	"github.com/segmentio/kafka-go"
 	"github.com/stretchr/testify/assert"
 
@@ -111,13 +112,13 @@ func Test_client_getReaderConfig(t *testing.T) {
 			name: "happy-path",
 			args: args{
 				topic:  "test-topic",
-				group:  "test-consumer-group",
+				group:  "test-getReaderConfig-group",
 				config: test_utils.TestKafkaConfig,
 			},
 			want: &kafka.ReaderConfig{
 				Brokers:          c.Address,
 				Topic:            "test-topic",
-				GroupID:          "test-consumer-group",
+				GroupID:          "test-getReaderConfig-group",
 				MinBytes:         1,
 				MaxBytes:         10 * 1024,
 				MaxWait:          time.Duration(test_utils.TestKafkaConfig.ConsumerMaxWaitTime) * time.Millisecond,
@@ -181,8 +182,8 @@ func Test_client_NewConsumer(t *testing.T) {
 			name: "happy-path",
 			args: args{
 				ctx:    context.Background(),
-				topic:  "test-consumer-topic",
-				group:  "test-consumer-group",
+				topic:  "test-Consumer-topic",
+				group:  "test-Consumer-group-NewConsumer",
 				handle: func(ctx context.Context, msg *Message) error { return nil },
 			},
 			want:    Consumer(&consumer{}),
@@ -195,36 +196,39 @@ func Test_client_NewConsumer(t *testing.T) {
 			if !tt.wantErr(t, err) {
 			}
 			assert.IsType(t, tt.want, consumer)
+			consumer.Close()
 		})
 	}
 }
 
-var count = 0
-
-func Test_consumer_Run(t *testing.T) {
+func Test_Consumer_Run(t *testing.T) {
+	var testTopic = "test-Consumer-topic-Run"
 	c := newClient(test_utils.TestKafkaConfig)
 	defer c.Close()
 
 	ctx := context.Background()
-	c.CreateTopic(ctx, "test-consumer-topic", 1, 1)
+	assert.NoError(t, c.CreateTopic(ctx, testTopic, 1, 1))
 
+	var count = 0
 	handler := func(ctx context.Context, msg *Message) error {
 		log.Infof("successfully handle msg: %v", msg)
-		assert.Equal(t, msg.Value, []byte("test-consumer-value"))
+		assert.Equal(t, msg.Value, []byte("test-Consumer-value"))
 		count++
 		return nil
 	}
-	consumerInst, _ := c.NewConsumer(ctx, "test-consumer-topic", "test-consumer-group", handler)
+	consumerInst, err := c.NewConsumer(ctx, testTopic, "test-Consumer-group-Run", handler)
+	assert.NoError(t, err)
 	defer consumerInst.Close()
 
-	for i := 0; i < 10; i++ {
-		c.SendMessage(ctx, &Message{
-			Topic: "test-consumer-topic",
-			Value: []byte("test-consumer-value"),
-		})
-	}
-
 	consumerInst.Run(ctx)
+	for i := 0; i < 10; i++ {
+		_, err = c.SendMessage(ctx, &Message{
+			Topic: testTopic,
+			Key:   []byte(uuid.NewString()),
+			Value: []byte("test-Consumer-value"),
+		})
+		assert.NoError(t, err)
+	}
 
 	time.Sleep(2 * time.Second)
 	assert.Equal(t, 10, count)

@@ -58,7 +58,7 @@ func newClient(config *configs.KafkaConfig) *client {
 			BatchTimeout: time.Duration(config.ProducerBatchTimeout) * time.Millisecond,
 			BatchSize:    config.BatchSize,
 			RequiredAcks: kafka.RequireAll,
-			Async:        true,
+			Async:        false,
 			Logger:       kafka.LoggerFunc(l.RecordMessageInfoLog),
 			ErrorLogger:  kafka.LoggerFunc(l.RecordMessageErrorLog),
 		},
@@ -70,17 +70,16 @@ func (c *client) SendMessage(ctx context.Context, msg *Message) (string, error) 
 	const retries = 3
 	var err error
 	for i := 0; i < retries; i++ {
-		ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
-		defer cancel()
-
 		if err = c.writer.WriteMessages(ctx, *msg); err != nil {
 			if errors.Is(err, kafka.LeaderNotAvailable) || errors.Is(err, context.DeadlineExceeded) {
 				time.Sleep(time.Millisecond * 250)
 				continue
 			}
 		} else {
+			log.Debugf("send message [%s] to kafka success for times %d: %v", msg.Key, i, err)
 			break
 		}
+		log.Warnf("send message [%s] to kafka failed for times %d: %v", msg.Key, i, err)
 	}
 
 	if err != nil {
@@ -115,8 +114,8 @@ func (c *client) getReaderConfig(topic, group string, config *configs.KafkaConfi
 		MinBytes: 1,
 		MaxBytes: 10 * 1024,
 		MaxWait:  time.Duration(config.ConsumerMaxWaitTime) * time.Millisecond,
-		// if the broker has no offset for the consumer group, start with the FirstOffset
-		StartOffset:      kafka.LastOffset,
+		// if the broker has no offset for the consumer group, start with the LastOffset
+		StartOffset:      kafka.FirstOffset,
 		ReadBatchTimeout: 10 * time.Second,
 		Logger:           kafka.LoggerFunc(c.logger.RecordMessageInfoLog),
 		ErrorLogger:      kafka.LoggerFunc(c.logger.RecordMessageErrorLog),
@@ -154,7 +153,53 @@ func (c *client) CreateTopic(ctx context.Context, topic string, numPartitions, r
 		log.Errorf("failed to create topic, err=%v", err)
 		return err
 	}
+
+	// need wait for a while to make sure the topic is created
+	c.waitForTopic(ctx, topic)
+	log.Infof("create topic [%s] success", topic)
 	return nil
+}
+
+// Block until topic exists.
+func (c *client) waitForTopic(ctx context.Context, topic string) {
+	for {
+		select {
+		case <-ctx.Done():
+			log.Errorf("reached deadline before verifying topic existence")
+		default:
+		}
+
+		cli := &kafka.Client{
+			Addr:    c.writer.Addr,
+			Timeout: 5 * time.Second,
+		}
+
+		response, err := cli.Metadata(ctx, &kafka.MetadataRequest{
+			Addr:   cli.Addr,
+			Topics: []string{topic},
+		})
+		if err != nil {
+			log.Errorf("waitForTopic: error listing topics: %v", err)
+		}
+
+		// Find a topic which has at least 1 partition in the metadata response
+		for _, top := range response.Topics {
+			if top.Name != topic {
+				continue
+			}
+
+			numPartitions := len(top.Partitions)
+			log.Debugf("waitForTopic: found topic %s with %d partitions", topic, numPartitions)
+
+			if numPartitions > 0 {
+				return
+			}
+		}
+
+		log.Debugf("retrying after 1s")
+		time.Sleep(time.Second)
+		continue
+	}
 }
 
 // Close close kafka client
