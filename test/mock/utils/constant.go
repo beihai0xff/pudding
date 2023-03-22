@@ -10,5 +10,14 @@ const (
 
 // TestMySQLConfig is the test config for MySQL.
 var TestMySQLConfig = &configs.MySQLConfig{
-	DSN: "root:my-secret-pw@tcp(mysql_host:3306)/test?charset=utf8mb4&parseTime=True&loc=UTC",
+	DSN: "root:my-secret-pw@tcp(localhost:3306)/test?charset=utf8mb4&parseTime=True&loc=UTC",
+}
+
+// TestKafkaConfig is the test config for Kafka.
+var TestKafkaConfig = &configs.KafkaConfig{
+	Address:              []string{"localhost:9092"},
+	Network:              "tcp",
+	ConsumerMaxWaitTime:  1000,
+	ProducerBatchTimeout: 1000,
+	BatchSize:            1,
 }

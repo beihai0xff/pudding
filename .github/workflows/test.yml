@@ -1,7 +1,6 @@
 on: [pull_request]
 name: Test
 jobs:
-
   # Label of the container job
   test:
     strategy:
