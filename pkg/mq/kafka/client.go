@@ -8,6 +8,7 @@ import (
 	"net"
 	"strconv"
 	"sync"
+	"sync/atomic"
 	"time"
 
 	"github.com/google/uuid"
@@ -28,6 +29,7 @@ type Client interface {
 	SendMessage(ctx context.Context, msg *Message) (string, error)
 	NewConsumer(ctx context.Context, topic, group string,
 		handler func(context.Context, *Message) error) (Consumer, error)
+	CreateTopic(ctx context.Context, topic string, numPartitions, replicationFactor int) error
 	Close() error
 }
 
@@ -98,7 +100,7 @@ func (c *client) NewConsumer(ctx context.Context, topic, group string,
 	kafkaConsumer := &consumer{
 		reader:  reader,
 		name:    fmt.Sprintf("%s-%s-%s-%s", topic, group, utils.GetOutBoundIP(), uuid.NewString()),
-		mutex:   &sync.Mutex{},
+		wg:      sync.WaitGroup{},
 		logger:  c.logger,
 		handler: handler,
 	}
@@ -217,26 +219,24 @@ type Consumer interface {
 
 // consumer kafka consumer
 type consumer struct {
-	name string
-	// mutex is used to protect the isClosed field
-	mutex    *sync.Mutex
-	reader   *kafka.Reader
-	logger   *logger.MessageLogger
-	isClosed bool
-	handler  func(context.Context, *Message) error
+	name    string
+	wg      sync.WaitGroup
+	reader  *kafka.Reader
+	logger  *logger.MessageLogger
+	closed  atomic.Bool
+	handler func(context.Context, *Message) error
 }
 
 // Run start a goroutine to consume kafka message
 func (c *consumer) Run(ctx context.Context) {
+	c.wg.Add(1)
 	go c.worker(ctx)
 }
 
 // worker start a goroutine to consume kafka message
 func (c *consumer) worker(ctx context.Context) {
-	c.mutex.Lock()
-	defer c.mutex.Unlock()
 	for {
-		if c.isClosed {
+		if c.closed.Load() {
 			break
 		}
 		// read kafka message in blocking mode
@@ -261,6 +261,7 @@ func (c *consumer) worker(ctx context.Context) {
 		// commit kafka Message
 		c.commitMsg(&msg)
 	}
+	c.wg.Done()
 }
 
 // handleMsg process kafka message
@@ -293,15 +294,11 @@ func (c *consumer) commitMsg(msg *kafka.Message) {
 // Close close kafka consumer
 // we wrap the reader.Close() to make it compatible with kafka.Close()
 func (c *consumer) Close() error {
-	c.isClosed = true
+	c.closed.Store(true)
 	if err := c.reader.Close(); err != nil {
 		return err
 	}
-	// if get mutex, it means the worker() goroutine has exited
-	c.mutex.Lock()
+	c.wg.Wait()
 	log.Infof("%s reader Closed", c.name)
-	// wait for the worker() goroutine to exit
-
-	defer c.mutex.Unlock()
 	return nil
 }

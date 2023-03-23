@@ -218,7 +218,6 @@ func Test_Consumer_Run(t *testing.T) {
 	}
 	consumerInst, err := c.NewConsumer(ctx, testTopic, "test-Consumer-group-Run", handler)
 	assert.NoError(t, err)
-	defer consumerInst.Close()
 
 	consumerInst.Run(ctx)
 	for i := 0; i < 10; i++ {
@@ -231,6 +230,6 @@ func Test_Consumer_Run(t *testing.T) {
 	}
 
 	time.Sleep(2 * time.Second)
-	assert.Equal(t, 10, count)
 	consumerInst.Close()
+	assert.Equal(t, 10, count)
 }
