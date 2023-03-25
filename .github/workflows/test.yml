@@ -19,15 +19,15 @@ jobs:
         uses: actions/setup-go@v4.0.0
         with:
           go-version: ${{ matrix.go-version }}
-      - name: Go Mod Cache
-        uses: actions/cache@v3
+          check-latest: true
+      - name: Cache image
+        uses: whoan/docker-build-with-cache-action@v5
         with:
-          path: |
-            ~/.cache/go-build
-            ~/go/pkg/mod
-          key: ${{ runner.os }}-go-${{ hashFiles('**/go.sum') }}
-          restore-keys: |
-            ${{ runner.os }}-go-
-
-      - name: Test
-        run: make test
+          username: whoan
+          password: "${{ secrets.GITHUB_TOKEN }}"
+          registry: docker.pkg.github.com
+          compose_file: docker-compose.yml
+      - name: Init unittest environment
+        run: make env/test
+      - name: Run unittest
+        run: make run/test
