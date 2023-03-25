@@ -53,13 +53,33 @@ jobs:
       - uses: bufbuild/buf-lint-action@v1
         with:
           input: api/protobuf-spec
-  misspell:
-    runs-on: ubuntu-latest
+
+  test:
+    strategy:
+      matrix:
+        go-version: [1.19.x, 1.20.x]
+        os: [ubuntu-latest]
+    runs-on: ${{ matrix.os }}
+
     steps:
-      - uses: actions/checkout@v3.3.0
-      - uses: sobolevn/misspell-fixer-action@master
-      - uses: peter-evans/create-pull-request@v2.4.4
+      - name: Checkout code
+        uses: actions/checkout@v3.3.0
+      - uses: KengoTODA/actions-setup-docker-compose@v1
         with:
-          token: ${{ secrets.GITHUB_TOKEN }}
-          commit-message: 'Fixes by misspell-fixer'
-          title: 'Typos fix by misspell-fixer'
+          version: '2.15.1'
+      - name: Install Go
+        uses: actions/setup-go@v4.0.0
+        with:
+          go-version: ${{ matrix.go-version }}
+          check-latest: true
+      - name: Cache image
+        uses: whoan/docker-build-with-cache-action@v5
+        with:
+          username: whoan
+          password: "${{ secrets.GITHUB_TOKEN }}"
+          registry: docker.pkg.github.com
+          compose_file: ./test/docker-compose.yml
+      - name: Init unittest environment
+        run: make env/test
+      - name: Run unittest
+        run: make run/test
