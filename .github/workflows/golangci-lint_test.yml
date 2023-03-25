@@ -75,7 +75,7 @@ jobs:
       - name: Cache image
         uses: whoan/docker-build-with-cache-action@v5
         with:
-          username: whoan
+          username: beihai0xff
           password: "${{ secrets.GITHUB_TOKEN }}"
           registry: docker.pkg.github.com
           compose_file: ./test/docker-compose.yml
