@@ -16,7 +16,7 @@ permissions:
   contents: read
   pull-requests: read
 jobs:
-  golangci:
+  golangci-lint:
     name: lint
     runs-on: ubuntu-latest
     steps:
@@ -83,3 +83,6 @@ jobs:
         run: make env/test
       - name: Run unittest
         run: make run/test
+  build:
+    runs-on: ubuntu-latest
+    needs: [golangci-lint, test]
