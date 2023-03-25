@@ -1,7 +1,7 @@
 #!/bin/bash
 
-set -e
+set -e -x
 
-rm -rf api/gen && rm -rf api/http-spec
+rm -rf api/gen api/http-spec
 cd api/protobuf-spec && buf mod update
 cd ../.. && buf generate

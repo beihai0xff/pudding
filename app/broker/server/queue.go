@@ -5,12 +5,14 @@ import (
 	"time"
 
 	"github.com/beihai0xff/pudding/app/broker/connector"
+	"github.com/beihai0xff/pudding/app/broker/connector/kafka_connector"
 	"github.com/beihai0xff/pudding/app/broker/connector/redis_connector"
 	"github.com/beihai0xff/pudding/app/broker/pkg/configs"
 	"github.com/beihai0xff/pudding/app/broker/storage"
 	"github.com/beihai0xff/pudding/app/broker/storage/redis_storage"
 	conf "github.com/beihai0xff/pudding/configs"
 	"github.com/beihai0xff/pudding/pkg/log"
+	"github.com/beihai0xff/pudding/pkg/mq/kafka"
 	rdb "github.com/beihai0xff/pudding/pkg/redis"
 )
 
@@ -41,6 +43,8 @@ func newConnector(connectorType string) connector.RealTimeConnector {
 	switch connectorType {
 	case "pulsar":
 		log.Fatalf("pulsar connector is not implemented yet")
+	case "kafka":
+		return kafka_connector.NewConnector(kafka.New(configs.GetKafkaConfig()))
 	case "redis":
 		return redis_connector.NewConnector(rdb.New(configs.GetRedisConfig()))
 	default:

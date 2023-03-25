@@ -29,6 +29,8 @@ type Config struct {
 	Redis *conf.RedisConfig `json:"redis_config" yaml:"redis_config" mapstructure:"redis_config"`
 	// Pulsar pulsar config
 	Pulsar *conf.PulsarConfig `json:"pulsar_config" yaml:"pulsar_config" mapstructure:"pulsar_config"`
+	// Kafka kafka config
+	Kafka *conf.KafkaConfig `json:"kafka_config" yaml:"kafka_config" mapstructure:"kafka_config"`
 }
 
 // JSON returns the json format of the config.
@@ -50,6 +52,11 @@ func GetRedisConfig() *conf.RedisConfig {
 // GetPulsarConfig returns the pulsar config.
 func GetPulsarConfig() *conf.PulsarConfig {
 	return c.Pulsar
+}
+
+// GetKafkaConfig returns the kafka config.
+func GetKafkaConfig() *conf.KafkaConfig {
+	return c.Kafka
 }
 
 // GetServerConfig returns the scheduler config.
