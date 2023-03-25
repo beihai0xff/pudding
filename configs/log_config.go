@@ -34,7 +34,7 @@ type LogConfig struct {
 	LogName string `json:"log_name" yaml:"log_name" mapstructure:"log_name"`
 	// Writers log output(console, file)
 	Writers []string `yaml:"writers" mapstructure:"writers" json:"writers"`
-	// FileConfig 日志文件配置，如果 Writers 为 file 则该配置不能为空
+	// FileConfig log file config, if writers has file, must set file config
 	FileConfig LogFileConfig `yaml:"file_config" mapstructure:"file_config" json:"file_config"`
 
 	// Format log format type (console, json)
@@ -43,11 +43,11 @@ type LogConfig struct {
 	// Level log level debug info error...
 	Level string `yaml:"level" mapstructure:"level" json:"level"`
 
-	// CallerSkip 控制 log 函数嵌套深度
+	// CallerSkip log caller skip
 	CallerSkip int `yaml:"caller_skip" mapstructure:"caller_skip" json:"caller_skip"`
 }
 
-// LogFileConfig 日志文件的配置
+// LogFileConfig log file config
 type LogFileConfig struct {
 	// Filepath log file path
 	Filepath string `yaml:"filepath" mapstructure:"filepath" json:"filepath"`

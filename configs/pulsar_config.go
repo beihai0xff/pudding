@@ -1,4 +1,5 @@
 // Package configs provides config management
+// pulsar.go provides pulsar config
 //
 //nolint:lll
 package configs

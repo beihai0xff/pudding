@@ -32,9 +32,6 @@ const (
 	prefixTimeLocker = "pudding_locker_time:%d"
 )
 
-//nolint:lll
-//go:generate mockgen -destination=../../test/mock/scheduler_mock.go -package=mock github.com/beihai0xff/pudding/app/scheduler Scheduler
-
 // Scheduler interface
 type Scheduler interface {
 	// Run start the scheduler

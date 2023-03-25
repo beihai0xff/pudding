@@ -7,8 +7,9 @@ run:
   # Which dirs to skip: issues from them won't be reported.
   skip-dirs:
     - api
-    - api/swagger/docs
     - pkg/cronexpr
+    - test
+    - third_party
   # Which files to skip: they will be analyzed, but issues from them won't be reported.
   skip-files:
     - _test.go
@@ -116,6 +117,7 @@ linters-settings: # please keep this alphabetized
   stylecheck:
     checks:
       - "ST1019"  # Importing the same package multiple times.
+
   lll:
     line-length: 120
   typecheck:
