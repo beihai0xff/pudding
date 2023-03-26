@@ -73,17 +73,27 @@ jobs:
         with:
           go-version: ${{ matrix.go-version }}
           check-latest: true
-#      - name: Cache image
-#        uses: whoan/docker-build-with-cache-action@v5
+#      - name: Set up Docker Buildx
+#        uses: docker/setup-buildx-action@v2
+#      - name: Cache Docker layers
+#        uses: actions/cache@v3
 #        with:
-#          username: beihai0xff
-#          password: "${{ secrets.GITHUB_TOKEN }}"
-#          registry: docker.pkg.github.com
-#          compose_file: ./test/docker-compose.yml
+#          path: /tmp/.buildx-cache
+#          key: ${{ runner.os }}-buildx-${{ github.sha }}
+#          restore-keys: |
+#            ${{ runner.os }}-buildx-
       - name: Init unittest environment
         run: make env/test
       - name: Run unittest
         run: make run/test
+#      -
+#        # Temp fix
+#        # https://github.com/docker/build-push-action/issues/252
+#        # https://github.com/moby/buildkit/issues/1896
+#        name: Move cache
+#        run: |
+#          rm -rf /tmp/.buildx-cache
+#          mv /tmp/.buildx-cache-new /tmp/.buildx-cache
   build:
     runs-on: ubuntu-latest
     needs: [golangci-lint, test]
