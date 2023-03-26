@@ -13,12 +13,9 @@ lint:
 	@cd api/protobuf-spec && buf mod update && buf lint
 	@golangci-lint run
 
-test:
-	@echo "Run unittest inside docker compose container"
-	WORKSPACE_DIR=${WORKSPACE_DIR} \
-    docker compose -f ./test/docker-compose.yml up \
-    -d --force-recreate --renew-anon-volumes --wait
-	bash -x ./scripts/run_test.sh
+
+
+test: env/dev run/test
 
 
 # build binary app
@@ -61,13 +58,22 @@ clean:
 
 # bootstrap
 
-env/dev: bootstrap
-
 env/mysql:
 	go run scripts/init_mysql_env.go
+
+env/dev: bootstrap
 
 # bootstrap the build by downloading additional tools that may be used by devs
 bootstrap:
 	@go generate -tags tools tools/tools.go
 
-.PHONY: env/dev bootstrap
+env/test:
+	@echo "init unittest docker compose container"
+	WORKSPACE_DIR=${WORKSPACE_DIR} \
+	docker compose -f ./test/docker-compose.yml up \
+	-d --force-recreate --renew-anon-volumes --wait
+
+run/test:
+	bash -x ./scripts/run_test.sh
+
+.PHONY: env/dev env/mysql env/test run/test bootstrap

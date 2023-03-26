@@ -1,4 +1,4 @@
-name: golangci-lint
+name: lint-and-test
 on:
   push:
     tags:
@@ -16,14 +16,15 @@ permissions:
   contents: read
   pull-requests: read
 jobs:
-  golangci:
+  golangci-lint:
     name: lint
     runs-on: ubuntu-latest
     steps:
+      - uses: actions/checkout@v3.3.0
       - uses: actions/setup-go@v4.0.0
         with:
-          go-version: 1.19
-      - uses: actions/checkout@v3.3.0
+          go-version: '1.20'
+          cache: false
       - name: golangci-lint
         uses: golangci/golangci-lint-action@v3
         with:
@@ -53,3 +54,39 @@ jobs:
       - uses: bufbuild/buf-lint-action@v1
         with:
           input: api/protobuf-spec
+
+  test:
+    strategy:
+      matrix:
+        go-version: [1.19.x, 1.20.x]
+        os: [ubuntu-latest]
+    runs-on: ${{ matrix.os }}
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3.3.0
+      - uses: KengoTODA/actions-setup-docker-compose@v1
+        with:
+          version: '2.15.1'
+      - name: Install Go
+        uses: actions/setup-go@v4.0.0
+        with:
+          go-version: ${{ matrix.go-version }}
+          check-latest: true
+#      - name: Cache image
+#        uses: whoan/docker-build-with-cache-action@v5
+#        with:
+#          username: beihai0xff
+#          password: "${{ secrets.GITHUB_TOKEN }}"
+#          registry: docker.pkg.github.com
+#          compose_file: ./test/docker-compose.yml
+      - name: Init unittest environment
+        run: make env/test
+      - name: Run unittest
+        run: make run/test
+  build:
+    runs-on: ubuntu-latest
+    needs: [golangci-lint, test]
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3.3.0
