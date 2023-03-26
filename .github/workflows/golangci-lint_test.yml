@@ -73,13 +73,14 @@ jobs:
         with:
           go-version: ${{ matrix.go-version }}
           check-latest: true
-#      - name: Cache image
-#        uses: whoan/docker-build-with-cache-action@v5
-#        with:
-#          username: beihai0xff
-#          password: "${{ secrets.GITHUB_TOKEN }}"
-#          registry: docker.pkg.github.com
-#          compose_file: ./test/docker-compose.yml
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v2
+      - name: cache docker layers
+        uses: docker/build-push-action@v2
+        with:
+          context: .
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
       - name: Init unittest environment
         run: make env/test
       - name: Run unittest
