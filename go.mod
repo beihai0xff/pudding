@@ -16,7 +16,7 @@ require (
 	github.com/grpc-ecosystem/grpc-gateway/v2 v2.15.0
 	github.com/hashicorp/consul/api v1.18.0
 	github.com/jinzhu/copier v0.3.6-0.20221021060712-6a4be2a76157
-	github.com/klauspost/compress v1.16.0
+	github.com/klauspost/compress v1.16.3
 	github.com/mbobakov/grpc-consul-resolver v1.4.5-0.20230322113819-1adaa17226ef
 	github.com/pkg/errors v0.9.1
 	github.com/prometheus/client_golang v1.14.0
