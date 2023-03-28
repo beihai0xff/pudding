@@ -1,11 +1,13 @@
 // Package configs provides config management
+// server_base_config.go contains the base config of a server
 package configs
 
-import (
-	"github.com/beihai0xff/pudding/pkg/grpc/args"
-)
+import "github.com/beihai0xff/pudding/pkg/grpc/args"
 
 const baseConfigPath = "server_config.base_config"
+
+// OptionFunc is the option function for config.
+type OptionFunc func(map[string]interface{})
 
 // BaseConfig server base Config
 // support CommandLine
@@ -43,32 +45,4 @@ func (c *BaseConfig) SetFlags() {
 		c.KeyPath = *args.KeyPath
 	}
 	baseConfig = c
-}
-
-// BrokerConfig BrokerConfig Config
-type BrokerConfig struct {
-	// BaseConfig server base Config
-	BaseConfig `json:"base_config" yaml:"base_config" mapstructure:"base_config"`
-
-	// TimeSliceInterval broker loop time interval
-	TimeSliceInterval string `json:"time_slice_interval" yaml:"time_slice_interval" mapstructure:"time_slice_interval"`
-	// MessageTopic default message topic, if no topic set in message, use this topic
-	MessageTopic string `json:"message_topic" yaml:"message_topic" mapstructure:"message_topic"`
-	// TokenTopic TimeSlice token topic
-	TokenTopic string `json:"token_topic" yaml:"token_topic" mapstructure:"token_topic"`
-	// Broker type
-	Broker string `json:"broker" yaml:"broker" mapstructure:"broker"`
-	// Connector type
-	Connector string `json:"connector" yaml:"connector" mapstructure:"connector"`
-}
-
-// TriggerConfig Trigger server config
-type TriggerConfig struct {
-	// BaseConfig server base Config
-	BaseConfig `json:"base_config" yaml:"base_config" mapstructure:"base_config"`
-
-	// WebhookPrefix is the prefix of webhook url.
-	WebhookPrefix string `json:"webhook_prefix" yaml:"webhook_prefix" mapstructure:"webhook_prefix"`
-	// SchedulerConsulURL is the scheduler consul connection url.
-	SchedulerConsulURL string `json:"scheduler_consul_url" yaml:"scheduler_consul_url" mapstructure:"scheduler_consul_url"`
 }

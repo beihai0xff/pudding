@@ -12,12 +12,14 @@ import (
 	rdb "github.com/beihai0xff/pudding/pkg/redis"
 )
 
+var testRedLockClient *RedLockClient
+
 func TestMain(m *testing.M) {
 
 	// initial Redis database
 	rdb := rdb.NewMockRdb()
 
-	Init(rdb)
+	testRedLockClient = NewRedLockClient(rdb)
 
 	exitCode := m.Run()
 	os.Exit(exitCode)
@@ -26,7 +28,7 @@ func TestMain(m *testing.M) {
 // Test_NewRedLock 测试 NewRedLock 方法
 func Test_NewRedLock(t *testing.T) {
 
-	lock, _ := NewRedLock(context.Background(), "DLockUsed", 10*time.Second)
+	lock, _ := testRedLockClient.NewRedLock(context.Background(), "DLockUsed", 10*time.Second)
 	defer lock.Release(context.Background())
 	type args struct {
 		name string
@@ -44,7 +46,7 @@ func Test_NewRedLock(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			ctx := context.Background()
-			mutex, err := NewRedLock(ctx, tt.args.name, 2*time.Second)
+			mutex, err := testRedLockClient.NewRedLock(ctx, tt.args.name, 2*time.Second)
 			if (err != nil) != tt.wantDLockErr {
 				t.Errorf("mutex Lock error = %v, wantErr %v", err, tt.wantDLockErr)
 				return

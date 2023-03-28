@@ -145,6 +145,8 @@ issues:
     - linters:
         - lll
       source: "^//go:generate "
+  # Fix found issues (if it's supported by the linter).
+  fix: true
 # output configuration options
 output:
   # Format: colored-line-number|line-number|json|tab|checkstyle|code-climate|junit-xml|github-actions

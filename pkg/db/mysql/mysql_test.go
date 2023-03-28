@@ -9,7 +9,7 @@ import (
 	test_utils "github.com/beihai0xff/pudding/test/mock/utils"
 )
 
-// Example of how to implement a MySQL server based on a Engine:
+// Example of how to implement a MySQLConfig server based on a Engine:
 //
 // ```
 // > mysql --host=127.0.0.1 --port=3306 -u root test -e "SELECT * FROM user"

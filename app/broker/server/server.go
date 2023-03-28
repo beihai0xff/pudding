@@ -8,18 +8,16 @@ import (
 	"google.golang.org/grpc/health"
 
 	pb "github.com/beihai0xff/pudding/api/gen/pudding/broker/v1"
-	"github.com/beihai0xff/pudding/app/broker/pkg/configs"
+	"github.com/beihai0xff/pudding/configs"
 	"github.com/beihai0xff/pudding/pkg/grpc/launcher"
 	"github.com/beihai0xff/pudding/pkg/grpc/resolver"
-	"github.com/beihai0xff/pudding/pkg/lock"
 	"github.com/beihai0xff/pudding/pkg/log"
 	"github.com/beihai0xff/pudding/pkg/log/logger"
-	"github.com/beihai0xff/pudding/pkg/redis"
 	"github.com/beihai0xff/pudding/pkg/utils"
 )
 
 const (
-	// custom http endpoint prifix path
+	// custom http endpoint prefix path
 	httpPrefix = "/pudding/broker"
 )
 
@@ -38,19 +36,17 @@ func RegisterLogger() {
 }
 
 // StartServer starts the server.
-func StartServer() (*grpc.Server, *health.Server, *http.Server) {
-	rdb := redis.New(configs.GetRedisConfig())
-	lock.Init(rdb)
-	baseConfig := configs.GetServerConfig().BaseConfig
-	grpcServer, healthcheck := launcher.StartGRPCServer(&baseConfig, startSchedulerService)
+func StartServer(conf *configs.BrokerConfig) (*grpc.Server, *health.Server, *http.Server) {
+	baseConfig := conf.ServerConfig.BaseConfig
+	grpcServer, healthcheck := launcher.StartGRPCServer(&baseConfig, withSchedulerService(conf))
 	httpServer := launcher.StartHTTPServer(&baseConfig, healthEndpointPath, swaggerEndpointPath)
 	return grpcServer, healthcheck, httpServer
 }
 
 // RegisterResolver registers the service to the resolver.
-func RegisterResolver() []*resolver.Pair {
-	baseConfig := configs.GetServerConfig().BaseConfig
-	consulURL := configs.GetNameServerURL()
+func RegisterResolver(conf *configs.BrokerConfig) []*resolver.Pair {
+	baseConfig := conf.ServerConfig.BaseConfig
+	consulURL := conf.ServerConfig.NameServerURL
 
 	pairs := []*resolver.Pair{
 		resolver.GRPCRegistration(pb.SchedulerService_ServiceDesc.ServiceName,
