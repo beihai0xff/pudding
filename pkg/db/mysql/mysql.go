@@ -1,4 +1,4 @@
-// Package mysql provides a MySQLConfig client.
+// Package mysql provides a MySQL client.
 package mysql
 
 import (
@@ -12,12 +12,12 @@ import (
 	"github.com/beihai0xff/pudding/pkg/log/logger"
 )
 
-// Client is a MySQLConfig client.
+// Client is a MySQL client.
 type Client struct {
 	*gorm.DB
 }
 
-// New returns a new MySQLConfig client.
+// New returns a new MySQL client.
 func New(c *configs.MySQLConfig) *Client {
 	db, err := gorm.Open(mysql.Open(c.DSN),
 		&gorm.Config{
@@ -28,7 +28,7 @@ func New(c *configs.MySQLConfig) *Client {
 		})
 
 	if err != nil {
-		log.Fatalf("failed to connect MySQLConfig database: %v", err)
+		log.Fatalf("failed to connect MySQL database: %v", err)
 	}
 
 	setConnPool(db)
