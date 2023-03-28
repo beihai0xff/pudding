@@ -17,6 +17,7 @@ import (
 	"github.com/beihai0xff/pudding/pkg/errno"
 	"github.com/beihai0xff/pudding/pkg/lock"
 	"github.com/beihai0xff/pudding/pkg/log"
+	"github.com/beihai0xff/pudding/pkg/redis"
 )
 
 var (
@@ -50,6 +51,8 @@ type scheduler struct {
 	// wallClock wall wallClock time
 	wallClock clock.Clock
 
+	lockClient *lock.RedLockClient
+
 	// messageTopic default message topic
 	messageTopic string
 	// tokenTopic default token topic
@@ -67,8 +70,9 @@ func New(config *configs.BrokerConfig, delay storage.DelayStorage, realtime conn
 		delay:        delay,
 		connector:    realtime,
 		wallClock:    clock.New(),
-		messageTopic: config.MessageTopic,
-		tokenTopic:   config.TokenTopic,
+		lockClient:   lock.NewRedLockClient(redis.New(config.RedisConfig)),
+		messageTopic: config.ServerConfig.MessageTopic,
+		tokenTopic:   config.ServerConfig.TokenTopic,
 		token:        make(chan uint64),
 		quit:         make(chan int64),
 	}
@@ -150,9 +154,9 @@ func (s *scheduler) startSchedule() {
 				ctx, cancel := context.WithTimeout(context.Background(), time.Second*3)
 				defer cancel()
 
-				// lock the timeSlice
+				// lockClient the timeSlice
 				name := s.getLockerName(t)
-				locker, err := lock.NewRedLock(ctx, name, time.Second*3)
+				locker, err := s.lockClient.NewRedLock(ctx, name, time.Second*3)
 				if err != nil {
 					if !errors.Is(err, lock.ErrNotObtained) {
 						log.Errorf("failed to get timeSlice locker: %s, caused by %v", name, err)
@@ -164,7 +168,7 @@ func (s *scheduler) startSchedule() {
 					log.Errorf("failed to consume time: %d, caused by %v", t, err)
 				}
 
-				// Release the lock
+				// Release the lockClient
 				if err := locker.Release(ctx); err != nil {
 					log.Errorf("failed to release time locker: %s, caused by %v", name, err)
 				}

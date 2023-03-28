@@ -6,13 +6,10 @@ import (
 
 	_ "github.com/mbobakov/grpc-consul-resolver" // It's important
 	"google.golang.org/grpc"
-	"google.golang.org/grpc/credentials/insecure"
 	"google.golang.org/grpc/health"
 
-	"github.com/beihai0xff/pudding/api/gen/pudding/broker/v1"
 	pb "github.com/beihai0xff/pudding/api/gen/pudding/trigger/v1"
-	"github.com/beihai0xff/pudding/app/trigger/pkg/configs"
-	"github.com/beihai0xff/pudding/pkg/db/mysql"
+	"github.com/beihai0xff/pudding/configs"
 	"github.com/beihai0xff/pudding/pkg/grpc/launcher"
 	"github.com/beihai0xff/pudding/pkg/grpc/resolver"
 	"github.com/beihai0xff/pudding/pkg/log"
@@ -26,34 +23,12 @@ const (
 )
 
 var (
+
 	// healthEndpointPath health check http endpoint path.
 	healthEndpointPath = utils.GetHealthEndpointPath(httpPrefix)
 	// swaggerEndpointPath Swagger ui http endpoint path.
 	swaggerEndpointPath = utils.GetSwaggerEndpointPath(httpPrefix)
-
-	// db is the MySQL database connection.
-	db = mysql.New(configs.GetMySQLConfig())
-	// brokerClient is the scheduler grpc service client.
-	brokerClient broker.SchedulerServiceClient
 )
-
-func init() {
-	// init grpc connection
-	conn, err := grpc.Dial(
-		configs.GetSchedulerConsulURL(),
-		grpc.WithTransportCredentials(insecure.NewCredentials()),
-		grpc.WithDefaultServiceConfig(`{"loadBalancingPolicy": "round_robin"}`),
-	)
-	if err != nil {
-		log.Fatalf("grpc Dial err: %v", err)
-	}
-
-	// TODO: close conn
-	// defer conn.Close()
-
-	// create scheduler service client
-	brokerClient = broker.NewSchedulerServiceClient(conn)
-}
 
 // RegisterLogger registers the logger to the resolver.
 func RegisterLogger() {
@@ -63,9 +38,9 @@ func RegisterLogger() {
 }
 
 // RegisterResolver registers the service to the resolver.
-func RegisterResolver() []*resolver.Pair {
-	baseConfig := configs.GetServerConfig().BaseConfig
-	consulURL := configs.GetNameServerURL()
+func RegisterResolver(conf *configs.TriggerConfig) []*resolver.Pair {
+	baseConfig := conf.ServerConfig.BaseConfig
+	consulURL := baseConfig.NameServerURL
 
 	pairs := []*resolver.Pair{
 		resolver.GRPCRegistration(pb.CronTriggerService_ServiceDesc.ServiceName,
@@ -79,10 +54,10 @@ func RegisterResolver() []*resolver.Pair {
 }
 
 // StartServer starts the server.
-func StartServer() (*grpc.Server, *health.Server, *http.Server) {
-	baseConfig := configs.GetServerConfig().BaseConfig
+func StartServer(conf *configs.TriggerConfig) (*grpc.Server, *health.Server, *http.Server) {
+	baseConfig := conf.ServerConfig.BaseConfig
 	grpcServer, healthcheck := launcher.StartGRPCServer(&baseConfig,
-		startCronTriggerService, startWebhookTriggerService)
+		withCronTriggerService(conf), withWebhookTriggerService(conf))
 	httpServer := launcher.StartHTTPServer(&baseConfig, healthEndpointPath, swaggerEndpointPath)
 	return grpcServer, healthcheck, httpServer
 }

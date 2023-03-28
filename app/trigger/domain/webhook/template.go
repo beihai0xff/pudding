@@ -12,7 +12,6 @@ import (
 
 	"github.com/beihai0xff/pudding/api/gen/pudding/broker/v1"
 	pb "github.com/beihai0xff/pudding/api/gen/pudding/trigger/v1"
-	"github.com/beihai0xff/pudding/app/trigger/pkg/configs"
 	"github.com/beihai0xff/pudding/app/trigger/pkg/constants"
 	"github.com/beihai0xff/pudding/app/trigger/repo"
 	"github.com/beihai0xff/pudding/pkg/clock"
@@ -42,9 +41,9 @@ type Trigger struct {
 }
 
 // NewTrigger create a webhook trigger
-func NewTrigger(db *mysql.Client, client broker.SchedulerServiceClient) *Trigger {
+func NewTrigger(db *mysql.Client, client broker.SchedulerServiceClient, prefix string) *Trigger {
 	return &Trigger{
-		webhookPrefix:   configs.GetWebhookPrefix(),
+		webhookPrefix:   prefix,
 		schedulerClient: client,
 		repo:            repo.NewWebhookTemplate(db),
 		wallClock:       clock.New(),

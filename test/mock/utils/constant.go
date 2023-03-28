@@ -8,7 +8,7 @@ const (
 	TestConfigFilePath = "./test/data/config.test.yaml"
 )
 
-// TestMySQLConfig is the test config for MySQL.
+// TestMySQLConfig is the test config for MySQLConfig.
 var TestMySQLConfig = &configs.MySQLConfig{
 	DSN: "root:my-secret-pw@tcp(localhost:3306)/test?charset=utf8mb4&parseTime=True&loc=UTC",
 }

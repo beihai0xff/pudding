@@ -11,28 +11,25 @@ import (
 	rdb "github.com/beihai0xff/pudding/pkg/redis"
 )
 
-var r *redislock.Client
-
-// Init init the lock module
-func Init(client *rdb.Client) {
-	r = redislock.New(client.GetClient())
+// RedLockClient is the redis distributed lock client
+type RedLockClient struct {
+	*redislock.Client
 }
 
-// RedLock is the redis distributed lock implement
-type RedLock struct {
-	locker *redislock.Lock
-	// Create a new locker client.
+// NewRedLockClient init the lock module
+func NewRedLockClient(client *rdb.Client) *RedLockClient {
+	return &RedLockClient{redislock.New(client.GetClient())}
 }
 
 // NewRedLock create a new redlock
-func NewRedLock(ctx context.Context, name string, expireTime time.Duration) (Lock, error) {
-	if r == nil {
+func (c *RedLockClient) NewRedLock(ctx context.Context, name string, expireTime time.Duration) (Lock, error) {
+	if c.Client == nil {
 		return nil, errors.New("redis client is nil, please init the lock module first")
 	}
 
 	// Retry every 100ms, for up-to 3x
 	backoff := redislock.LimitRetry(redislock.LinearBackoff(100*time.Millisecond), 3)
-	locker, err := r.Obtain(ctx, name, expireTime, &redislock.Options{
+	locker, err := c.Client.Obtain(ctx, name, expireTime, &redislock.Options{
 		RetryStrategy: backoff,
 	})
 	if err != nil {
@@ -42,6 +39,12 @@ func NewRedLock(ctx context.Context, name string, expireTime time.Duration) (Loc
 		return nil, err
 	}
 	return &RedLock{locker: locker}, nil
+}
+
+// RedLock is the redis distributed lock implement
+type RedLock struct {
+	locker *redislock.Lock
+	// Create a new locker client.
 }
 
 // Release release the lock
