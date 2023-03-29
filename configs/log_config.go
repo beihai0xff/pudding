@@ -82,7 +82,9 @@ func GetLogConfig(logName string) *LogConfig {
 	if baseConfig == nil {
 		return &c
 	}
-	v, ok := baseConfig.Logger[logName]
+	v, ok := lo.Find(baseConfig.Logger, func(conf LogConfig) bool {
+		return conf.LogName == logName
+	})
 
 	if ok {
 		// if log writers contains file, then set file config

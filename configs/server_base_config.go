@@ -23,7 +23,7 @@ type BaseConfig struct {
 	// NameServerURL name server url
 	NameServerURL string `json:"name_server_url" yaml:"name_server_url" mapstructure:"name_server_url"`
 	// Logger log config for output config message, do not use it
-	Logger map[string]*LogConfig `json:"log_config" yaml:"log_config" mapstructure:"log_config"`
+	Logger []LogConfig `json:"log_config" yaml:"log_config" mapstructure:"log_config"`
 }
 
 var baseConfig *BaseConfig
