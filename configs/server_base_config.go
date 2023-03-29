@@ -26,8 +26,6 @@ type BaseConfig struct {
 	Logger []LogConfig `json:"log_config" yaml:"log_config" mapstructure:"log_config"`
 }
 
-var baseConfig *BaseConfig
-
 // SetFlags set flags to BaseConfig
 // flags have the highest priority
 func (c *BaseConfig) SetFlags() {
@@ -44,5 +42,4 @@ func (c *BaseConfig) SetFlags() {
 	if *args.KeyPath != args.DefaultKeyPath || c.KeyPath == "" {
 		c.KeyPath = *args.KeyPath
 	}
-	baseConfig = c
 }

@@ -4,36 +4,30 @@ import (
 	"fmt"
 	"testing"
 
+	"github.com/samber/lo"
 	"github.com/stretchr/testify/assert"
 )
 
 func TestUnmarshalToStruct(t *testing.T) {
 	Parse("../test/data/config.test.yaml", ConfigFormatYAML, ReadFromFile)
-	type args struct {
-		path string
-		c    *BrokerConfig
-	}
-	tests := []struct {
-		name       string
-		args       args
-		wantConfig *BrokerConfig
-		wantErr    bool
-	}{
-		{
-			name: "happy_path",
-			args: args{"", &BrokerConfig{}},
-		},
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			if err := UnmarshalToStruct(tt.args.path, tt.args.c); (err != nil) != tt.wantErr {
-				t.Errorf("UnmarshalToStruct() error = %v, wantErr %v", err, tt.wantErr)
-			}
-			assert.Equal(t, "redis", tt.args.c.ServerConfig.Broker)
-			buf, _ := JSONFormat(tt.args.c)
-			fmt.Println(buf.String())
-		})
-	}
+
+	// happy_path
+	brokerConfig := BrokerConfig{}
+	err := UnmarshalToStruct("", &brokerConfig)
+	assert.NoError(t, err)
+	assert.Equal(t, "redis", brokerConfig.ServerConfig.Broker)
+	buf, _ := JSONFormat(brokerConfig)
+	assert.Equal(t, testJSONFormat, buf.String())
+
+	// get_logger_configs
+	var logConfig []LogConfig
+	err = UnmarshalToStruct("server_config.base_config.log_config", &logConfig)
+	assert.NoError(t, err)
+	v, _ := lo.Find(logConfig, func(conf LogConfig) bool {
+		return conf.LogName == "default"
+	})
+	assert.Equal(t, LogConfig{LogName: "default", Writers: []string{OutputConsole}, Level: "debug", Format: EncoderTypeJSON}, v)
+	fmt.Println(logConfig)
 }
 
 func TestJSONFormat(t *testing.T) {
@@ -72,7 +66,7 @@ var testJSONFormat = `{
                 {
                     "log_name": "default",
                     "writers": [
-                        "stdout"
+                        "console"
                     ],
                     "file_config": {
                         "filepath": "",
@@ -88,7 +82,7 @@ var testJSONFormat = `{
                 {
                     "log_name": "kafka_log",
                     "writers": [
-                        "stdout"
+                        "console"
                     ],
                     "file_config": {
                         "filepath": "",

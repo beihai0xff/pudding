@@ -78,24 +78,31 @@ var (
 
 // GetLogConfig get specify log config by log name
 func GetLogConfig(logName string) *LogConfig {
-	c := defaultConfig
-	if baseConfig == nil {
-		return &c
-	}
-	v, ok := lo.Find(baseConfig.Logger, func(conf LogConfig) bool {
-		return conf.LogName == logName
-	})
 
-	if ok {
-		// if log writers contains file, then set file config
-		if lo.Contains[string](v.Writers, OutputFile) {
-			fileConfig := defaultLogFileConfig
-			c.FileConfig = fileConfig
-		}
-		if err := copier.CopyWithOption(&c, v, copier.Option{IgnoreEmpty: true, DeepCopy: true}); err != nil {
-			panic(err)
+	// get_logger_configs
+	var logConfig []LogConfig
+	if err := UnmarshalToStruct("server_config.base_config.log_config", &logConfig); err != nil {
+		panic(err)
+	}
+
+	c := defaultConfig
+	if len(logConfig) != 0 {
+		v, ok := lo.Find(logConfig, func(conf LogConfig) bool {
+			return conf.LogName == logName
+		})
+
+		if ok {
+			// if log writers contains file, then set file config
+			if lo.Contains[string](v.Writers, OutputFile) {
+				fileConfig := defaultLogFileConfig
+				c.FileConfig = fileConfig
+			}
+			if err := copier.CopyWithOption(&c, v, copier.Option{IgnoreEmpty: true, DeepCopy: true}); err != nil {
+				panic(err)
+			}
 		}
 	}
+
 	c.LogName = logName
 
 	return &c

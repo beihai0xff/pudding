@@ -8,12 +8,12 @@ server_config:
       - log_name: default
         level: debug
         writers:
-          - stdout
+          - console
         format: json
       - log_name: kafka_log
         level: debug
         writers:
-          - stdout
+          - console
         format: json
 
   broker: redis
