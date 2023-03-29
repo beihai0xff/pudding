@@ -78,7 +78,6 @@ var (
 
 // GetLogConfig get specify log config by log name
 func GetLogConfig(logName string) *LogConfig {
-
 	// get_logger_configs
 	var logConfig []LogConfig
 	if err := UnmarshalToStruct("server_config.base_config.log_config", &logConfig); err != nil {
