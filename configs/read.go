@@ -2,55 +2,94 @@
 package configs
 
 import (
-	"errors"
+	"flag"
 	"fmt"
 	"strings"
 
-	"github.com/spf13/viper"
+	kjson "github.com/knadh/koanf/parsers/json"
+	kyaml "github.com/knadh/koanf/parsers/yaml"
+	"github.com/knadh/koanf/providers/basicflag"
+	kconsul "github.com/knadh/koanf/providers/consul"
+	kenv "github.com/knadh/koanf/providers/env"
+	kfile "github.com/knadh/koanf/providers/file"
+	"github.com/knadh/koanf/v2"
 )
 
-// ParseOptionFunc Parse config option func
-type ParseOptionFunc func(path, format string)
+// Global koanf instance. Use defaultDelim as the key path delimiter. This can be "/" or any character.
+var k = koanf.NewWithConf(koanf.Conf{
+	Delim:       defaultDelim,
+	StrictMerge: true,
+})
+
+// ParserFunc Parse config option func
+type ParserFunc func(path string, parser koanf.Parser) error
 
 const (
+	defaultDelim = "."
+
 	// ConfigFormatYAML config format type yaml
 	ConfigFormatYAML = "yaml"
+	// ConfigFormatJSON config format type json
+	ConfigFormatJSON = "json"
 )
 
-// Parse ReadConfig read config from filePath with format
-func Parse(filePath, format string, c interface{}, opt ParseOptionFunc) {
-	opt(filePath, format)
-	if err := viper.Unmarshal(c); err != nil {
-		panic(fmt.Errorf("failed to unmarshal config: %w", err))
+// Parse load config from  given filePath and format
+func Parse(filePath, format string, reader ParserFunc) error {
+	// first, read config from given config read func, such as file, consul, etc.
+	var parser koanf.Parser
+	switch format {
+	case ConfigFormatYAML:
+		parser = kyaml.Parser()
+	case ConfigFormatJSON:
+		parser = kjson.Parser()
+	default:
+		return fmt.Errorf("unsupported config format: %s", format)
 	}
+	if err := reader(filePath, parser); err != nil {
+		return err
+	}
+
+	// second, read config from environment variables
+	// Parse environment variables and merge into the loaded config.
+	// "PUDDING" is the prefix to filter the env vars by.
+	// "." is the delimiter used to represent the key hierarchy in env vars.
+	// The (optional, or can be nil) function can be used to transform
+	// the env var names, for instance, to lowercase them.
+	if err := k.Load(kenv.Provider("PUDDING_", defaultDelim, func(s string) string {
+		return strings.ReplaceAll(strings.ToLower(
+			strings.TrimPrefix(s, "PUDDING_")), "_", ".")
+	}), nil); err != nil {
+		err := fmt.Errorf("error loading config from env: %w", err)
+		return err
+	}
+
+	// third, read config from command line flags
+	// config fields can still be overridden with the values from the command line.
+	if err := k.Load(basicflag.Provider(flag.CommandLine, defaultDelim), nil); err != nil {
+		err := fmt.Errorf("error loading config from command line: %w", err)
+		return err
+	}
+
+	return nil
 }
 
 // ReadFromFile read config from filePath with format
-func ReadFromFile(filePath, format string) {
-	viper.SetConfigFile(filePath)
-	viper.SetConfigType(format)
-
+func ReadFromFile(filePath string, parser koanf.Parser) error {
 	// Find and read the config file
-	if err := viper.ReadInConfig(); err != nil { // Handle errors reading the config file
-		if errors.As(err, &viper.ConfigFileNotFoundError{}) {
-			panic(fmt.Errorf("config file not found: %w", err))
-		} else {
-			// Config file was found but another error was produced
-			panic(fmt.Errorf("failed to read config file: %w", err))
-		}
+	if err := k.Load(kfile.Provider(filePath), parser); err != nil {
+		// Config file was found but another error was produced
+		return fmt.Errorf("error loading config from file [%s]: %w", filePath, err)
 	}
+
+	return nil
 }
 
 // ReadFromConsul read config from consul with format
-func ReadFromConsul(filePath, format string) {
-	path := strings.SplitN(filePath, "/", 2)
-	if err := viper.AddRemoteProvider("consul", path[0], path[1]); err != nil {
-		panic(fmt.Errorf("failed to add remote provider: %w", err))
-	}
-	viper.SetConfigType(format)
-
+func ReadFromConsul(filePath string, parser koanf.Parser) error {
 	// Find and read the config file
-	if err := viper.ReadRemoteConfig(); err != nil { // Handle errors reading the config file
-		panic(fmt.Errorf("failed to read config file: %w", err))
+	if err := k.Load(kconsul.Provider(kconsul.Config{}), parser); err != nil {
+		return fmt.Errorf("error loading config from consul: %w", err)
 	}
+
+	return nil
 }

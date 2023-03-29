@@ -14,8 +14,7 @@ lint:
 	@golangci-lint run
 
 
-
-test: env/dev run/test
+test: env/test run/test
 
 
 # build binary app

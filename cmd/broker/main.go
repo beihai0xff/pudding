@@ -11,8 +11,8 @@ import (
 
 	_ "go.uber.org/automaxprocs"
 
-	"github.com/beihai0xff/pudding/app/broker/pkg/configs"
 	"github.com/beihai0xff/pudding/app/broker/server"
+	"github.com/beihai0xff/pudding/configs"
 	"github.com/beihai0xff/pudding/pkg/grpc/args"
 	"github.com/beihai0xff/pudding/pkg/log"
 	"github.com/beihai0xff/pudding/pkg/shutdown"
@@ -26,7 +26,7 @@ var (
 func main() {
 	flag.Parse()
 
-	configs.ReadFrom(*args.ConfigPath, configs.WithRedisURL(*redisURL), configs.WithPulsarURL(*pulsarURL))
+	conf := configs.ParseBrokerConfig(*args.ConfigPath, configs.WithRedisURL(*redisURL))
 	server.RegisterLogger()
 
 	interrupt := make(chan os.Signal, 1)
@@ -34,9 +34,9 @@ func main() {
 	defer signal.Stop(interrupt)
 
 	// start server
-	grpcServer, healthcheck, httpServer := server.StartServer()
+	grpcServer, healthcheck, httpServer := server.StartServer(conf)
 	// register service to consul
-	resolverPairs := server.RegisterResolver()
+	resolverPairs := server.RegisterResolver(conf)
 
 	// block until a signal is received.
 	sign := <-interrupt

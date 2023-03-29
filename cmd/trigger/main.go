@@ -11,8 +11,8 @@ import (
 
 	_ "go.uber.org/automaxprocs"
 
-	"github.com/beihai0xff/pudding/app/trigger/pkg/configs"
 	"github.com/beihai0xff/pudding/app/trigger/server"
+	"github.com/beihai0xff/pudding/configs"
 	"github.com/beihai0xff/pudding/pkg/grpc/args"
 	"github.com/beihai0xff/pudding/pkg/log"
 	"github.com/beihai0xff/pudding/pkg/shutdown"
@@ -27,7 +27,7 @@ var (
 func main() {
 	flag.Parse()
 
-	configs.Init(*args.ConfigPath, configs.WithMySQLDSN(*mysqlDSN), configs.WithWebhookPrefix(*webhookPrefix))
+	conf := configs.ParseTriggerConfig(*args.ConfigPath)
 	server.RegisterLogger()
 
 	interrupt := make(chan os.Signal, 1)
@@ -35,9 +35,9 @@ func main() {
 	defer signal.Stop(interrupt)
 
 	// start server
-	grpcServer, healthcheck, httpServer := server.StartServer()
+	grpcServer, healthcheck, httpServer := server.StartServer(conf)
 	// register service to consul
-	resolverPairs := server.RegisterResolver()
+	resolverPairs := server.RegisterResolver(conf)
 
 	// block until a signal is received.
 	sign := <-interrupt
