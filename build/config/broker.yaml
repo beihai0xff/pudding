@@ -1,7 +1,7 @@
 name: pudding.broker
 server_config:
   broker: redis
-  connector: redis
+  connector: kafka
   time_slice_interval: 60s
   message_topic: default
   token_topic: token
@@ -10,7 +10,7 @@ server_config:
     http_port: 8081
     cert_path: ./certs/pudding.pem
     key_path: ./certs/pudding-key.pem
-    name_server_url: http://192.168.10.220:8500
+    name_server_url: http://localhost:8500
     log_config:
       default:
         level: info
@@ -36,24 +36,10 @@ server_config:
 
 
 redis_config:
-  url: redis://default:default@192.168.10.220:6379/11
+  url: redis://default:default@localhost:6379/11
   dial_timeout: 20
-pulsar_config:
-  url: pulsar://192.168.10.220:6650
-  connection_timeout: 10
-  producers_config:
-    - topic: token
-      batching_max_publish_delay: 10
-      batching_max_messages: 100
-      batching_max_size: 5
-    - topic: test_topic_1
-      # BatchingMaxPublishDelay specifies the time period within which the messages sent will be batched (default: 10ms)
-      batching_max_publish_delay: 10
-      batching_max_messages: 100
-      # BatchingMaxSize specifies the maximum number of bytes permitted in a batch. xxKB
-      batching_max_size: 5
-    - topic: test_topic_2
-      batching_max_publish_delay: 10
-      batching_max_messages: 100
-      batching_max_size: 5
+kafka_config:
+  address: localhost:9092
+  batch_size: 100
+  producer_batch_timeout: 50
 

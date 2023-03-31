@@ -42,23 +42,23 @@ type client struct {
 }
 
 // New create a kafka client
-func New(config *configs.KafkaConfig) Client {
-	return newClient(config)
+func New(conf *configs.KafkaConfig) Client {
+	return newClient(conf)
 }
 
-func newClient(config *configs.KafkaConfig) *client {
+func newClient(conf *configs.KafkaConfig) *client {
 	l := logger.NewMessageLogger()
 	return &client{
-		KafkaConfig: config,
+		KafkaConfig: conf,
 		logger:      l,
 		mutex:       sync.Mutex{},
 		writer: &kafka.Writer{
-			Addr: kafka.TCP(config.Address...),
+			Addr: kafka.TCP(conf.Address...),
 			// the same key will be sent to the same partition
 			Balancer: &kafka.CRC32Balancer{},
 			// the minimum amount of time to wait before sending a batch of messages
-			BatchTimeout: time.Duration(config.ProducerBatchTimeout) * time.Millisecond,
-			BatchSize:    config.BatchSize,
+			BatchTimeout: time.Duration(conf.ProducerBatchTimeout) * time.Millisecond,
+			BatchSize:    conf.BatchSize,
 			RequiredAcks: kafka.RequireAll,
 			Async:        false,
 			Logger:       kafka.LoggerFunc(l.RecordMessageInfoLog),

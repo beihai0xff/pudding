@@ -2,8 +2,6 @@
 // server_broker_config.go contains the config of broker server
 package configs
 
-import "github.com/knadh/koanf/providers/confmap"
-
 // BrokerConfig BrokerConfig Config
 type BrokerConfig struct {
 	ServerConfig struct {
@@ -32,16 +30,7 @@ type BrokerConfig struct {
 
 // ParseBrokerConfig read the config from the given configPath.
 func ParseBrokerConfig(configPath string, opts ...OptionFunc) *BrokerConfig {
-	if err := Parse(configPath, ConfigFormatYAML, ReadFromFile); err != nil {
-		panic(err)
-	}
-
-	var configMap map[string]interface{}
-	for _, opt := range opts {
-		opt(configMap)
-	}
-
-	if err := k.Load(confmap.Provider(configMap, defaultDelim), nil); err != nil {
+	if err := Parse(configPath, ConfigFormatYAML, ReadFromFile, opts...); err != nil {
 		panic(err)
 	}
 
@@ -50,6 +39,9 @@ func ParseBrokerConfig(configPath string, opts ...OptionFunc) *BrokerConfig {
 	if err := UnmarshalToStruct("", &c); err != nil {
 		panic(err)
 	}
+
+	// set flags
+	c.ServerConfig.BaseConfig.SetFlags()
 
 	return &c
 }

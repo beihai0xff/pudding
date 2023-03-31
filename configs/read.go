@@ -2,13 +2,12 @@
 package configs
 
 import (
-	"flag"
 	"fmt"
 	"strings"
 
 	kjson "github.com/knadh/koanf/parsers/json"
 	kyaml "github.com/knadh/koanf/parsers/yaml"
-	"github.com/knadh/koanf/providers/basicflag"
+	"github.com/knadh/koanf/providers/confmap"
 	kconsul "github.com/knadh/koanf/providers/consul"
 	kenv "github.com/knadh/koanf/providers/env"
 	kfile "github.com/knadh/koanf/providers/file"
@@ -34,7 +33,7 @@ const (
 )
 
 // Parse load config from  given filePath and format
-func Parse(filePath, format string, reader ParserFunc) error {
+func Parse(configPath, format string, reader ParserFunc, opts ...OptionFunc) error {
 	// first, read config from given config read func, such as file, consul, etc.
 	var parser koanf.Parser
 	switch format {
@@ -45,7 +44,7 @@ func Parse(filePath, format string, reader ParserFunc) error {
 	default:
 		return fmt.Errorf("unsupported config format: %s", format)
 	}
-	if err := reader(filePath, parser); err != nil {
+	if err := reader(configPath, parser); err != nil {
 		return err
 	}
 
@@ -63,11 +62,12 @@ func Parse(filePath, format string, reader ParserFunc) error {
 		return err
 	}
 
-	// third, read config from command line flags
-	// config fields can still be overridden with the values from the command line.
-	if err := k.Load(basicflag.Provider(flag.CommandLine, defaultDelim), nil); err != nil {
-		err := fmt.Errorf("error loading config from command line: %w", err)
-		return err
+	configMap := map[string]interface{}{}
+	for _, opt := range opts {
+		opt(configMap)
+	}
+	if err := k.Load(confmap.Provider(configMap, defaultDelim), nil); err != nil {
+		panic(err)
 	}
 
 	return nil
@@ -85,7 +85,7 @@ func ReadFromFile(filePath string, parser koanf.Parser) error {
 }
 
 // ReadFromConsul read config from consul with format
-func ReadFromConsul(filePath string, parser koanf.Parser) error {
+func ReadFromConsul(configPath string, parser koanf.Parser) error {
 	// Find and read the config file
 	if err := k.Load(kconsul.Provider(kconsul.Config{}), parser); err != nil {
 		return fmt.Errorf("error loading config from consul: %w", err)

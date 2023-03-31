@@ -21,7 +21,8 @@ type Connector struct {
 // NewConnector create a new kafka connector
 func NewConnector(client kafka.Client) *Connector {
 	return &Connector{
-		client: client,
+		client:    client,
+		consumers: map[string]kafka.Consumer{},
 	}
 }
 

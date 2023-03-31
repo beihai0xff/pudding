@@ -13,7 +13,6 @@ import (
 
 	"github.com/beihai0xff/pudding/app/broker/server"
 	"github.com/beihai0xff/pudding/configs"
-	"github.com/beihai0xff/pudding/pkg/grpc/args"
 	"github.com/beihai0xff/pudding/pkg/log"
 	"github.com/beihai0xff/pudding/pkg/shutdown"
 )
@@ -26,7 +25,7 @@ var (
 func main() {
 	flag.Parse()
 
-	conf := configs.ParseBrokerConfig(*args.ConfigPath, configs.WithRedisURL(*redisURL))
+	conf := configs.ParseBrokerConfig(*configs.ConfigPath, configs.WithRedisURL(*redisURL))
 	server.RegisterLogger()
 
 	interrupt := make(chan os.Signal, 1)
