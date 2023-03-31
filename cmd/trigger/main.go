@@ -13,7 +13,6 @@ import (
 
 	"github.com/beihai0xff/pudding/app/trigger/server"
 	"github.com/beihai0xff/pudding/configs"
-	"github.com/beihai0xff/pudding/pkg/grpc/args"
 	"github.com/beihai0xff/pudding/pkg/log"
 	"github.com/beihai0xff/pudding/pkg/shutdown"
 )
@@ -27,7 +26,7 @@ var (
 func main() {
 	flag.Parse()
 
-	conf := configs.ParseTriggerConfig(*args.ConfigPath)
+	conf := configs.ParseTriggerConfig(*configs.ConfigPath)
 	server.RegisterLogger()
 
 	interrupt := make(chan os.Signal, 1)

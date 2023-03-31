@@ -2,10 +2,6 @@
 // server_trigger_config.go contains the config of trigger server
 package configs
 
-import (
-	"github.com/knadh/koanf/providers/confmap"
-)
-
 // TriggerConfig Trigger server config
 type TriggerConfig struct {
 	ServerConfig struct {
@@ -24,16 +20,7 @@ type TriggerConfig struct {
 
 // ParseTriggerConfig read the config from the given configPath.
 func ParseTriggerConfig(configPath string, opts ...OptionFunc) *TriggerConfig {
-	if err := Parse(configPath, ConfigFormatYAML, ReadFromFile); err != nil {
-		panic(err)
-	}
-
-	var configMap map[string]interface{}
-	for _, opt := range opts {
-		opt(configMap)
-	}
-
-	if err := k.Load(confmap.Provider(configMap, defaultDelim), nil); err != nil {
+	if err := Parse(configPath, ConfigFormatYAML, ReadFromFile, opts...); err != nil {
 		panic(err)
 	}
 
@@ -42,6 +29,8 @@ func ParseTriggerConfig(configPath string, opts ...OptionFunc) *TriggerConfig {
 	if err := UnmarshalToStruct("", &c); err != nil {
 		panic(err)
 	}
+	// set flags
+	c.ServerConfig.BaseConfig.SetFlags()
 
 	return &c
 }

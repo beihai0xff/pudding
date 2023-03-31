@@ -2,9 +2,21 @@
 // server_base_config.go contains the base config of a server
 package configs
 
-import "github.com/beihai0xff/pudding/pkg/grpc/args"
+const (
+	// baseConfigPath server base config path
+	baseConfigPath = "server_config.base_config"
 
-const baseConfigPath = "server_config.base_config"
+	// DefaultGRPCPort is the default port for gRPC server.
+	DefaultGRPCPort = 50050
+	// DefaultHTTPPort is the default port for HTTP server.
+	DefaultHTTPPort = 8081
+	// DefaultCertPath is the default path for TLS certificate.
+	DefaultCertPath = "./certs/pudding.pem"
+	// DefaultKeyPath is the default path for TLS key.
+	DefaultKeyPath = "./certs/pudding-key.pem"
+	// DefaultNameServerURL is the default name server connection url
+	DefaultNameServerURL = ""
+)
 
 // OptionFunc is the option function for config.
 type OptionFunc func(map[string]interface{})
@@ -28,18 +40,25 @@ type BaseConfig struct {
 
 // SetFlags set flags to BaseConfig
 // flags have the highest priority
+// if command line not set flag and other config provider not set the key,
+// it will set the key to flag default value
 func (c *BaseConfig) SetFlags() {
 	// if flag changes or not set value in other config file, use flag value
-	if *args.GRPCPort != args.DefaultGRPCPort || c.GRPCPort == 0 {
-		c.GRPCPort = *args.GRPCPort
+	if *GRPCPort != DefaultGRPCPort || c.GRPCPort == 0 {
+		c.GRPCPort = *GRPCPort
 	}
-	if *args.HTTPPort != args.DefaultHTTPPort || c.HTTPPort == 0 {
-		c.HTTPPort = *args.HTTPPort
+	if *HTTPPort != DefaultHTTPPort || c.HTTPPort == 0 {
+		c.HTTPPort = *HTTPPort
 	}
-	if *args.CertPath != args.DefaultCertPath || c.CertPath == "" {
-		c.CertPath = *args.CertPath
+	if *CertPath != DefaultCertPath || c.CertPath == "" {
+		c.CertPath = *CertPath
 	}
-	if *args.KeyPath != args.DefaultKeyPath || c.KeyPath == "" {
-		c.KeyPath = *args.KeyPath
+	if *KeyPath != DefaultKeyPath || c.KeyPath == "" {
+		c.KeyPath = *KeyPath
 	}
+	if *NameServerURL != DefaultNameServerURL || c.NameServerURL == "" {
+		c.NameServerURL = *NameServerURL
+	}
+
+	return
 }
