@@ -8,6 +8,7 @@ import (
 
 	"github.com/bsm/redislock"
 
+	"github.com/beihai0xff/pudding/pkg/log"
 	rdb "github.com/beihai0xff/pudding/pkg/redis"
 )
 
@@ -38,6 +39,7 @@ func (c *RedLockClient) NewRedLock(ctx context.Context, name string, expireTime 
 		}
 		return nil, err
 	}
+	log.Infof("get locker [%s] success", name)
 	return &RedLock{locker: locker}, nil
 }
 

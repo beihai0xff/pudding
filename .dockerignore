@@ -1,0 +1,10 @@
+.idea
+.cache
+.github
+dist/
+*.cov
+*.md
+.DS_Store
+
+build/
+!build/config

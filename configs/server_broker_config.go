@@ -36,7 +36,7 @@ func ParseBrokerConfig(configPath string, opts ...OptionFunc) *BrokerConfig {
 		panic(err)
 	}
 
-	var configMap map[string]interface{}
+	configMap := map[string]interface{}{}
 	for _, opt := range opts {
 		opt(configMap)
 	}

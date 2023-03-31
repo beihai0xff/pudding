@@ -15,7 +15,6 @@
 
 .idea
 .cache
-/build/bin/
 
 /third_party/swagger-ui/*.swagger.json
 /third_party/swagger-ui/swagger-initializer.js
@@ -25,3 +24,4 @@
 
 .DS_Store
 /coverprofile.cov
+/dist/

@@ -2,7 +2,7 @@ IMAGE_VERSION 		?= alpha-1
 GO_VERSION 			?= 1.18
 GOLANG_IMAGE_NAME 	?= golang:$(GO_VERSION)
 APP 				?= ""
-IMAGE_NAME 			= pudding.${APP}:latest
+IMAGE_NAME 			= pudding/${APP}:latest
 
 SWAGGER_UI_VERSION	:=v4.15.5
 

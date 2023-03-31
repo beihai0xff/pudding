@@ -20,18 +20,18 @@ func newQueue(config *configs.BrokerConfig) (storage.DelayStorage, connector.Rea
 }
 
 // newDelayStorage create a new DelayStorage
-func newDelayStorage(config *configs.BrokerConfig) storage.DelayStorage {
-	broker := config.ServerConfig.Broker
+func newDelayStorage(conf *configs.BrokerConfig) storage.DelayStorage {
+	broker := conf.ServerConfig.Broker
 	switch broker {
 	case "redis":
 		// parse Polling delay queue interval
-		interval := config.ServerConfig.TimeSliceInterval
+		interval := conf.ServerConfig.TimeSliceInterval
 		t, err := time.ParseDuration(interval)
 		if err != nil {
 			log.Fatalf("failed to parse '%s' to time.Duration: %v", interval, err)
 		}
 		log.Infof("timeSlice interval is: %f seconds", t.Seconds())
-		return redis_storage.NewDelayStorage(rdb.New(config.RedisConfig), uint64(t.Seconds()))
+		return redis_storage.NewDelayStorage(rdb.New(conf.RedisConfig), uint64(t.Seconds()))
 	default:
 		log.Fatalf("unknown broker type: [%s]", broker)
 	}
@@ -39,15 +39,15 @@ func newDelayStorage(config *configs.BrokerConfig) storage.DelayStorage {
 }
 
 // newConnector create a new RealTime Queue Connector
-func newConnector(config *configs.BrokerConfig) connector.RealTimeConnector {
-	connectorName := config.ServerConfig.Connector
+func newConnector(conf *configs.BrokerConfig) connector.RealTimeConnector {
+	connectorName := conf.ServerConfig.Connector
 	switch connectorName {
 	case "pulsar":
 		log.Fatalf("pulsar connectorName is not implemented yet")
 	case "kafka":
-		return kafka_connector.NewConnector(kafka.New(config.KafkaConfig))
+		return kafka_connector.NewConnector(kafka.New(conf.KafkaConfig))
 	case "redis":
-		return redis_connector.NewConnector(rdb.New(config.RedisConfig))
+		return redis_connector.NewConnector(rdb.New(conf.RedisConfig))
 	default:
 		log.Fatalf("unknown connectorType type: [%s]", connectorName)
 	}

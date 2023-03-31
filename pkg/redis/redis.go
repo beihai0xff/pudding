@@ -35,7 +35,7 @@ func New(c *configs.RedisConfig) *Client {
 		func() {
 			opt, err := redis.ParseURL(c.URL)
 			if err != nil {
-				panic(err)
+				log.Panicf("Parse redis URL [%s] error: %v", c.URL, err)
 			}
 
 			opt.DialTimeout = time.Duration(c.DialTimeout) * time.Second
