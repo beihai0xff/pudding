@@ -18,6 +18,7 @@ var (
 	// CertPath tls cert file path, the file must contain PEM encoded data.
 	CertPath = flag.String("cert_path", DefaultCertPath, "The tls cert file path")
 	// KeyPath tls key file path, the file must contain PEM encoded data.
-	KeyPath       = flag.String("key_path", DefaultKeyPath, "The tls key file path")
+	KeyPath = flag.String("key_path", DefaultKeyPath, "The tls key file path")
+	// NameServerURL name server url
 	NameServerURL = flag.String("name_server_url", DefaultNameServerURL, "The name server connection url")
 )

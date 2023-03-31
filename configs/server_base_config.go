@@ -59,6 +59,4 @@ func (c *BaseConfig) SetFlags() {
 	if *NameServerURL != DefaultNameServerURL || c.NameServerURL == "" {
 		c.NameServerURL = *NameServerURL
 	}
-
-	return
 }
