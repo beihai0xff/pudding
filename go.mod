@@ -29,7 +29,7 @@ require (
 	github.com/prometheus/client_golang v1.14.0
 	github.com/redis/go-redis/extra/redisotel/v9 v9.0.2
 	github.com/redis/go-redis/v9 v9.0.2
-	github.com/samber/lo v1.37.0
+	github.com/samber/lo v1.38.1
 	github.com/segmentio/kafka-go v0.4.39
 	github.com/stretchr/testify v1.8.2
 	github.com/vmihailenco/msgpack/v5 v5.3.5
