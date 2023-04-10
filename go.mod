@@ -5,7 +5,7 @@ go 1.19
 require (
 	github.com/alicebob/miniredis/v2 v2.30.0
 	github.com/apache/pulsar-client-go v0.9.0
-	github.com/bsm/redislock v0.9.0
+	github.com/bsm/redislock v0.9.2
 	github.com/bufbuild/buf v1.15.1
 	github.com/fatih/gomodifytags v1.16.0
 	github.com/go-playground/validator/v10 v10.12.0
