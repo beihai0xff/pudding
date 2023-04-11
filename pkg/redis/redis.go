@@ -132,10 +132,9 @@ func (c *Client) StreamSend(ctx context.Context, streamName string, msg []byte) 
 // start argument is the ID of the first message to consume
 // start can be specified as ID or $, where $ means from the last message
 func (c *Client) XGroupCreate(ctx context.Context, topic, group, start string) error {
-	// 创建消费者组
-	// 但是 XGroupCreate 这个命令不幂等，不能重复创建同一个消费者组，
-	// 如果 group 已经存在了则会返回错误
-	// 也不能在不存在的 stream 上创建 group
+	// create consumer group
+	// the XGroupCreate command can not create the same consumer group twice,
+	// otherwise it will return error
 	err := c.client.XGroupCreateMkStream(ctx, topic, group, start).Err()
 	if err != nil && !errors.Is(err, ErrConsumerGroupExists) {
 		return err
