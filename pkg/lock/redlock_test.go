@@ -39,9 +39,9 @@ func Test_NewRedLock(t *testing.T) {
 		wantDLockErr bool
 		unlock       bool
 	}{
-		{"DistributeLock 测试获取未被使用的锁", args{"DLockUnused"}, false, true},
-		{"DistributeLock 测试获取已经释放的锁", args{"DLockUnused"}, false, false},
-		{"DistributeLock 测试获取已经使用的锁", args{"DLockUsed"}, true, false},
+		{"DistributeLock get unused locker", args{"DLockUnused"}, false, true},
+		{"DistributeLock get released locker", args{"DLockUnused"}, false, false},
+		{"DistributeLock get locked locker", args{"DLockUsed"}, true, false},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {

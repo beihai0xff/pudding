@@ -37,10 +37,10 @@ func TestClient_Set(t *testing.T) {
 		args    args
 		wantErr bool
 	}{
-		{"Set 测试正常数据", args{"SetKey0", "SetValue0", 60 * time.Second}, false},
-		{"Set 测试数据过期时间为0", args{"SetKey1", "SetValue1", 0}, false},
-		{"Set 测试 key 为 empty", args{"", "SetValue", 60 * time.Second}, true},
-		{"Set 测试 value 为 empty", args{"SetKey", "", 60 * time.Second}, true},
+		{"Set normal test data", args{"SetKey0", "SetValue0", 60 * time.Second}, false},
+		{"Set expire time is zero", args{"SetKey1", "SetValue1", 0}, false},
+		{"Set key is empty", args{"", "SetValue", 60 * time.Second}, true},
+		{"Set value is empty", args{"SetKey", "", 60 * time.Second}, true},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -51,7 +51,7 @@ func TestClient_Set(t *testing.T) {
 	}
 }
 
-// TestClient_Get 测试 Get 方法
+// TestClient_Get test Get function
 func TestClient_Get(t *testing.T) {
 	c.Set(context.Background(), "GetKey", "GetValue", 60*time.Second)
 	type args struct {
@@ -63,8 +63,8 @@ func TestClient_Get(t *testing.T) {
 		want    string
 		wantErr bool
 	}{
-		{"Get 测试已存储在 Redis 的数据", args{"GetKey"}, "GetValue", false},
-		{"Get 测试未存储在 Redis 的数据", args{"GetKey100"}, "", true},
+		{"Get exist data in Redis", args{"GetKey"}, "GetValue", false},
+		{"Get non-exist data in Redis", args{"GetKey100"}, "", true},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -92,8 +92,8 @@ func TestClient_HGet(t *testing.T) {
 		want    []byte
 		wantErr bool
 	}{
-		{"HGet 测试已经存储在 Redis 的数据", args{table, key}, []byte("GetValue"), false},
-		{"HGet 测试未存储在 Redis 的数据", args{"no", key}, nil, true},
+		{"HGet exist data in Redis", args{table, key}, []byte("GetValue"), false},
+		{"HGet non-exist data in Redis", args{"no", key}, nil, true},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -121,7 +121,7 @@ func TestClient_ZRangeByScore(t *testing.T) {
 		want    []redis.Z
 		wantErr bool
 	}{
-		{"ZSet 获取已经存储在 Redis 的数据", args{context.Background(), zset, &redis.ZRangeBy{
+		{"ZSet exist data in Redis", args{context.Background(), zset, &redis.ZRangeBy{
 			Min:    "-inf",
 			Max:    strconv.FormatInt(time.Now().Unix(), 10),
 			Offset: 0,
@@ -152,8 +152,8 @@ func TestClient_DelMap(t *testing.T) {
 		args    args
 		wantErr bool
 	}{
-		{"删除整个哈希表 的数据", args{context.Background(), table}, false},
-		{"删除不存在的 key", args{context.Background(), "unknow key"}, false},
+		{"delete all data in map", args{context.Background(), table}, false},
+		{"delete non-exist key in map", args{context.Background(), "unknow key"}, false},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
