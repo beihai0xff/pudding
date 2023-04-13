@@ -11,10 +11,13 @@ services:
         delay: 5s
         max_attempts: 3
         window: 60s
-    depends_on:
-      - kafka-host
-      - redis-host
-      - consul-client
     network_mode: "host"
+    command: "--http-port=1213 --grpc-port=50051"
+    healthcheck:
+      test: curl -fsk https://127.0.0.1:1213/healthz
+      interval: 5s
+      timeout: 10s
+      retries: 20
     ports:
-      - "1213:8080"
+      - "1213:1213"
+      - "50051:50051/tcp"
