@@ -1,7 +1,6 @@
 .idea
 .cache
 .github
-dist/
 *.cov
 *.md
 .DS_Store

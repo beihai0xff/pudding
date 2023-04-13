@@ -1,62 +1,61 @@
+WORKSPACE_DIR		?= $(shell pwd)
+
 IMAGE_VERSION 		?= alpha-1
-GO_VERSION 			?= 1.18
-GOLANG_IMAGE_NAME 	?= golang:$(GO_VERSION)
 APP 				?= ""
 IMAGE_NAME 			= pudding/${APP}:latest
 
 SWAGGER_UI_VERSION	:=v4.15.5
 
-WORKSPACE_DIR		?= $(shell pwd)
 
 # lint
 lint:
-	@cd api/protobuf-spec && buf mod update && buf lint
-	@golangci-lint run
+	cd api/protobuf-spec && buf mod update && buf lint
+	golangci-lint run
 
+test: env/test test/run
 
-test: env/test run/test
+.PHONY: clean lint test
 
 
 # build binary app
 build/binary: gen/proto gen/struct_tag gen/swagger-ui
 	@echo "build ${APP}"
-	APP=$(APP) bash -x scripts/build_binary.sh
+	APP=$(APP) bash scripts/build_binary.sh
 
 # build docker image
-build/docker: clean/build
+build/docker: clean
 	@DOCKER_BUILDKIT=1 docker build \
 	--build-arg APP=${APP} \
 	-t ${IMAGE_NAME} -f ./build/Dockerfile .
 
 # gen
 gen/proto:
-	@bash -x scripts/gen_proto.sh
+	bash -x scripts/gen_proto.sh
 
 gen/struct_tag:
-	@bash -x scripts/gen_configs_struct_tag.sh
+	bash -x scripts/gen_configs_struct_tag.sh
 
 gen/mock:
-	@bash -x scripts/gen_mock.sh
+	bash -x scripts/gen_mock.sh
 
 gen/swagger-ui:
-	@SWAGGER_UI_VERSION=$(SWAGGER_UI_VERSION) APP=$(APP) bash -x ./scripts/gen_swagger-ui.sh
+	SWAGGER_UI_VERSION=$(SWAGGER_UI_VERSION) APP=$(APP) bash -x ./scripts/gen_swagger-ui.sh
 
 gen/certs:
-	@bash -x scripts/gen_certs.sh
+	bash -x scripts/gen_certs.sh
 
 .PHONY: build/binary build/docker gen/proto gen/struct_tag gen/mock gen/swagger-ui gen/certs
 
-# clean
 
+# clean
 clean:
 	@echo "clean build dir"
 	@rm -rf ./build/bin
 
+.PHONY: clean
 
-.PHONY: clean/build clean/docker lint test
 
 # bootstrap
-
 env/mysql:
 	go run scripts/init_mysql_env.go
 
@@ -72,7 +71,7 @@ env/test:
 	docker compose -f ./test/docker-compose.yml up \
 	-d --force-recreate --renew-anon-volumes --wait
 
-run/test:
+test/run:
 	bash -x ./scripts/run_test.sh
 
-.PHONY: env/dev env/mysql env/test run/test bootstrap
+.PHONY: env/dev env/mysql env/test test/run bootstrap

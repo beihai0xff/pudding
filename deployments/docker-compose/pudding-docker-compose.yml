@@ -1,0 +1,133 @@
+version: "3.9"
+services:
+  pudding-broker:
+    image: pudding/broker:latest
+    hostname: pudding-broker
+    container_name: pudding-broker
+    deploy:
+      restart_policy:
+        condition: on-failure
+        delay: 5s
+        max_attempts: 3
+        window: 60s
+    depends_on:
+      - kafka-host
+      - redis-host
+      - consul-client
+    network_mode: "host"
+    ports:
+      - "1213:8080"
+
+  redis-host:
+    image: "redis:latest"
+    hostname: redis-host
+    container_name: pudding-redis-host
+    restart: always
+    deploy:
+      replicas: 1
+    ports:
+      - "6379:6379"
+    environment:
+      - TZ=UTC
+
+  mysql-host:
+    image: "mysql:8.0.31"
+    hostname: mysql-host
+    container_name: pudding-mysql-host
+    restart: always
+    deploy:
+      replicas: 1
+    ports:
+      - "3306:3306"
+    environment:
+      - MYSQL_ROOT_PASSWORD=my-secret-pw
+      - MYSQL_DATABASE=test
+      - TZ=UTC
+    healthcheck:
+      test: ["CMD", "mysqladmin" ,"ping", "-h", "localhost", "-uroot", "-ppass"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+    networks:
+      - monitor-net
+
+  kafka-host:
+    image: confluentinc/cp-kafka:7.3.0
+    hostname: kafka-host
+    container_name: pudding-kafka_host
+    ports:
+      - "9092:9092"
+      - "9101:9101"
+    environment:
+      KAFKA_BROKER_ID: 1
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: 'CONTROLLER:PLAINTEXT,PLAINTEXT:PLAINTEXT,PLAINTEXT_HOST:PLAINTEXT'
+      KAFKA_LISTENERS: 'PLAINTEXT://kafka-host:29092,CONTROLLER://kafka-host:29093,PLAINTEXT_HOST://0.0.0.0:9092'
+      KAFKA_ADVERTISED_LISTENERS: 'PLAINTEXT://kafka-host:29092,PLAINTEXT_HOST://localhost:9092'
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+      KAFKA_GROUP_INITIAL_REBALANCE_DELAY_MS: 0
+      KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 1
+      KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 1
+      KAFKA_JMX_PORT: 9101
+      KAFKA_JMX_HOSTNAME: localhost
+      KAFKA_PROCESS_ROLES: 'broker,controller'
+      KAFKA_NODE_ID: 1
+      KAFKA_CONTROLLER_QUORUM_VOTERS: '1@kafka-host:29093'
+      KAFKA_INTER_BROKER_LISTENER_NAME: 'PLAINTEXT'
+      KAFKA_CONTROLLER_LISTENER_NAMES: 'CONTROLLER'
+      KAFKA_LOG_DIRS: '/tmp/kraft-combined-logs'
+    volumes:
+      - ../configs/kafka/run_kafka.sh:/home/appuser/run_kafka.sh
+    command: "bash -c 'chmod 777 /home/appuser/run_kafka.sh && /home/appuser/run_kafka.sh && /etc/confluent/docker/run'"
+    healthcheck:
+      test: kafka-topics --bootstrap-server kafka_host:9092 --list
+      interval: 10s
+      timeout: 10s
+      retries: 3
+    networks:
+      - monitor-net
+
+  kafka-control-center:
+    image: confluentinc/cp-enterprise-control-center:7.3.2
+    hostname: kafka-control-center
+    container_name: pudding-kafka-control-center
+    depends_on:
+      - kafka-host
+    ports:
+      - "9021:9021"
+    environment:
+      CONTROL_CENTER_BOOTSTRAP_SERVERS: 'kafka-host:29092'
+      CONTROL_CENTER_REPLICATION_FACTOR: 1
+      CONTROL_CENTER_INTERNAL_TOPICS_PARTITIONS: 1
+      CONTROL_CENTER_MONITORING_INTERCEPTOR_TOPIC_PARTITIONS: 1
+      CONFLUENT_METRICS_TOPIC_REPLICATION: 1
+      PORT: 9021
+    networks:
+      - monitor-net
+
+  consul-server:
+    image: hashicorp/consul:1.14.3
+    hostname: consul-server
+    container_name: pudding-consul-server
+    restart: always
+    volumes:
+      - ../configs/consul/server.json:/consul/config/server.json:ro
+    networks:
+      - monitor-net
+    ports:
+      - "8500:8500"
+      - "8600:8600/tcp"
+      - "8600:8600/udp"
+    command: "agent"
+
+  consul-client:
+    image: hashicorp/consul:1.14.3
+    hostname: consul-client
+    container_name: pudding-consul-client
+    restart: always
+    expose:
+      - 8500
+    volumes:
+      - ../configs/consul/client.json:/consul/config/client.json:ro
+    networks:
+      - monitor-net
+    command: "agent"
