@@ -1,22 +1,9 @@
 version: "3.9"
+
+networks:
+  infra-net:
+    driver: bridge
 services:
-  pudding-broker:
-    image: pudding/broker:latest
-    hostname: pudding-broker
-    container_name: pudding-broker
-    deploy:
-      restart_policy:
-        condition: on-failure
-        delay: 5s
-        max_attempts: 3
-        window: 60s
-    depends_on:
-      - kafka-host
-      - redis-host
-      - consul-client
-    network_mode: "host"
-    ports:
-      - "1213:8080"
 
   redis-host:
     image: "redis:latest"
@@ -29,6 +16,9 @@ services:
       - "6379:6379"
     environment:
       - TZ=UTC
+    healthcheck:
+      test: [ "CMD", "redis-cli", "--raw", "incr", "ping" ]
+
 
   mysql-host:
     image: "mysql:8.0.31"
@@ -49,7 +39,7 @@ services:
       timeout: 5s
       retries: 20
     networks:
-      - monitor-net
+      - infra-net
 
   kafka-host:
     image: confluentinc/cp-kafka:7.3.0
@@ -79,19 +69,20 @@ services:
       - ../configs/kafka/run_kafka.sh:/home/appuser/run_kafka.sh
     command: "bash -c 'chmod 777 /home/appuser/run_kafka.sh && /home/appuser/run_kafka.sh && /etc/confluent/docker/run'"
     healthcheck:
-      test: kafka-topics --bootstrap-server kafka_host:9092 --list
+      test: kafka-topics --bootstrap-server localhost:9092 --list
       interval: 10s
       timeout: 10s
-      retries: 3
+      retries: 20
     networks:
-      - monitor-net
+      - infra-net
 
   kafka-control-center:
     image: confluentinc/cp-enterprise-control-center:7.3.2
     hostname: kafka-control-center
     container_name: pudding-kafka-control-center
     depends_on:
-      - kafka-host
+      kafka-host:
+        condition: service_healthy
     ports:
       - "9021:9021"
     environment:
@@ -102,10 +93,10 @@ services:
       CONFLUENT_METRICS_TOPIC_REPLICATION: 1
       PORT: 9021
     networks:
-      - monitor-net
+      - infra-net
 
   consul-server:
-    image: hashicorp/consul:1.14.3
+    image: hashicorp/consul:1.14.6
     hostname: consul-server
     container_name: pudding-consul-server
     restart: always
@@ -118,9 +109,14 @@ services:
       - "8600:8600/tcp"
       - "8600:8600/udp"
     command: "agent"
+    healthcheck:
+      test: consul info | awk '/health_score/{if ($3 >=1) exit 1; else exit 0}'
+      interval: 10s
+      timeout: 10s
+      retries: 20
 
   consul-client:
-    image: hashicorp/consul:1.14.3
+    image: hashicorp/consul:1.14.6
     hostname: consul-client
     container_name: pudding-consul-client
     restart: always
@@ -131,3 +127,8 @@ services:
     networks:
       - monitor-net
     command: "agent"
+    healthcheck:
+      test: consul info | awk '/health_score/{if ($3 >=1) exit 1; else exit 0}'
+      interval: 10s
+      timeout: 10s
+      retries: 20

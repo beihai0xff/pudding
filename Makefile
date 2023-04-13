@@ -75,3 +75,8 @@ test/run:
 	bash -x ./scripts/run_test.sh
 
 .PHONY: env/dev env/mysql env/test test/run bootstrap
+
+deploy/docker-compose:
+	bash scripts/deploy/deploy_docker_compose.sh
+
+.PHONY: deploy/docker-compose

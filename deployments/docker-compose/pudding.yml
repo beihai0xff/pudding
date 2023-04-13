@@ -1,0 +1,23 @@
+version: "3.9"
+services:
+
+  pudding-broker:
+    image: pudding/broker:latest
+    hostname: pudding-broker
+    container_name: pudding-broker
+    deploy:
+      restart_policy:
+        condition: on-failure
+        delay: 5s
+        max_attempts: 3
+        window: 60s
+    network_mode: "host"
+    command: "--http-port=1213 --grpc-port=50051"
+    healthcheck:
+      test: curl -fsk https://127.0.0.1:1213/healthz
+      interval: 5s
+      timeout: 10s
+      retries: 20
+    ports:
+      - "1213:1213"
+      - "50051:50051/tcp"

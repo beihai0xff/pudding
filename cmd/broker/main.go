@@ -18,8 +18,8 @@ import (
 )
 
 var (
-	redisURL  = flag.String("redis_url", "", "The server redis url")
-	pulsarURL = flag.String("pulsar_url", "", "The server pulsar url")
+	redisURL  = flag.String("redis-url", "", "The redis connection url")
+	pulsarURL = flag.String("pulsar-url", "", "The pulsar connection url")
 )
 
 func main() {
