@@ -1,0 +1,3 @@
+[submodule "deployments/docker-compose/dockprom"]
+	path = deployments/docker-compose/dockprom
+	url = git@github.com:stefanprodan/dockprom.git
