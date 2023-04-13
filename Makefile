@@ -78,3 +78,5 @@ test/run:
 
 deploy/docker-compose:
 	bash scripts/deploy/deploy_docker_compose.sh
+
+.PHONY: deploy/docker-compose
