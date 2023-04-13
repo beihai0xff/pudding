@@ -18,9 +18,9 @@ import (
 )
 
 var (
-	mysqlDSN = flag.String("mysql", "", "The server mysql dsn")
+	mysqlDSN = flag.String("mysql-url", "", "The server mysql connection dsn")
 
-	webhookPrefix = flag.String("webhook_prefix", "", "The server webhook prefix")
+	webhookPrefix = flag.String("webhook-prefix", "", "The server webhook prefix")
 )
 
 func main() {

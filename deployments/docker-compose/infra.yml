@@ -1,22 +1,9 @@
 version: "3.9"
+
+networks:
+  infra-net:
+    driver: bridge
 services:
-  pudding-broker:
-    image: pudding/broker:latest
-    hostname: pudding-broker
-    container_name: pudding-broker
-    deploy:
-      restart_policy:
-        condition: on-failure
-        delay: 5s
-        max_attempts: 3
-        window: 60s
-    depends_on:
-      - kafka-host
-      - redis-host
-      - consul-client
-    network_mode: "host"
-    ports:
-      - "1213:8080"
 
   redis-host:
     image: "redis:latest"
@@ -49,7 +36,7 @@ services:
       timeout: 5s
       retries: 20
     networks:
-      - monitor-net
+      - infra-net
 
   kafka-host:
     image: confluentinc/cp-kafka:7.3.0
@@ -84,7 +71,7 @@ services:
       timeout: 10s
       retries: 3
     networks:
-      - monitor-net
+      - infra-net
 
   kafka-control-center:
     image: confluentinc/cp-enterprise-control-center:7.3.2
@@ -102,10 +89,10 @@ services:
       CONFLUENT_METRICS_TOPIC_REPLICATION: 1
       PORT: 9021
     networks:
-      - monitor-net
+      - infra-net
 
   consul-server:
-    image: hashicorp/consul:1.14.3
+    image: hashicorp/consul:1.14.6
     hostname: consul-server
     container_name: pudding-consul-server
     restart: always
@@ -120,7 +107,7 @@ services:
     command: "agent"
 
   consul-client:
-    image: hashicorp/consul:1.14.3
+    image: hashicorp/consul:1.14.6
     hostname: consul-client
     container_name: pudding-consul-client
     restart: always

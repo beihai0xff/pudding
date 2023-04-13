@@ -9,7 +9,7 @@ const (
 	// DefaultGRPCPort is the default port for gRPC server.
 	DefaultGRPCPort = 50050
 	// DefaultHTTPPort is the default port for HTTP server.
-	DefaultHTTPPort = 8081
+	DefaultHTTPPort = 8080
 	// DefaultCertPath is the default path for TLS certificate.
 	DefaultCertPath = "./certs/pudding.pem"
 	// DefaultKeyPath is the default path for TLS key.

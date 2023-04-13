@@ -1,0 +1,20 @@
+version: "3.9"
+services:
+
+  pudding-broker:
+    image: pudding/broker:latest
+    hostname: pudding-broker
+    container_name: pudding-broker
+    deploy:
+      restart_policy:
+        condition: on-failure
+        delay: 5s
+        max_attempts: 3
+        window: 60s
+    depends_on:
+      - kafka-host
+      - redis-host
+      - consul-client
+    network_mode: "host"
+    ports:
+      - "1213:8080"
