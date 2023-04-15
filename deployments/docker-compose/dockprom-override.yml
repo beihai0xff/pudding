@@ -1,0 +1,12 @@
+version: '3.9'
+
+networks:
+  monitor-net:
+    name: pudding-infra-net
+    driver: bridge
+
+services:
+
+  prometheus:
+    volumes:
+      - ../configs/prometheus:/etc/prometheus

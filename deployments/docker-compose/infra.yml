@@ -2,7 +2,15 @@ version: "3.9"
 
 networks:
   infra-net:
-    driver: bridge
+    name: pudding-infra-net
+    external: true
+
+volumes:
+  redis-data: {}
+  mysql-data: {}
+  kafka-data: {}
+  consul-data: {}
+
 services:
 
   redis-host:
@@ -10,6 +18,8 @@ services:
     hostname: redis-host
     container_name: pudding-redis-host
     restart: always
+    volumes:
+      - redis-data:/data
     deploy:
       replicas: 1
     ports:
@@ -18,13 +28,16 @@ services:
       - TZ=UTC
     healthcheck:
       test: [ "CMD", "redis-cli", "--raw", "incr", "ping" ]
-
+    networks:
+      - infra-net
 
   mysql-host:
     image: "mysql:8.0.31"
     hostname: mysql-host
     container_name: pudding-mysql-host
     restart: always
+    volumes:
+      - mysql-data:/var/lib/mysql
     deploy:
       replicas: 1
     ports:
@@ -46,13 +59,12 @@ services:
     hostname: kafka-host
     container_name: pudding-kafka_host
     ports:
-      - "9092:9092"
-      - "9101:9101"
+      - "29092:29092"
     environment:
       KAFKA_BROKER_ID: 1
-      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: 'CONTROLLER:PLAINTEXT,PLAINTEXT:PLAINTEXT,PLAINTEXT_HOST:PLAINTEXT'
-      KAFKA_LISTENERS: 'PLAINTEXT://kafka-host:29092,CONTROLLER://kafka-host:29093,PLAINTEXT_HOST://0.0.0.0:9092'
-      KAFKA_ADVERTISED_LISTENERS: 'PLAINTEXT://kafka-host:29092,PLAINTEXT_HOST://localhost:9092'
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: 'LISTENER_INTER:PLAINTEXT,LISTENER_OUTER:PLAINTEXT,CONTROLLER:PLAINTEXT'
+      KAFKA_LISTENERS: 'LISTENER_INTER://:9092,LISTENER_OUTER://:29092,CONTROLLER://:29093'
+      KAFKA_ADVERTISED_LISTENERS: 'LISTENER_INTER://kafka-host:9092,LISTENER_OUTER://HOST_IP:29092'
       KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
       KAFKA_GROUP_INITIAL_REBALANCE_DELAY_MS: 0
       KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 1
@@ -62,11 +74,12 @@ services:
       KAFKA_PROCESS_ROLES: 'broker,controller'
       KAFKA_NODE_ID: 1
       KAFKA_CONTROLLER_QUORUM_VOTERS: '1@kafka-host:29093'
-      KAFKA_INTER_BROKER_LISTENER_NAME: 'PLAINTEXT'
+      KAFKA_INTER_BROKER_LISTENER_NAME: 'LISTENER_INTER'
       KAFKA_CONTROLLER_LISTENER_NAMES: 'CONTROLLER'
       KAFKA_LOG_DIRS: '/tmp/kraft-combined-logs'
     volumes:
-      - ../configs/kafka/run_kafka.sh:/home/appuser/run_kafka.sh
+      - ./configs/kafka/run_kafka.sh:/home/appuser/run_kafka.sh
+      - kafka-data:/var/lib/kafka/data
     command: "bash -c 'chmod 777 /home/appuser/run_kafka.sh && /home/appuser/run_kafka.sh && /etc/confluent/docker/run'"
     healthcheck:
       test: kafka-topics --bootstrap-server localhost:9092 --list
@@ -86,7 +99,7 @@ services:
     ports:
       - "9021:9021"
     environment:
-      CONTROL_CENTER_BOOTSTRAP_SERVERS: 'kafka-host:29092'
+      CONTROL_CENTER_BOOTSTRAP_SERVERS: 'kafka-host:9092'
       CONTROL_CENTER_REPLICATION_FACTOR: 1
       CONTROL_CENTER_INTERNAL_TOPICS_PARTITIONS: 1
       CONTROL_CENTER_MONITORING_INTERCEPTOR_TOPIC_PARTITIONS: 1
@@ -101,34 +114,23 @@ services:
     container_name: pudding-consul-server
     restart: always
     volumes:
-      - ../configs/consul/server.json:/consul/config/server.json:ro
-    networks:
-      - monitor-net
+      - ./configs/consul/server.json:/consul/config/server.json:ro
+      - consul-data:/consul/data
     ports:
       - "8500:8500"
       - "8600:8600/tcp"
       - "8600:8600/udp"
-    command: "agent"
-    healthcheck:
-      test: consul info | awk '/health_score/{if ($3 >=1) exit 1; else exit 0}'
-      interval: 10s
-      timeout: 10s
-      retries: 20
-
-  consul-client:
-    image: hashicorp/consul:1.14.6
-    hostname: consul-client
-    container_name: pudding-consul-client
-    restart: always
     expose:
-      - 8500
-    volumes:
-      - ../configs/consul/client.json:/consul/config/client.json:ro
-    networks:
-      - monitor-net
-    command: "agent"
+      - 8300
+      - 8301
+      - 8301/udp
+      - 8302
+      - 8302/udp
+    command: "agent -server -bootstrap-expect 1 "
     healthcheck:
       test: consul info | awk '/health_score/{if ($3 >=1) exit 1; else exit 0}'
       interval: 10s
       timeout: 10s
       retries: 20
+    networks:
+      - infra-net
