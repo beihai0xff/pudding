@@ -1,3 +1,5 @@
+include ./deployments/Makefile
+
 WORKSPACE_DIR		?= $(shell pwd)
 
 IMAGE_VERSION 		?= alpha-1
@@ -76,7 +78,3 @@ test/run:
 
 .PHONY: env/dev env/mysql env/test test/run bootstrap
 
-deploy/docker-compose:
-	bash scripts/deploy/deploy_docker_compose.sh
-
-.PHONY: deploy/docker-compose

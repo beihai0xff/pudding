@@ -1,4 +1,11 @@
 version: "3.9"
+networks:
+  service-net:
+    name: pudding-service-net
+    driver: bridge
+  infra-net:
+    name: pudding-infra-net
+    external: true
 services:
 
   pudding-broker:
@@ -10,9 +17,10 @@ services:
         condition: on-failure
         delay: 5s
         max_attempts: 3
-        window: 60s
-    network_mode: "host"
+        window: 120s
     command: "--http-port=1213 --grpc-port=50051"
+    volumes:
+      - ./configs/pudding/broker/config.yaml:/pudding/app/broker/config.yaml
     healthcheck:
       test: curl -fsk https://127.0.0.1:1213/healthz
       interval: 5s
@@ -21,3 +29,24 @@ services:
     ports:
       - "1213:1213"
       - "50051:50051/tcp"
+    networks:
+      - infra-net
+    depends_on:
+      consul-client:
+        condition: service_healthy
+
+  consul-client:
+    image: hashicorp/consul:1.15.2
+    hostname: consul-client
+    container_name: pudding-consul-client
+    restart: always
+    volumes:
+      - ./configs/consul/client.json:/consul/config/client.json:ro
+    networks:
+      - infra-net
+    command: "agent"
+    healthcheck:
+      test: consul info | awk '/health_score/{if ($3 >=1) exit 1; else exit 0}'
+      interval: 10s
+      timeout: 10s
+      retries: 20

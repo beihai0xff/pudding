@@ -1,18 +1,19 @@
 FROM golang:1.20-buster AS builder
 LABEL stage=gobuilder
 
-ARG APP="broker"
-ENV GOPROXY https://goproxy.cn,direct
+
+ENV GOPROXY https://goproxy.io,direct
 WORKDIR /builder
 COPY . .
 RUN make bootstrap
+ARG APP
 RUN make build/binary APP=${APP}
 
 
 FROM ubuntu:22.04
 RUN apt update
-RUN apt install -y curl
-ARG APP="broker"
+RUN apt install -y curl iputils-ping
+ARG APP
 WORKDIR /pudding/app/${APP}
 COPY --from=builder /builder/dist/bin/${APP} ./
 

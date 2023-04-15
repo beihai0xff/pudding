@@ -3,6 +3,9 @@
   "server": false,
   "datacenter": "dc1",
   "data_dir": "/consul/data",
+  "addresses": {
+    "http" : "0.0.0.0"
+  },
   "retry_join":[
     "consul-server"
   ]
