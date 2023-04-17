@@ -6,6 +6,7 @@ server_config:
   message_topic: default
   token_topic: token
   base_config:
+    host-domain: "localhost"
     grpc_port: 50051
     http_port: 8080
     cert_path: ./certs/pudding.pem

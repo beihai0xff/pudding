@@ -11,7 +11,7 @@ RUN make build/binary APP=${APP}
 
 
 FROM ubuntu:22.04
-RUN apt update
+RUN apt update -y
 RUN apt install -y curl iputils-ping
 ARG APP
 WORKDIR /pudding/app/${APP}

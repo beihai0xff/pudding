@@ -16,6 +16,7 @@ import (
 	"go.opentelemetry.io/contrib/instrumentation/google.golang.org/grpc/otelgrpc"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials"
+	"google.golang.org/grpc/credentials/insecure"
 	"google.golang.org/grpc/health"
 	pbhealth "google.golang.org/grpc/health/grpc_health_v1"
 	"google.golang.org/grpc/keepalive"
@@ -23,6 +24,7 @@ import (
 
 	pb "github.com/beihai0xff/pudding/api/gen/pudding/broker/v1"
 	"github.com/beihai0xff/pudding/configs"
+	"github.com/beihai0xff/pudding/pkg/autocert"
 	"github.com/beihai0xff/pudding/pkg/grpc/swagger"
 	"github.com/beihai0xff/pudding/pkg/log"
 	"github.com/beihai0xff/pudding/pkg/otel"
@@ -103,14 +105,18 @@ func StartHTTPServer(config *configs.BaseConfig, healthEndpointPath, swaggerEndp
 		IdleTimeout: 30 * time.Second,
 	}
 
+	if config.EnableTLS {
+		httpServer.TLSConfig = autocert.GetTLSConfig()
+	}
+
 	go func() {
-		log.Infof("gRPC-Gateway server listening at %v", httpLis.Addr())
-		if err := httpServer.ServeTLS(httpLis, config.CertPath, config.KeyPath); err != nil {
+		log.Infof("http server listening at %v", httpLis.Addr())
+		if err := httpServer.Serve(httpLis); err != nil {
 			if errors.Is(err, http.ErrServerClosed) {
-				log.Info("gRPC-Gateway server closed")
+				log.Info("http server closed")
 				return
 			}
-			log.Fatalf("Failed to serve gRPC-Gateway: %v", err)
+			log.Fatalf("Failed to serve http server: %v", err)
 		}
 	}()
 
@@ -120,38 +126,37 @@ func StartHTTPServer(config *configs.BaseConfig, healthEndpointPath, swaggerEndp
 // createGRPCLocalClient creates a gRPC client to the local gRPC server.
 // It is used by the gRPC-Gateway.
 func createGRPCLocalClient(config *configs.BaseConfig) *grpc.ClientConn {
-	cred, err := credentials.NewClientTLSFromFile(config.CertPath, "localhost")
-	if err != nil {
-		log.Panicf("Failed to load Server TLS: %v", err)
-	}
-	conn, err := grpc.DialContext(
-		context.Background(),
-		// net.JoinHostPort("localhost", grpcLis.Addr().(*net.TCPAddr).Port),
-		fmt.Sprintf("localhost:%d", config.GRPCPort),
+	log.Info("creating gRPC local client...")
+	options := []grpc.DialOption{
 		grpc.WithBlock(),
-		grpc.WithTransportCredentials(cred),
 		grpc.WithKeepaliveParams(keepalive.ClientParameters{
 			Time:                10 * time.Second, // send pings every 10 seconds if there is no activity
 			Timeout:             time.Second,      // wait 1 second for ping ack before considering the connection dead
 			PermitWithoutStream: true,             // send pings even without active streams
 		}),
+	}
+	if config.EnableTLS {
+		// define TLS configuration
+		cred := credentials.NewTLS(autocert.GetTLSConfig())
+		options = append(options, grpc.WithTransportCredentials(cred))
+	} else {
+		options = append(options, grpc.WithTransportCredentials(insecure.NewCredentials()))
+	}
+	conn, err := grpc.DialContext(
+		context.Background(),
+		fmt.Sprintf("localhost:%d", config.GRPCPort),
+		options...,
 	)
 	if err != nil {
 		log.Panicf("Failed to dial server: %v", err)
 	}
+	log.Infof("create gRPC local client success")
 	return conn
 }
 
 // createGRPCServer creates a gRPC server
 func createGRPCServer(config *configs.BaseConfig) *grpc.Server {
-	// define TLS configuration
-	cred, err := credentials.NewServerTLSFromFile(config.CertPath, config.KeyPath)
-	if err != nil {
-		log.Panicf("Failed to load Server TLS: %v", err)
-	}
-
-	// init grpc server
-	return grpc.NewServer(
+	options := []grpc.ServerOption{
 		grpc.KeepaliveParams(keepalive.ServerParameters{
 			Time:    time.Minute,
 			Timeout: 5 * time.Second,
@@ -167,6 +172,14 @@ func createGRPCServer(config *configs.BaseConfig) *grpc.Server {
 			// define open telemetry MeterProvider
 			otelgrpc.UnaryServerInterceptor(otelgrpc.WithMeterProvider(otel.GetMeterProvider())),
 		)),
-		grpc.Creds(cred),
-	)
+	}
+
+	if config.EnableTLS {
+		// define TLS configuration
+		cred := credentials.NewTLS(autocert.GetTLSConfig())
+		options = append(options, grpc.Creds(cred))
+	}
+
+	// init grpc server
+	return grpc.NewServer(options...)
 }
