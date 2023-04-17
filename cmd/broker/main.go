@@ -13,6 +13,7 @@ import (
 
 	"github.com/beihai0xff/pudding/app/broker/server"
 	"github.com/beihai0xff/pudding/configs"
+	"github.com/beihai0xff/pudding/pkg/autocert"
 	"github.com/beihai0xff/pudding/pkg/log"
 	"github.com/beihai0xff/pudding/pkg/shutdown"
 )
@@ -27,6 +28,7 @@ func main() {
 
 	conf := configs.ParseBrokerConfig(*configs.ConfigPath, configs.WithRedisURL(*redisURL))
 	server.RegisterLogger()
+	autocert.New(conf.ServerConfig.HostDomain)
 
 	interrupt := make(chan os.Signal, 1)
 	signal.Notify(interrupt, syscall.SIGINT, syscall.SIGTERM)

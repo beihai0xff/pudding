@@ -6,6 +6,7 @@ server_config:
   message_topic: default
   token_topic: token
   base_config:
+    host-domain: "localhost"
     grpc_port: 50051
     http_port: 8080
     cert_path: ./certs/pudding.pem
@@ -19,13 +20,12 @@ server_config:
           - file
         file_config:
           filepath: ./log/server.log
-      pulsar_log:
+      kafka_log:
         level: info
         writers:
-          - console
           - file
         file_config:
-          filepath: ./log/pulsar.log
+          filepath: ./log/kafka.log
       grpc_log:
         level: info
         writers:
