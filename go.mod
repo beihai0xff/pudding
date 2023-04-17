@@ -3,7 +3,7 @@ module github.com/beihai0xff/pudding
 go 1.19
 
 require (
-	github.com/alicebob/miniredis/v2 v2.30.0
+	github.com/alicebob/miniredis/v2 v2.30.1
 	github.com/apache/pulsar-client-go v0.9.0
 	github.com/bsm/redislock v0.9.2
 	github.com/bufbuild/buf v1.15.1
@@ -256,7 +256,7 @@ require (
 	github.com/vmihailenco/tagparser/v2 v2.0.0 // indirect
 	github.com/yagipy/maintidx v1.0.0 // indirect
 	github.com/yeya24/promlinter v0.2.0 // indirect
-	github.com/yuin/gopher-lua v0.0.0-20220504180219-658193537a64 // indirect
+	github.com/yuin/gopher-lua v1.1.0 // indirect
 	gitlab.com/bosi/decorder v0.2.3 // indirect
 	go.opentelemetry.io/otel v1.14.0 // indirect
 	go.opentelemetry.io/otel/sdk v1.14.0 // indirect
