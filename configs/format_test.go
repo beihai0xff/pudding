@@ -57,8 +57,10 @@ func TestJSONFormat(t *testing.T) {
 var testJSONFormat = `{
     "server_config": {
         "base_config": {
+            "host_domain": "localhost",
             "grpc_port": 50051,
             "http_port": 8080,
+            "enable_tls": false,
             "cert_path": "",
             "key_path": "",
             "name_server_url": "",
