@@ -1,8 +1,8 @@
+// Package autocert support auto cert
 package autocert
 
 import (
 	"crypto/tls"
-	"net"
 	"sync"
 
 	"golang.org/x/crypto/acme/autocert"
@@ -13,6 +13,7 @@ var (
 	manager *Manager
 )
 
+// Manager is autocert Manager Proxy
 type Manager struct {
 	*autocert.Manager
 	domain string
@@ -33,7 +34,8 @@ func New(domain string) {
 	})
 }
 
-func GetCertificates() (*tls.Certificate, error) {
+// GetTLSCert get tls Certificate
+func GetTLSCert() (*tls.Certificate, error) {
 	cert, err := manager.TLSConfig().GetCertificate(ClientHelloInfo(manager.domain))
 	if err != nil {
 		return nil, err
@@ -42,17 +44,15 @@ func GetCertificates() (*tls.Certificate, error) {
 	return cert, nil
 }
 
+// GetTLSConfig get tls Config
 func GetTLSConfig() *tls.Config {
-	if _, err := GetCertificates(); err != nil {
+	if _, err := GetTLSCert(); err != nil {
 		return nil
 	}
 	return manager.TLSConfig()
 }
 
-func GetListener() net.Listener {
-	return manager.Listener()
-}
-
+// ClientHelloInfo get tls ClientHelloInfo
 func ClientHelloInfo(sni string) *tls.ClientHelloInfo {
 	hello := &tls.ClientHelloInfo{
 		ServerName:   sni,

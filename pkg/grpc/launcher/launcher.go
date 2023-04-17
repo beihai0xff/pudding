@@ -156,7 +156,6 @@ func createGRPCLocalClient(config *configs.BaseConfig) *grpc.ClientConn {
 
 // createGRPCServer creates a gRPC server
 func createGRPCServer(config *configs.BaseConfig) *grpc.Server {
-
 	options := []grpc.ServerOption{
 		grpc.KeepaliveParams(keepalive.ServerParameters{
 			Time:    time.Minute,
