@@ -82,12 +82,11 @@ func (l *etcdLock) Refresh(ctx context.Context, ttl time.Duration) error {
 	go func() {
 		timeoutCtx, cancel := context.WithTimeout(context.Background(), ttl)
 		defer cancel()
-		select {
-		case <-timeoutCtx.Done():
-			if err := l.Release(ctx); err != nil {
-				log.Errorf("refresh lock [%s] failed: %v", l.locker.Key(), err)
-			}
+		<-timeoutCtx.Done()
+		if err := l.Release(ctx); err != nil {
+			log.Errorf("refresh lock [%s] failed: %v", l.locker.Key(), err)
 		}
+
 	}()
 	return nil
 }
