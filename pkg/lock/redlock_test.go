@@ -25,7 +25,7 @@ func TestMain(m *testing.M) {
 	os.Exit(exitCode)
 }
 
-// Test_NewRedLock 测试 NewRedLock 方法
+// Test_NewRedLock test NewRedLock function
 func Test_NewRedLock(t *testing.T) {
 
 	lock, _ := testRedLockClient.NewRedLock(context.Background(), "DLockUsed", 10*time.Second)
