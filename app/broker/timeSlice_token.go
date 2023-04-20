@@ -64,7 +64,7 @@ func (s *scheduler) tryProduceToken() {
 
 			log.Infof("success produce token: %s", tokenName)
 
-			// extends the lockClient with a new TTL
+			// extends the locker with a new TTL
 			if err := locker.Refresh(ctx, 3*time.Second); err != nil {
 				log.Errorf("failed to refresh locker: %s, caused by %v", tokenName, err)
 			}

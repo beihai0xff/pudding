@@ -19,7 +19,7 @@ type Manager struct {
 	domain string
 }
 
-// New create a autocert Manager
+// New create an autocert Manager
 func New(domain string) {
 	once.Do(func() {
 		m := &autocert.Manager{
