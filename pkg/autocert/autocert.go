@@ -52,7 +52,7 @@ func GetTLSConfig() *tls.Config {
 	return manager.TLSConfig()
 }
 
-// ClientHelloInfo get tls ·ClientHelloInfo
+// ClientHelloInfo get tls ClientHelloInfo
 func ClientHelloInfo(sni string) *tls.ClientHelloInfo {
 	hello := &tls.ClientHelloInfo{
 		ServerName:   sni,
