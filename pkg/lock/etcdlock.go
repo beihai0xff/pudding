@@ -86,7 +86,7 @@ func (l *etcdLock) Refresh(ctx context.Context, ttl time.Duration) error {
 		if err := l.Release(ctx); err != nil {
 			log.Errorf("refresh lock [%s] failed: %v", l.locker.Key(), err)
 		}
-
 	}()
+
 	return nil
 }
