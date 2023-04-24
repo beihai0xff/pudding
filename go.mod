@@ -3,7 +3,7 @@ module github.com/beihai0xff/pudding
 go 1.19
 
 require (
-	github.com/alicebob/miniredis/v2 v2.30.1
+	github.com/alicebob/miniredis/v2 v2.30.2
 	github.com/apache/pulsar-client-go v0.9.0
 	github.com/bsm/redislock v0.9.2
 	github.com/bufbuild/buf v1.17.0
