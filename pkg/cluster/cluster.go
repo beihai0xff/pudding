@@ -17,7 +17,7 @@ type (
 	// Cluster is a cluster manager.
 	Cluster interface {
 		// Mutex returns a distributed mutex implementation.
-		Mutex(name string) (Mutex, error)
+		Mutex(name string, ttl time.Duration, opts ...MutexOption) (Mutex, error)
 	}
 
 	// cluster is a cluster manager implementation.
@@ -32,11 +32,11 @@ type (
 		requestTimeout time.Duration
 	}
 
-	// clusterOption is a function that applies an option to cluster.
-	clusterOption func(*clusterOptions)
+	// ClusterOption is a function that applies an option to cluster.
+	ClusterOption func(*clusterOptions)
 )
 
-func newCluster(client *clientv3.Client, opts ...clusterOption) *cluster {
+func newCluster(client *clientv3.Client, opts ...ClusterOption) *cluster {
 	ops := clusterOptions{requestTimeout: defaultRequestTimeout}
 	for _, opt := range opts {
 		opt(&ops)

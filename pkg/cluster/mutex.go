@@ -21,7 +21,8 @@ var (
 	ErrInvalidTTL = fmt.Errorf("invalid TTL, must be greater than %s", minLockTTL.String())
 
 	// ErrLocked is returned when a lock locked by another session.
-	ErrLocked = concurrency.ErrLocked
+	ErrLocked       = errors.New("locked already held by another session")
+	ErrLockedBySelf = errors.New("locked already held by self")
 	// ErrLockNotHeld is returned when a lock is not held
 	ErrLockNotHeld = errors.New("lock not held")
 )
@@ -33,7 +34,7 @@ type Mutex interface {
 	// May return ErrLockNotHeld.
 	Unlock(ctx context.Context) error
 
-	// Refresh extends the lock with a new TTL.
+	// Refresh extends the lock with TTL.
 	// recommended use it when keepAlive is false
 	// will return ErrLockNotHeld if refresh is unsuccessful.
 	Refresh(ctx context.Context) error
@@ -55,15 +56,19 @@ type mutex struct {
 func (m *mutex) Lock(ctx context.Context) (err error) {
 	isTimeout := true
 
-	m.lock.Lock()
+	if !m.lock.TryLock() {
+		return ErrLockedBySelf
+	}
 	defer func() {
 		if isTimeout || err != nil {
 			if errors.Is(err, concurrency.ErrLocked) {
-				log.Errorf("lock failed: %v", err)
 				err = ErrLocked
 			}
+			log.Errorf("lock failed: %v", err)
 			m.lock.Unlock()
+			return
 		}
+		log.Infof("mutex [%s] locked", m.m.Key())
 	}()
 
 	err = m.m.Lock(ctx)
@@ -76,7 +81,10 @@ func (m *mutex) Lock(ctx context.Context) (err error) {
 }
 
 func (m *mutex) Unlock(ctx context.Context) error {
-	defer m.lock.Unlock()
+	defer func() {
+		m.lock.Unlock()
+		log.Infof("mutex [%s] unlocked", m.m.Key())
+	}()
 
 	return m.m.Unlock(ctx)
 }
@@ -86,11 +94,12 @@ func (m *mutex) Refresh(ctx context.Context) error {
 	if errors.Is(err, concurrency.ErrSessionExpired) {
 		return ErrLockNotHeld
 	}
+
 	return err
 }
 
 func (c *cluster) Mutex(name string, ttl time.Duration, opts ...MutexOption) (Mutex, error) {
-	if ttl <= minLockTTL {
+	if ttl < minLockTTL {
 		return nil, ErrInvalidTTL
 	}
 
