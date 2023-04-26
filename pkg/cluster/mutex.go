@@ -21,7 +21,8 @@ var (
 	ErrInvalidTTL = fmt.Errorf("invalid TTL, must be greater than %s", minLockTTL.String())
 
 	// ErrLocked is returned when a lock locked by another session.
-	ErrLocked       = errors.New("locked already held by another session")
+	ErrLocked = errors.New("locked already held by another session")
+	// ErrLockedBySelf is returned when a lock locked by self.
 	ErrLockedBySelf = errors.New("locked already held by self")
 	// ErrLockNotHeld is returned when a lock is not held
 	ErrLockNotHeld = errors.New("lock not held")
