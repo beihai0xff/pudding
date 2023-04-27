@@ -14,10 +14,9 @@ import (
 	"github.com/beihai0xff/pudding/app/broker/storage"
 	"github.com/beihai0xff/pudding/configs"
 	"github.com/beihai0xff/pudding/pkg/clock"
+	"github.com/beihai0xff/pudding/pkg/cluster"
 	"github.com/beihai0xff/pudding/pkg/errno"
-	"github.com/beihai0xff/pudding/pkg/lock"
 	"github.com/beihai0xff/pudding/pkg/log"
-	"github.com/beihai0xff/pudding/pkg/redis"
 )
 
 var (
@@ -51,7 +50,7 @@ type scheduler struct {
 	// wallClock wall wallClock time
 	wallClock clock.Clock
 
-	lockClient *lock.RedLockClient
+	cluster cluster.Cluster
 
 	// messageTopic default message topic
 	messageTopic string
@@ -65,19 +64,25 @@ type scheduler struct {
 }
 
 // New create a new scheduler
-func New(config *configs.BrokerConfig, delay storage.DelayStorage, realtime connector.RealTimeConnector) Scheduler {
+func New(config *configs.BrokerConfig, delay storage.DelayStorage,
+	realtime connector.RealTimeConnector) (Scheduler, error) {
+	clusterManager, err := cluster.New(config.ServerConfig.EtcdURLs)
+	if err != nil {
+		return nil, err
+	}
+
 	q := &scheduler{
 		delay:        delay,
 		connector:    realtime,
 		wallClock:    clock.New(),
-		lockClient:   lock.NewRedLockClient(redis.New(config.RedisConfig)),
+		cluster:      clusterManager,
 		messageTopic: config.ServerConfig.MessageTopic,
 		tokenTopic:   config.ServerConfig.TokenTopic,
 		token:        make(chan uint64),
 		quit:         make(chan int64),
 	}
 
-	return q
+	return q, nil
 }
 
 // Run start the scheduler
@@ -91,7 +96,7 @@ func (s *scheduler) Run() {
 	Produce or Consume DeliverAfter scheduler
 */
 
-// Produce produce a Message to the delay queue
+// Produce a Message to the delay queue
 func (s *scheduler) Produce(ctx context.Context, msg *types.Message) error {
 	var err error
 
@@ -154,23 +159,26 @@ func (s *scheduler) startSchedule() {
 				ctx, cancel := context.WithTimeout(context.Background(), time.Second*3)
 				defer cancel()
 
-				// lockClient the timeSlice
+				// lock the timeSlice
 				name := s.getLockerName(t)
-				locker, err := s.lockClient.NewRedLock(ctx, name, time.Second*3)
+				locker, err := s.cluster.Mutex(name, time.Second*3)
 				if err != nil {
-					if !errors.Is(err, lock.ErrNotObtained) {
-						log.Errorf("failed to get timeSlice locker: %s, caused by %v", name, err)
+					return
+				}
+				if err = locker.Lock(ctx); err != nil {
+					if !errors.Is(err, cluster.ErrLocked) {
+						log.Errorf("failed to get timeSlice locker [%s]: %v", name, err)
 					}
 					return
 				}
 
 				if err := s.delay.Consume(ctx, t, 100, s.produceRealTime); err != nil {
-					log.Errorf("failed to consume time: %d, caused by %v", t, err)
+					log.Errorf("failed to consume timeSlice [%d] message: %v", t, err)
 				}
 
-				// Release the lockClient
-				if err := locker.Release(ctx); err != nil {
-					log.Errorf("failed to release time locker: %s, caused by %v", name, err)
+				// Release the cluster
+				if err := locker.Unlock(ctx); err != nil {
+					log.Errorf("failed to release timeSlice locker [%s]: %v", name, err)
 				}
 			}()
 

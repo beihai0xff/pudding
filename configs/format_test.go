@@ -103,7 +103,8 @@ var testJSONFormat = `{
         "message_topic": "",
         "token_topic": "",
         "broker": "redis",
-        "connector": "kafka"
+        "connector": "kafka",
+        "etcd_urls": null
     },
     "redis_config": {
         "url": "redis://default:default@localhost:6379/11",

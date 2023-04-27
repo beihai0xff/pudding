@@ -20,7 +20,10 @@ func withSchedulerService(conf *configs.BrokerConfig) launcher.StartServiceFunc 
 
 		// Initialize dependencies
 		delay, realtime := newQueue(conf)
-		s := broker.New(conf, delay, realtime)
+		s, err := broker.New(conf, delay, realtime)
+		if err != nil {
+			panic(err)
+		}
 		s.Run()
 		handler := broker.NewHandler(s)
 
