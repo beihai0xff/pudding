@@ -134,3 +134,12 @@ services:
       retries: 20
     networks:
       - infra-net
+
+  etcd-host:
+    image: 'bitnami/etcd:3.5.8'
+    environment:
+      - ALLOW_NONE_AUTHENTICATION=yes
+      - ETCD_ADVERTISE_CLIENT_URLS=http://etcd-host:2379
+    ports:
+      - "2379:2379"
+      - "2380:2380"

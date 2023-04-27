@@ -18,6 +18,8 @@ type BrokerConfig struct {
 		Broker string `json:"broker" yaml:"broker" mapstructure:"broker"`
 		// Connector type
 		Connector string `json:"connector" yaml:"connector" mapstructure:"connector"`
+		// EtcdURLs etcd connection urls
+		EtcdURLs []string `json:"etcd_urls" yaml:"etcd_urls" mapstructure:"etcd_urls"`
 	} `json:"server_config" yaml:"server_config" mapstructure:"server_config"`
 
 	// RedisConfig redis config

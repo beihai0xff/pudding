@@ -36,6 +36,20 @@ type (
 	ClusterOption func(*clusterOptions)
 )
 
+// New creates a new cluster manager.
+func New(urls []string, opts ...ClusterOption) (Cluster, error) {
+	client, err := newETCDClient(urls)
+	if err != nil {
+		return nil, fmt.Errorf("create etcd client failed: %v", err)
+	}
+
+	return newCluster(client, opts...), nil
+}
+
+func newETCDClient(urls []string) (*clientv3.Client, error) {
+	return clientv3.NewFromURLs(urls)
+}
+
 func newCluster(client *clientv3.Client, opts ...ClusterOption) *cluster {
 	ops := clusterOptions{requestTimeout: defaultRequestTimeout}
 	for _, opt := range opts {

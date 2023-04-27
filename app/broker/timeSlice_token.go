@@ -10,7 +10,7 @@ import (
 
 	"github.com/beihai0xff/pudding/api/gen/pudding/types/v1"
 	type2 "github.com/beihai0xff/pudding/app/broker/pkg/types"
-	"github.com/beihai0xff/pudding/pkg/lock"
+	"github.com/beihai0xff/pudding/pkg/cluster"
 	"github.com/beihai0xff/pudding/pkg/log"
 )
 
@@ -43,30 +43,33 @@ func (s *scheduler) tryProduceToken() {
 			// get token name
 			tokenName := s.formatTokenName(uint64(t.Unix()))
 
-			// try to lockClient the token
+			// try to lock the token
 			ctx, cancel := context.WithTimeout(context.Background(), time.Second)
-			locker, err := s.lockClient.NewRedLock(context.Background(), s.formatTokenLockerName(t.Unix()), time.Millisecond*500)
+			locker, err := s.cluster.Mutex(s.formatTokenLockerName(t.Unix()), time.Millisecond*500,
+				cluster.WithDisableKeepalive())
 			if err != nil {
-				// if the token is not locked, but the error is not ErrNotObtained, log it
-				if !errors.Is(err, lock.ErrNotObtained) {
-					log.Errorf("failed to get token lockClient: %s, caused by %v", tokenName, err)
+				log.Errorf("failed to get token locker [%s]: %v", tokenName, err)
+				continue
+			}
+			if err = locker.Lock(ctx); err != nil {
+				if !errors.Is(err, cluster.ErrLocked) {
+					log.Errorf("failed to get token locker [%s]: %v", tokenName, err)
 				}
-
 				// if the token is locked, skip it
 				continue
 			}
 
-			// if got the token lockClient, send it to token topic
+			// if got the token cluster, send it to the token topic
 			if err := s.produceRealTime(ctx, &types.Message{Topic: s.tokenTopic, Payload: []byte(tokenName)}); err != nil {
-				log.Errorf("failed to produce token: %s, caused by %v", tokenName, err)
+				log.Errorf("failed to produce token [%s]: %v", tokenName, err)
 				continue
 			}
 
 			log.Infof("success produce token: %s", tokenName)
 
 			// extends the locker with a new TTL
-			if err := locker.Refresh(ctx, 3*time.Second); err != nil {
-				log.Errorf("failed to refresh locker: %s, caused by %v", tokenName, err)
+			if err := locker.Refresh(ctx); err != nil {
+				log.Errorf("failed to refresh locker [%s]: %v", tokenName, err)
 			}
 			cancel()
 		case <-s.quit:
@@ -75,7 +78,7 @@ func (s *scheduler) tryProduceToken() {
 	}
 }
 
-// try to consume token and send to token channel
+// try to consume token and send to the token channel
 func (s *scheduler) getToken() {
 	log.Infof("start consume token")
 
