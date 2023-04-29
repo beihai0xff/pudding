@@ -15,7 +15,7 @@ func Test_ReadFromFile(t *testing.T) {
 		name string
 		args args
 	}{
-		{"test", args{"../test/data/config.test.yaml"}},
+		{"test", args{"../test/data/config.format.yaml"}},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
