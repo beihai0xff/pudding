@@ -8,7 +8,7 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-type formatConfig struct {
+type testFormatConfig struct {
 	Name         string `json:"name" yaml:"name" mapstructure:"name"`
 	ServerConfig struct {
 		Broker     string `json:"broker" yaml:"broker" mapstructure:"broker"`
@@ -26,7 +26,7 @@ func TestUnmarshalToStruct(t *testing.T) {
 	assert.NoError(t, Parse("../test/data/config.format.yaml", ConfigFormatYAML, ReadFromFile))
 
 	// happy_path
-	format := formatConfig{}
+	format := testFormatConfig{}
 	err := UnmarshalToStruct("", &format)
 	assert.NoError(t, err)
 	assert.Equal(t, "redis", format.ServerConfig.Broker)
@@ -44,9 +44,9 @@ func TestUnmarshalToStruct(t *testing.T) {
 }
 
 func TestJSONFormat(t *testing.T) {
-	assert.NoError(t, Parse("../test/data/config.test.yaml", ConfigFormatYAML, ReadFromFile))
-	config := BrokerConfig{}
-	_ = UnmarshalToStruct("", &config)
+	assert.NoError(t, Parse("../test/data/config.format.yaml", ConfigFormatYAML, ReadFromFile))
+	config := testFormatConfig{}
+	assert.NoError(t, UnmarshalToStruct("", &config))
 
 	tests := []struct {
 		name    string
