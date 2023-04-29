@@ -8,15 +8,29 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
+type testFormatConfig struct {
+	Name         string `json:"name" yaml:"name" mapstructure:"name"`
+	ServerConfig struct {
+		Broker     string `json:"broker" yaml:"broker" mapstructure:"broker"`
+		BaseConfig struct {
+			HostDomain string      `json:"host_domain" yaml:"host_domain" mapstructure:"host_domain"`
+			GRPCPort   int         `json:"grpc_port" yaml:"grpc_port" mapstructure:"grpc_port"`
+			HTTPPort   int         `json:"http_port" yaml:"http_port" mapstructure:"http_port"`
+			EnableTLS  bool        `json:"enable_tls" yaml:"enable_tls" mapstructure:"enable_tls"`
+			Logger     []LogConfig `json:"log_config" yaml:"log_config" mapstructure:"log_config"`
+		} `json:"base_config" yaml:"base_config" mapstructure:"base_config"`
+	} `json:"server_config" yaml:"server_config"  mapstructure:"server_config"`
+}
+
 func TestUnmarshalToStruct(t *testing.T) {
-	Parse("../test/data/config.test.yaml", ConfigFormatYAML, ReadFromFile)
+	assert.NoError(t, Parse("../test/data/config.format.yaml", ConfigFormatYAML, ReadFromFile))
 
 	// happy_path
-	brokerConfig := BrokerConfig{}
-	err := UnmarshalToStruct("", &brokerConfig)
+	format := testFormatConfig{}
+	err := UnmarshalToStruct("", &format)
 	assert.NoError(t, err)
-	assert.Equal(t, "redis", brokerConfig.ServerConfig.Broker)
-	buf, _ := JSONFormat(brokerConfig)
+	assert.Equal(t, "redis", format.ServerConfig.Broker)
+	buf, _ := JSONFormat(format)
 	assert.Equal(t, testJSONFormat, buf.String())
 
 	// get_logger_configs
@@ -27,13 +41,12 @@ func TestUnmarshalToStruct(t *testing.T) {
 		return conf.LogName == "default"
 	})
 	assert.Equal(t, LogConfig{LogName: "default", Writers: []string{OutputConsole}, Level: "debug", Format: EncoderTypeJSON}, v)
-	fmt.Println(logConfig)
 }
 
 func TestJSONFormat(t *testing.T) {
-	Parse("../test/data/config.test.yaml", ConfigFormatYAML, ReadFromFile)
-	config := BrokerConfig{}
-	_ = UnmarshalToStruct("", &config)
+	assert.NoError(t, Parse("../test/data/config.format.yaml", ConfigFormatYAML, ReadFromFile))
+	config := testFormatConfig{}
+	assert.NoError(t, UnmarshalToStruct("", &config))
 
 	tests := []struct {
 		name    string
@@ -55,15 +68,14 @@ func TestJSONFormat(t *testing.T) {
 }
 
 var testJSONFormat = `{
+    "name": "pudding",
     "server_config": {
+        "broker": "redis",
         "base_config": {
             "host_domain": "localhost",
             "grpc_port": 50051,
             "http_port": 8080,
             "enable_tls": false,
-            "cert_path": "",
-            "key_path": "",
-            "name_server_url": "",
             "log_config": [
                 {
                     "log_name": "default",
@@ -98,41 +110,6 @@ var testJSONFormat = `{
                     "caller_skip": 0
                 }
             ]
-        },
-        "time_slice_interval": "",
-        "message_topic": "",
-        "token_topic": "",
-        "broker": "redis",
-        "connector": "kafka",
-        "etcd_urls": null
-    },
-    "redis_config": {
-        "url": "redis://default:default@localhost:6379/11",
-        "dial_timeout": 20
-    },
-    "pulsar_config": {
-        "url": "pulsar://localhost:6650",
-        "connection_timeout": 10,
-        "producers_config": [
-            {
-                "topic": "token",
-                "batching_max_publish_delay": 10,
-                "batching_max_messages": 100,
-                "batching_max_size": 5
-            },
-            {
-                "topic": "test_topic_1",
-                "batching_max_publish_delay": 10,
-                "batching_max_messages": 100,
-                "batching_max_size": 5
-            },
-            {
-                "topic": "test_topic_2",
-                "batching_max_publish_delay": 10,
-                "batching_max_messages": 100,
-                "batching_max_size": 5
-            }
-        ]
-    },
-    "kafka_config": null
+        }
+    }
 }`

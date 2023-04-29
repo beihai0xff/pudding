@@ -1,0 +1,20 @@
+name: pudding
+server_config:
+  broker: redis
+  base_config:
+    host_domain: "localhost"
+    grpc_port: 50051
+    http_port: 8080
+    enable_tls: false
+    name_server: localhost:8081
+    log_config:
+      - log_name: default
+        level: debug
+        writers:
+          - console
+        format: json
+      - log_name: kafka_log
+        level: debug
+        writers:
+          - console
+        format: json
