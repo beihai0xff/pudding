@@ -30,20 +30,20 @@ require (
 	github.com/redis/go-redis/v9 v9.0.3
 	github.com/samber/lo v1.38.1
 	github.com/segmentio/kafka-go v0.4.39
-	github.com/stretchr/testify v1.8.2
+	github.com/stretchr/testify v1.8.3
 	github.com/vmihailenco/msgpack/v5 v5.3.5
 	go.etcd.io/bbolt v1.3.7
 	go.etcd.io/etcd/client/v3 v3.5.8
-	go.opentelemetry.io/contrib/instrumentation/google.golang.org/grpc/otelgrpc v0.38.0
+	go.opentelemetry.io/contrib/instrumentation/google.golang.org/grpc/otelgrpc v0.42.0
 	go.opentelemetry.io/otel/exporters/prometheus v0.35.0
-	go.opentelemetry.io/otel/metric v0.35.0
+	go.opentelemetry.io/otel/metric v1.16.0
 	go.opentelemetry.io/otel/sdk/metric v0.35.0
 	go.uber.org/automaxprocs v1.5.2
 	go.uber.org/zap v1.24.0
 	golang.org/x/crypto v0.8.0
-	golang.org/x/net v0.9.0
-	google.golang.org/genproto v0.0.0-20230223222841-637eb2293923
-	google.golang.org/grpc v1.54.0
+	golang.org/x/net v0.10.0
+	google.golang.org/genproto v0.0.0-20230306155012-7f2fa6fef1f4
+	google.golang.org/grpc v1.55.0
 	google.golang.org/protobuf v1.30.0
 	gopkg.in/natefinch/lumberjack.v2 v2.2.1
 	gorm.io/driver/mysql v1.5.0
@@ -266,17 +266,17 @@ require (
 	gitlab.com/bosi/decorder v0.2.3 // indirect
 	go.etcd.io/etcd/api/v3 v3.5.8 // indirect
 	go.etcd.io/etcd/client/pkg/v3 v3.5.8 // indirect
-	go.opentelemetry.io/otel v1.14.0 // indirect
+	go.opentelemetry.io/otel v1.16.0 // indirect
 	go.opentelemetry.io/otel/sdk v1.14.0 // indirect
-	go.opentelemetry.io/otel/trace v1.14.0 // indirect
+	go.opentelemetry.io/otel/trace v1.16.0 // indirect
 	go.uber.org/atomic v1.10.0 // indirect
 	go.uber.org/multierr v1.11.0 // indirect
 	golang.org/x/exp v0.0.0-20230321023759-10a507213a29 // indirect
 	golang.org/x/exp/typeparams v0.0.0-20230224173230-c95f2b4c22f2 // indirect
 	golang.org/x/mod v0.9.0 // indirect
 	golang.org/x/sync v0.1.0 // indirect
-	golang.org/x/sys v0.7.0 // indirect
-	golang.org/x/term v0.7.0 // indirect
+	golang.org/x/sys v0.8.0 // indirect
+	golang.org/x/term v0.8.0 // indirect
 	golang.org/x/text v0.9.0 // indirect
 	golang.org/x/time v0.1.0 // indirect
 	golang.org/x/tools v0.7.0 // indirect
