@@ -71,6 +71,7 @@ func (c *consulResolver) RegisterGRPC(serviceName, ip string, port int) (string,
 	}
 
 	log.Infof("register grpc service [%s] successfully", serviceID)
+
 	return serviceID, nil
 }
 
@@ -105,6 +106,7 @@ func (c *consulResolver) RegisterHTTP(path, ip string, port int) (string, error)
 	}
 
 	log.Infof("register http service [%s] successfully", serviceID)
+
 	return serviceID, nil
 }
 

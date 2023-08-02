@@ -49,6 +49,7 @@ func GetTLSConfig() *tls.Config {
 	if _, err := GetTLSCert(); err != nil {
 		return nil
 	}
+
 	return manager.TLSConfig()
 }
 
@@ -58,5 +59,6 @@ func ClientHelloInfo(sni string) *tls.ClientHelloInfo {
 		ServerName:   sni,
 		CipherSuites: []uint16{tls.TLS_ECDHE_RSA_WITH_CHACHA20_POLY1305, tls.TLS_ECDHE_ECDSA_WITH_CHACHA20_POLY1305},
 	}
+
 	return hello
 }

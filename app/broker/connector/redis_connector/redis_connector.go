@@ -33,8 +33,10 @@ func (q *Connector) Produce(ctx context.Context, msg *types.Message) error {
 	b, err := msgpack.Encode(msg)
 	if err != nil {
 		log.Errorf("msgpack encode message error: %v", err)
+
 		return err
 	}
+
 	return q.rdb.StreamSend(ctx, msg.Topic, b)
 }
 
@@ -60,6 +62,7 @@ func (q *Connector) NewConsumer(topic, group string, batchSize int, fn type2.Han
 			if err != nil {
 				log.Errorf("XGroupConsume message error: %v", err)
 			}
+
 			q.handlerRealTimeMessage(ctx, msgs, topic, group, fn)
 
 			cancel()

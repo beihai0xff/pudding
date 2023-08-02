@@ -30,10 +30,12 @@ func newCore(c *configs.LogConfig) zapcore.Core {
 
 	// get log output writer
 	var writes []zapcore.WriteSyncer
+
 	for _, writer := range c.Writers {
 		if writer == configs.OutputConsole {
 			writes = append(writes, getConsoleWriter())
 		}
+
 		if writer == configs.OutputFile {
 			writes = append(writes, getFileWriter(&c.FileConfig))
 		}
@@ -55,6 +57,7 @@ func getFileWriter(c *configs.LogFileConfig) zapcore.WriteSyncer {
 	if c.Filepath == "" {
 		Fatalf("log file writer set, but log file path is empty, please check your config")
 	}
+
 	lumberJackLogger := &lumberjack.Logger{
 		Filename:   c.Filepath,   // 日志文件路径
 		MaxSize:    c.MaxSize,    // 每个日志文件保存的大小 单位:M

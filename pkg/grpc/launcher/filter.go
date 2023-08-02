@@ -22,6 +22,7 @@ func Handler(h http.Handler, decors ...GwMuxDecorator) http.Handler {
 		d := decors[len(decors)-1-i] // iterate in reverse
 		h = d(h)
 	}
+
 	return h
 }
 
@@ -69,6 +70,7 @@ func requestLog(p *responseProxy, r *http.Request) {
 	if r.TLS != nil {
 		scheme = "https"
 	}
+
 	request := map[string]interface{}{
 		"scheme":       scheme,
 		"request_line": fmt.Sprintf("%s %s %s", r.Method, r.RequestURI, r.Proto),
@@ -83,5 +85,6 @@ func requestLog(p *responseProxy, r *http.Request) {
 		logger.GetGRPCLogger().Error(string(b))
 		return
 	}
+
 	logger.GetGRPCLogger().Info(string(b))
 }

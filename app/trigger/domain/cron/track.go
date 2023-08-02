@@ -68,6 +68,7 @@ func (t *Trigger) Run() {
 	<-timer.C
 
 	tick := time.NewTicker(1 * time.Second)
+
 	for {
 		now := <-tick.C
 		ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
@@ -107,12 +108,14 @@ func (t *Trigger) Tracking(temp *po.CronTriggerTemplate) error {
 
 	temp.LastExecutionTime = nextTime
 	temp.LoopedTimes++
+
 	if temp.LoopedTimes == temp.ExceptedLoopTimes {
 		log.Infof("cron template [%d] has reached the maximum loop times, "+
 			"update status to TemplateStatusMaxTimes", temp.ID)
 
 		temp.Status = pb.TriggerStatus_MAX_TIMES
 	}
+
 	log.Infof("cron template [%d] looped times: %d", temp.ID, temp.LoopedTimes)
 
 	return nil
@@ -124,6 +127,7 @@ func (t *Trigger) checkTempShouldRun(temp *po.CronTriggerTemplate, nextTime time
 		log.Warnf("cron template [%d] has reached the maximum loop times, but it has been tracked", temp.ID)
 
 		temp.Status = pb.TriggerStatus_MAX_TIMES
+
 		return false
 	}
 
@@ -132,6 +136,7 @@ func (t *Trigger) checkTempShouldRun(temp *po.CronTriggerTemplate, nextTime time
 		log.Warnf("cron template [%d] has reached the maximum age, set it to StatusMaxAge", temp.ID)
 
 		temp.Status = pb.TriggerStatus_MAX_AGE
+
 		return false
 	}
 
@@ -144,6 +149,7 @@ func (t *Trigger) getNextTime(expr string) (time.Time, error) {
 	if err != nil {
 		return time.Time{}, err
 	}
+
 	return expression.Next(t.wallClock.Now()), nil
 }
 

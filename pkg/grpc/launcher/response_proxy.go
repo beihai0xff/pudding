@@ -24,9 +24,12 @@ func (p *responseProxy) Write(buf []byte) (int, error) {
 	if p.status == 0 {
 		p.WriteHeader(http.StatusOK)
 	}
+
 	n, err := p.ResponseWriter.Write(buf)
+
 	p.body = append(p.body, buf[:n]...)
 	p.Len += n
+
 	return n, err
 }
 

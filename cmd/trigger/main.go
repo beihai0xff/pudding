@@ -28,10 +28,12 @@ func main() {
 	flag.Parse()
 
 	conf := configs.ParseTriggerConfig(*configs.ConfigPath)
-	server.RegisterLogger()
 	autocert.New(conf.ServerConfig.HostDomain)
 
+	server.RegisterLogger()
+
 	interrupt := make(chan os.Signal, 1)
+
 	signal.Notify(interrupt, syscall.SIGINT, syscall.SIGTERM)
 	defer signal.Stop(interrupt)
 

@@ -24,6 +24,7 @@ func New() Clock {
 	realClockOnce.Do(func() {
 		realClock = &RealClock{}
 	})
+
 	return realClock
 }
 

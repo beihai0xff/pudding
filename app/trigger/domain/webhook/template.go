@@ -55,12 +55,14 @@ func (t *Trigger) FindByID(ctx context.Context, id uint) (*TriggerTemplate, erro
 	if id <= 0 {
 		err := fmt.Errorf("invalid id, id: %d", id)
 		log.Errorf("%v", err)
+
 		return nil, err
 	}
 
 	po, err := t.repo.FindByID(ctx, id)
 	if err != nil {
 		log.Errorf("failed to find webhook template, caused by %v", err)
+
 		return nil, err
 	}
 
@@ -79,6 +81,7 @@ func (t *Trigger) PageQuery(ctx context.Context, p *constants.PageQuery,
 	if p.Offset < 0 || p.Limit <= 0 {
 		err := fmt.Errorf("invalid offset or limit, offset: %d, limit: %d", p.Offset, p.Limit)
 		log.Errorf("%v", err)
+
 		return nil, 0, err
 	}
 
@@ -92,6 +95,7 @@ func (t *Trigger) PageQuery(ctx context.Context, p *constants.PageQuery,
 	if err != nil {
 		return nil, 0, fmt.Errorf("convert po to entity failed: %w", err)
 	}
+
 	return e, count, nil
 }
 
@@ -102,6 +106,7 @@ func (t *Trigger) Register(ctx context.Context, temp *TriggerTemplate) error {
 		log.Errorf("failed to check params, caused by %v", err)
 		return err
 	}
+
 	if err := validate.Struct(temp); err != nil {
 		return fmt.Errorf("invalid validation error: %w", err)
 	}
@@ -111,12 +116,14 @@ func (t *Trigger) Register(ctx context.Context, temp *TriggerTemplate) error {
 	if err != nil {
 		return fmt.Errorf("convert entity to po failed: %w", err)
 	}
+
 	if err := t.repo.Insert(ctx, p); err != nil {
 		log.Errorf("failed to insert cron template, caused by %v", err)
 		return err
 	}
 
 	temp.ID = p.ID
+
 	return nil
 }
 
@@ -138,6 +145,7 @@ func (t *Trigger) checkRegisterParams(temp *TriggerTemplate) error {
 	if temp.ExceptedEndTime.IsZero() {
 		temp.ExceptedEndTime = t.wallClock.Now().Add(constants.DefaultTemplateActiveDuration)
 	}
+
 	if temp.ExceptedLoopTimes == 0 {
 		temp.ExceptedLoopTimes = constants.DefaultMaximumLoopTimes
 	}
@@ -171,6 +179,7 @@ func (t *Trigger) Call(ctx context.Context, id uint) (string, error) {
 	if err != nil {
 		return "", fmt.Errorf("failed to find webhook template, caused by %w", err)
 	}
+
 	messageKey := uuid.NewString()
 	if _, err := t.schedulerClient.SendDelayMessage(ctx, &broker.SendDelayMessageRequest{
 		Topic:        template.Topic,

@@ -85,6 +85,7 @@ func GetLogConfig(logName string) *LogConfig {
 	}
 
 	c := defaultConfig
+
 	if len(logConfig) != 0 {
 		v, ok := lo.Find(logConfig, func(conf LogConfig) bool {
 			return conf.LogName == logName
@@ -96,6 +97,7 @@ func GetLogConfig(logName string) *LogConfig {
 				fileConfig := defaultLogFileConfig
 				c.FileConfig = fileConfig
 			}
+
 			if err := copier.CopyWithOption(&c, v, copier.Option{IgnoreEmpty: true, DeepCopy: true}); err != nil {
 				panic(err)
 			}

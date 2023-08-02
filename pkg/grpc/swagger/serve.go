@@ -17,6 +17,7 @@ import (
 // RegisterHandler register Swagger UI handler.
 func RegisterHandler(gwmux *runtime.ServeMux, prefix string) {
 	swaggerHandler := getOpenAPIHandler(third_party.Embed)
+
 	if err := gwmux.HandlePath("GET", prefix+"/*", func(w http.ResponseWriter,
 		r *http.Request, pathParams map[string]string) {
 		r.URL.Path = strings.TrimPrefix(r.URL.Path, prefix)

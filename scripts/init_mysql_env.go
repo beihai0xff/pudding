@@ -16,29 +16,33 @@ func main() {
 }
 
 func createTable(db *mysql.Client) error {
-	err := db.Set("gorm:table_options", "ENGINE=InnoDB").Migrator().CreateTable(&po.WebhookTriggerTemplate{})
-	if err != nil {
+	if err := db.Set("gorm:table_options", "ENGINE=InnoDB").Migrator().CreateTable(&po.WebhookTriggerTemplate{}); err != nil {
 		log.Errorf("create table failed: %v", err)
+
 		return err
 	}
-	err = db.Set("gorm:table_options", "ENGINE=InnoDB").Migrator().CreateTable(&po.CronTriggerTemplate{})
-	if err != nil {
+
+	if err := db.Set("gorm:table_options", "ENGINE=InnoDB").Migrator().CreateTable(&po.CronTriggerTemplate{}); err != nil {
 		log.Errorf("create table failed: %v", err)
+
 		return err
 	}
+
 	return nil
 }
 
 func dropTable(db *mysql.Client) error {
-	err := db.Migrator().DropTable(&po.WebhookTriggerTemplate{})
-	if err != nil {
+	if err := db.Migrator().DropTable(&po.WebhookTriggerTemplate{}); err != nil {
 		log.Errorf("drop test table failed: %v", err)
+
 		return err
 	}
-	err = db.Migrator().DropTable(&po.CronTriggerTemplate{})
-	if err != nil {
+
+	if err := db.Migrator().DropTable(&po.CronTriggerTemplate{}); err != nil {
 		log.Errorf("drop test table failed: %v", err)
+
 		return err
 	}
+
 	return nil
 }

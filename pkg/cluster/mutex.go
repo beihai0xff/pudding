@@ -60,15 +60,19 @@ func (m *mutex) Lock(ctx context.Context) (err error) {
 	if !m.lock.TryLock() {
 		return ErrLockedBySelf
 	}
+
 	defer func() {
 		if isTimeout || err != nil {
 			if errors.Is(err, concurrency.ErrLocked) {
 				err = ErrLocked
 			}
+
 			log.Errorf("lock failed: %v", err)
 			m.lock.Unlock()
+
 			return
 		}
+
 		log.Infof("mutex [%s] locked", m.m.Key())
 	}()
 
@@ -78,6 +82,7 @@ func (m *mutex) Lock(ctx context.Context) (err error) {
 	}
 
 	isTimeout = false
+
 	return
 }
 
@@ -106,6 +111,7 @@ func (c *cluster) Mutex(name string, ttl time.Duration, opts ...MutexOption) (Mu
 
 	ctx, cancel := context.WithTimeout(context.Background(), c.opts.requestTimeout)
 	defer cancel()
+
 	session, err := c.getSession(ctx, int64(ttl.Seconds()))
 	if err != nil {
 		return nil, err

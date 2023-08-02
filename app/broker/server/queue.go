@@ -25,16 +25,18 @@ func newDelayStorage(conf *configs.BrokerConfig) storage.DelayStorage {
 	switch broker {
 	case "redis":
 		// parse Polling delay queue interval
-		interval := conf.ServerConfig.TimeSliceInterval
-		t, err := time.ParseDuration(interval)
+		t, err := time.ParseDuration(conf.ServerConfig.TimeSliceInterval)
 		if err != nil {
-			log.Fatalf("failed to parse '%s' to time.Duration: %v", interval, err)
+			log.Fatalf("failed to parse '%s' to time.Duration: %v", conf.ServerConfig.TimeSliceInterval, err)
 		}
+
 		log.Infof("timeSlice interval is: %f seconds", t.Seconds())
+
 		return redis_storage.NewDelayStorage(rdb.New(conf.RedisConfig), uint64(t.Seconds()))
 	default:
 		log.Fatalf("unknown broker type: [%s]", broker)
 	}
+
 	return nil
 }
 
@@ -51,5 +53,6 @@ func newConnector(conf *configs.BrokerConfig) connector.RealTimeConnector {
 	default:
 		log.Fatalf("unknown connectorType type: [%s]", connectorName)
 	}
+
 	return nil
 }

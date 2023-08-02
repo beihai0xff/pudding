@@ -69,6 +69,7 @@ func (c *Client) Set(ctx context.Context, key, value string, expireTime time.Dur
 	if key == "" || value == "" {
 		return errors.New("redis SET key or value can't be empty")
 	}
+
 	return c.client.Set(ctx, key, value, expireTime).Err()
 }
 

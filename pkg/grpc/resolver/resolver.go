@@ -30,10 +30,12 @@ type Pair struct {
 // GRPCRegistration register gRPC service with option resolver
 func GRPCRegistration(serviceName string, port int, opt OptionResolver) *Pair {
 	rsv := opt()
+
 	serviceID, err := rsv.RegisterGRPC(serviceName, utils.GetOutBoundIP(), port)
 	if err != nil {
 		log.Fatalf("failed to register service: %v", err)
 	}
+
 	return &Pair{rsv, serviceID}
 }
 
@@ -41,8 +43,10 @@ func GRPCRegistration(serviceName string, port int, opt OptionResolver) *Pair {
 func HTTPRegistration(path string, port int, opt OptionResolver) *Pair {
 	rsv := opt()
 	serviceID, err := rsv.RegisterHTTP(path, utils.GetOutBoundIP(), port)
+
 	if err != nil {
 		log.Fatalf("failed to register service: %v", err)
 	}
+
 	return &Pair{rsv, serviceID}
 }

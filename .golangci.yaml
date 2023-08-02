@@ -2,7 +2,9 @@
 run:
   # The default concurrency value is the number of available CPU.
   concurrency: 4
-
+  # Timeout for analysis, e.g. 30s, 5m.
+  # Default: 1m
+  timeout: 5m
   tests: false
   # Which dirs to skip: issues from them won't be reported.
   skip-dirs:
@@ -22,7 +24,6 @@ linters:
     # Don't use soon to deprecated[1] linters that lead to false
     # https://github.com/golangci/golangci-lint/issues/1841
     - bodyclose
-    - depguard
     - dogsled
     - dupl
     - errcheck
@@ -33,6 +34,7 @@ linters:
     - gofmt
 #    - gomnd
     - gocyclo
+    - gomodguard
 #    - gosec
     - gosimple
     - govet
@@ -50,11 +52,16 @@ linters:
     - typecheck
     - unconvert
     - unparam
-#    - whitespace
-#    - wsl
-    # - unused
+    - whitespace
+    - wsl
 
-linters-settings: # please keep this alphabetized
+linters-settings:
+  gomodguard:
+    blocked:
+      modules:
+        - io/ioutil:
+            reason: "Use of ioutil is forbidden. Use os instead."
+
   revive:
     ignore-generated-header: true
     severity: error

@@ -40,6 +40,7 @@ func (h *Handler) FindOneByID(ctx context.Context, req *pb.FindOneByIDRequest) (
 			Description: fmt.Sprintf("ID [%d] should be greater than zero", req.Id),
 		})
 	}
+
 	e, err := h.t.FindByID(ctx, uint(req.Id))
 	if err != nil {
 		return nil, errno.InternalError("can not find trigger by id", &errdetails.ErrorInfo{
@@ -48,6 +49,7 @@ func (h *Handler) FindOneByID(ctx context.Context, req *pb.FindOneByIDRequest) (
 			Metadata: map[string]string{"id": strconv.FormatUint(req.Id, 10)},
 		})
 	}
+
 	return &pb.WebhookFindOneByIDResponse{
 		Body: h.convertTemplateEntityToPb(e),
 	}, nil
@@ -95,6 +97,7 @@ func (h *Handler) Register(ctx context.Context,
 			Metadata: map[string]string{"request body": req.String()},
 		})
 	}
+
 	return &pb.WebhookRegisterResponse{
 		Url: h.t.genWebhookURL(e.ID),
 	}, nil
@@ -109,6 +112,7 @@ func (h *Handler) UpdateStatus(ctx context.Context, req *pb.UpdateStatusRequest)
 			Description: fmt.Sprintf("ID [%d] should be greater than zero", req.Id),
 		})
 	}
+
 	if req.Status > pb.TriggerStatus_MAX_AGE || req.Status <= pb.TriggerStatus_UNKNOWN_UNSPECIFIED {
 		return nil, errno.BadRequest("Invalid status code", &errdetails.BadRequest_FieldViolation{
 			Field:       "status",
@@ -163,5 +167,6 @@ func (h *Handler) convertTemplateEntitySliceToPb(es []*TriggerTemplate) []*pb.We
 	for _, e := range es {
 		res = append(res, h.convertTemplateEntityToPb(e))
 	}
+
 	return res
 }

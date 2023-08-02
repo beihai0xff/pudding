@@ -51,6 +51,7 @@ func (c *Connector) NewConsumer(topic, group string, batchSize int, fn type2.Han
 			Key:     string(kafkaMessage.Key),
 			Payload: kafkaMessage.Value,
 		}
+
 		return fn(ctx, &msg)
 	}
 
@@ -59,6 +60,7 @@ func (c *Connector) NewConsumer(topic, group string, batchSize int, fn type2.Han
 		log.Errorf("NewConsumer error: %v", err)
 		return err
 	}
+
 	c.consumers[topic+group+uuid.NewString()] = consumer
 
 	return nil
@@ -71,5 +73,6 @@ func (c *Connector) Close() error {
 			log.Errorf("consumer [%s] close error: %v", consumerName, err)
 		}
 	}
+
 	return c.client.Close()
 }

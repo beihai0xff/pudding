@@ -49,9 +49,11 @@ type MsgPack struct {
 // New creates a new MsgPack.
 func New(opts ...OptionFunc) *MsgPack {
 	pack := *defaultPack
+
 	for _, opt := range opts {
 		opt(defaultPack)
 	}
+
 	return &pack
 }
 
@@ -120,6 +122,7 @@ func (p *MsgPack) Decode(b []byte, value interface{}) error {
 		log.Errorf("Decompress failed: %v", err)
 		return err
 	}
+
 	return p.unmarshal(b, value)
 }
 
@@ -135,6 +138,7 @@ func S2Compress(data []byte) []byte {
 		b := make([]byte, n)
 		copy(b, data)
 		b[len(b)-1] = noCompression
+
 		return b
 	}
 
@@ -143,6 +147,7 @@ func S2Compress(data []byte) []byte {
 	b = s2.Encode(b, data)
 	// use the last byte to store positive compression method
 	b = append(b, s2Compression)
+
 	return b
 }
 
@@ -156,6 +161,7 @@ func S2Decompress(b []byte) ([]byte, error) {
 
 		var err error
 		b, err = s2.Decode(nil, b)
+
 		if err != nil {
 			return b, err
 		}

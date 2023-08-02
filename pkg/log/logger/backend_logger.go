@@ -68,10 +68,12 @@ func (l *GORMLogger) Trace(c context.Context, begin time.Time, fc func() (sql st
 	}
 
 	elapsed := time.Since(begin)
+
 	sql, rows := fc()
 	if rows == -1 {
 		rows = 0
 	}
+
 	switch {
 	case err != nil && l.level >= logger.Error && (!errors.Is(err, gorm.ErrRecordNotFound) || !l.IgnoreRecordNotFoundError): //nolint:lll
 		l.l.Errorf(l.traceErrStr, err, elapsed.Milliseconds(), rows, sql)

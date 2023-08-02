@@ -21,6 +21,7 @@ func (p *PulsarLogger) SubLogger(fields plog.Fields) plog.Logger {
 	for K, v := range fields {
 		f = append(f, K, v)
 	}
+
 	return &PulsarLogger{Logger: p.with(f...), with: p.with}
 }
 
