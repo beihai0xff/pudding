@@ -27,6 +27,7 @@ func NewMessageLogger() *MessageLogger {
 			l: getMessageLog(),
 		}
 	})
+
 	return messageLogger
 }
 

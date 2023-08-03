@@ -28,6 +28,7 @@ func ResolverDeregister(pairs ...*resolver.Pair) OptionFunc {
 				log.Infof("service [%s] deregistered", p.ServiceID)
 			}
 		}
+
 		return nil
 	}
 }
@@ -37,6 +38,7 @@ func HealthServerShutdown(healthServer *health.Server) OptionFunc {
 	return func(ctx context.Context) error {
 		healthServer.Shutdown()
 		log.Infof("gRPC health server stopped")
+
 		return nil
 	}
 }
@@ -48,7 +50,9 @@ func HTTPServerShutdown(httpServer *http.Server) OptionFunc {
 			log.Errorf("failed to shutdown HTTP server [%s]: %v", httpServer.Addr, err)
 			return err
 		}
+
 		log.Infof("HTTP server [%s] stopped", httpServer.Addr)
+
 		return nil
 	}
 }
@@ -58,6 +62,7 @@ func GRPCServerShutdown(s *grpc.Server) OptionFunc {
 	return func(ctx context.Context) error {
 		s.GracefulStop()
 		log.Infof("gRPC server stopped")
+
 		return nil
 	}
 }
@@ -67,6 +72,7 @@ func LogSync() OptionFunc {
 	return func(ctx context.Context) error {
 		log.Sync()
 		log.Infof("server log flushed")
+
 		return nil
 	}
 }

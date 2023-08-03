@@ -48,6 +48,7 @@ func (s *Handler) SendDelayMessage(ctx context.Context, req *pb.SendDelayMessage
 			Metadata: map[string]string{"body": req.String()},
 		})
 	}
+
 	return &emptypb.Empty{}, nil
 }
 

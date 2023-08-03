@@ -39,6 +39,7 @@ func getListen(port int) net.Listener {
 	if err != nil {
 		log.Panicf("failed to listen: %v", err)
 	}
+
 	return listen
 }
 
@@ -62,6 +63,7 @@ func StartGRPCServer(config *configs.BaseConfig, opts ...StartServiceFunc) (
 		// asynchronously inspect dependencies and toggle serving status as needed
 		healthServer.SetServingStatus(serviceName, pbhealth.HealthCheckResponse_SERVING)
 	}
+
 	healthServer.Resume()
 	// RegisterGRPC reflection service on gRPC server.
 	// This allows the gRPC server to be introspected by clients using reflection.67
@@ -70,6 +72,7 @@ func StartGRPCServer(config *configs.BaseConfig, opts ...StartServiceFunc) (
 	grpcLis := getListen(config.GRPCPort)
 	go func() {
 		log.Infof("grpc server listening at %v", grpcLis.Addr())
+
 		if err := server.Serve(grpcLis); err != nil {
 			log.Panicf("failed to start grpc serve: %v", err)
 		}
@@ -111,11 +114,13 @@ func StartHTTPServer(config *configs.BaseConfig, healthEndpointPath, swaggerEndp
 
 	go func() {
 		log.Infof("http server listening at %v", httpLis.Addr())
+
 		if err := httpServer.Serve(httpLis); err != nil {
 			if errors.Is(err, http.ErrServerClosed) {
 				log.Info("http server closed")
 				return
 			}
+
 			log.Fatalf("Failed to serve http server: %v", err)
 		}
 	}()
@@ -127,6 +132,7 @@ func StartHTTPServer(config *configs.BaseConfig, healthEndpointPath, swaggerEndp
 // It is used by the gRPC-Gateway.
 func createGRPCLocalClient(config *configs.BaseConfig) *grpc.ClientConn {
 	log.Info("creating gRPC local client...")
+
 	options := []grpc.DialOption{
 		grpc.WithBlock(),
 		grpc.WithKeepaliveParams(keepalive.ClientParameters{
@@ -135,6 +141,7 @@ func createGRPCLocalClient(config *configs.BaseConfig) *grpc.ClientConn {
 			PermitWithoutStream: true,             // send pings even without active streams
 		}),
 	}
+
 	if config.EnableTLS {
 		// define TLS configuration
 		cred := credentials.NewTLS(autocert.GetTLSConfig())
@@ -142,6 +149,7 @@ func createGRPCLocalClient(config *configs.BaseConfig) *grpc.ClientConn {
 	} else {
 		options = append(options, grpc.WithTransportCredentials(insecure.NewCredentials()))
 	}
+
 	conn, err := grpc.DialContext(
 		context.Background(),
 		fmt.Sprintf("localhost:%d", config.GRPCPort),
@@ -150,7 +158,9 @@ func createGRPCLocalClient(config *configs.BaseConfig) *grpc.ClientConn {
 	if err != nil {
 		log.Panicf("Failed to dial server: %v", err)
 	}
+
 	log.Infof("create gRPC local client success")
+
 	return conn
 }
 

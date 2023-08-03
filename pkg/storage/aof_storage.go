@@ -110,12 +110,14 @@ func newStorage(c *Config) (*aofStorage, error) {
 		stopChan: make(chan struct{}),
 		doneChan: make(chan struct{}),
 	}
+
 	return s, err
 }
 
 // View a k/v pairs in Read-Only transactions.
 func (s *aofStorage) View(segmentID, timestamp, sequence uint64) (*types.Message, error) {
 	msg := types.Message{}
+
 	return &msg, s.db[segmentID].View(func(tx *bolt.Tx) error {
 		b := tx.Bucket(s.getBucketName(segmentID, timestamp))
 		if b == nil {
@@ -130,6 +132,7 @@ func (s *aofStorage) View(segmentID, timestamp, sequence uint64) (*types.Message
 // Insert will insert a key/value pair with the given segmentID.
 func (s *aofStorage) Insert(msg *types.Message) (uint64, error) {
 	var sequence uint64
+
 	segmentID := getSegmentID(msg.DeliverAt, s.segmentInterval)
 
 	db, ok := s.db[segmentID]
@@ -265,18 +268,22 @@ func (s *aofStorage) createSegmentDB(segmentID uint64) (*bolt.DB, error) {
 	if err := s.tryCreateIndexBucket(db); err != nil {
 		log.Errorf("create segment [%d] index bucket error: %v", segmentID, err)
 	}
+
 	s.db[segmentID] = db
+
 	return db, nil
 }
 
 // tryCreateSegmentDB will open an exist db file, or create a db if it not exists
 func (s *aofStorage) tryCreateSegmentDB(segmentID uint64) (*bolt.DB, error) {
 	path := getFilePath(segmentID, s.segmentInterval, s.dir)
+
 	db, err := bolt.Open(path, 0666, &bolt.Options{Timeout: 3 * time.Second, InitialMmapSize: s.mmapSize})
 	if err != nil {
 		log.Errorf("create segment file: %s failed", path)
 		return nil, err
 	}
+
 	log.Infof("create segment file: %s success", path)
 
 	return db, nil
@@ -286,6 +293,7 @@ func (s *aofStorage) tryCreateSegmentDB(segmentID uint64) (*bolt.DB, error) {
 func (s *aofStorage) DeleteSegment(segmentID uint64) error {
 	path := getFilePath(segmentID, s.segmentInterval, s.dir)
 	delete(s.db, segmentID)
+
 	return os.Remove(path)
 }
 

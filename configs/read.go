@@ -36,6 +36,7 @@ const (
 func Parse(configPath, format string, reader ParserFunc, opts ...OptionFunc) error {
 	// first, read config from given config read func, such as file, consul, etc.
 	var parser koanf.Parser
+
 	switch format {
 	case ConfigFormatYAML:
 		parser = kyaml.Parser()
@@ -44,6 +45,7 @@ func Parse(configPath, format string, reader ParserFunc, opts ...OptionFunc) err
 	default:
 		return fmt.Errorf("unsupported config format: %s", format)
 	}
+
 	if err := reader(configPath, parser); err != nil {
 		return err
 	}
@@ -66,6 +68,7 @@ func Parse(configPath, format string, reader ParserFunc, opts ...OptionFunc) err
 	for _, opt := range opts {
 		opt(configMap)
 	}
+
 	if err := k.Load(confmap.Provider(configMap, defaultDelim), nil); err != nil {
 		panic(err)
 	}

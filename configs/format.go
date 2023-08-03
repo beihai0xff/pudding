@@ -13,6 +13,7 @@ func UnmarshalToStruct(path string, c interface{}) error {
 	if err := k.UnmarshalWithConf(path, c, koanf.UnmarshalConf{Tag: "yaml"}); err != nil {
 		return fmt.Errorf("failed to unmarshal config: %w", err)
 	}
+
 	return nil
 }
 
@@ -27,5 +28,6 @@ func JSONFormat(c interface{}) (*bytes.Buffer, error) {
 	if err = json.Indent(&buf, b, "", "    "); err != nil {
 		return nil, fmt.Errorf("indent config %v failed: %w", c, err)
 	}
+
 	return &buf, nil
 }

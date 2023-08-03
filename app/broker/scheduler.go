@@ -88,6 +88,7 @@ func New(config *configs.BrokerConfig, delay storage.DelayStorage,
 // Run start the scheduler
 func (s *scheduler) Run() {
 	go s.tryProduceToken()
+
 	s.getToken()
 	go s.startSchedule()
 }
@@ -119,6 +120,7 @@ func (s *scheduler) Produce(ctx context.Context, msg *types.Message) error {
 			break
 		}
 	}
+
 	return err
 }
 
@@ -130,6 +132,7 @@ func (s *scheduler) checkParams(msg *types.Message) error {
 		if msg.DeliverAfter <= 0 {
 			return errInvalidMessageDelay
 		}
+
 		msg.DeliverAt = uint64(s.wallClock.Now().Unix()) + msg.DeliverAfter
 	} else if time.Unix(int64(msg.DeliverAt), 0).Before(s.wallClock.Now()) {
 		return errInvalidMessageReady
@@ -161,14 +164,17 @@ func (s *scheduler) startSchedule() {
 
 				// lock the timeSlice
 				name := s.getLockerName(t)
+
 				locker, err := s.cluster.Mutex(name, time.Second*3)
 				if err != nil {
 					return
 				}
+
 				if err = locker.Lock(ctx); err != nil {
 					if !errors.Is(err, cluster.ErrLocked) {
 						log.Errorf("failed to get timeSlice locker [%s]: %v", name, err)
 					}
+
 					return
 				}
 
@@ -207,6 +213,7 @@ func (s *scheduler) produceRealTime(ctx context.Context, msg *types.Message) err
 			break
 		}
 	}
+
 	return err
 }
 

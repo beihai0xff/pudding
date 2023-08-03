@@ -37,6 +37,7 @@ func (s *scheduler) tryProduceToken() {
 	<-timer.C
 
 	tick := time.NewTicker(1 * time.Second)
+
 	for {
 		select {
 		case t := <-tick.C:
@@ -45,12 +46,14 @@ func (s *scheduler) tryProduceToken() {
 
 			// try to lock the token
 			ctx, cancel := context.WithTimeout(context.Background(), time.Second)
+
 			locker, err := s.cluster.Mutex(s.formatTokenLockerName(t.Unix()), time.Millisecond*500,
 				cluster.WithDisableKeepalive())
 			if err != nil {
 				log.Errorf("failed to get token locker [%s]: %v", tokenName, err)
 				continue
 			}
+
 			if err = locker.Lock(ctx); err != nil {
 				if !errors.Is(err, cluster.ErrLocked) {
 					log.Errorf("failed to get token locker [%s]: %v", tokenName, err)
@@ -71,6 +74,7 @@ func (s *scheduler) tryProduceToken() {
 			if err := locker.Refresh(ctx); err != nil {
 				log.Errorf("failed to refresh locker [%s]: %v", tokenName, err)
 			}
+
 			cancel()
 		case <-s.quit:
 			break
@@ -113,11 +117,14 @@ func (s *scheduler) parseNowFromToken(token string) uint64 {
 		t, err := strconv.ParseUint(token[len(prefixToken):], 10, 64)
 		if err != nil {
 			log.Errorf("failed to parse token token: %s, caused by %v", token, err)
+
 			return 0
 		}
+
 		return t
 	}
 
 	log.Errorf("failed to parse token, token token: %s is invalid", token)
+
 	return 0
 }

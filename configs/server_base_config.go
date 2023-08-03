@@ -59,6 +59,7 @@ func (c *BaseConfig) SetFlags() {
 	if *GRPCPort != DefaultGRPCPort || c.GRPCPort == 0 {
 		c.GRPCPort = *GRPCPort
 	}
+
 	if *HTTPPort != DefaultHTTPPort || c.HTTPPort == 0 {
 		c.HTTPPort = *HTTPPort
 	}
@@ -66,9 +67,11 @@ func (c *BaseConfig) SetFlags() {
 	if *CertPath != DefaultCertPath || c.CertPath == "" {
 		c.CertPath = *CertPath
 	}
+
 	if *KeyPath != DefaultKeyPath || c.KeyPath == "" {
 		c.KeyPath = *KeyPath
 	}
+
 	if *NameServerURL != DefaultNameServerURL || c.NameServerURL == "" {
 		c.NameServerURL = *NameServerURL
 	}

@@ -48,6 +48,7 @@ func New(conf *configs.KafkaConfig) Client {
 
 func newClient(conf *configs.KafkaConfig) *client {
 	l := logger.NewMessageLogger()
+
 	return &client{
 		KafkaConfig: conf,
 		logger:      l,
@@ -67,10 +68,12 @@ func newClient(conf *configs.KafkaConfig) *client {
 	}
 }
 
+const retries = 3
+
 // SendMessage send kafka message
 func (c *client) SendMessage(ctx context.Context, msg *Message) (string, error) {
-	const retries = 3
 	var err error
+
 	for i := 0; i < retries; i++ {
 		if err = c.writer.WriteMessages(ctx, *msg); err != nil {
 			if errors.Is(err, kafka.LeaderNotAvailable) || errors.Is(err, context.DeadlineExceeded) {
@@ -81,6 +84,7 @@ func (c *client) SendMessage(ctx context.Context, msg *Message) (string, error) 
 			log.Debugf("send message [%s] to kafka success for times %d: %v", msg.Key, i, err)
 			break
 		}
+
 		log.Warnf("send message [%s] to kafka failed for times %d: %v", msg.Key, i, err)
 	}
 
@@ -89,6 +93,7 @@ func (c *client) SendMessage(ctx context.Context, msg *Message) (string, error) 
 	}
 
 	log.Debugf("send message to kafka success: %s", msg)
+
 	return buildKafkaMsgID(msg), nil
 }
 
@@ -142,6 +147,7 @@ func (c *client) CreateTopic(ctx context.Context, topic string, numPartitions, r
 		log.Errorf("failed to get controller, err=%v", err)
 		return err
 	}
+
 	controllerConn, err := kafka.DialContext(ctx, c.Network,
 		net.JoinHostPort(controller.Host, strconv.Itoa(controller.Port)))
 	if err != nil {
@@ -159,6 +165,7 @@ func (c *client) CreateTopic(ctx context.Context, topic string, numPartitions, r
 	// need wait for a while to make sure the topic is created
 	c.waitForTopic(ctx, topic)
 	log.Infof("create topic [%s] success", topic)
+
 	return nil
 }
 
@@ -200,6 +207,7 @@ func (c *client) waitForTopic(ctx context.Context, topic string) {
 
 		log.Debugf("retrying after 1s")
 		time.Sleep(time.Second)
+
 		continue
 	}
 }
@@ -208,6 +216,7 @@ func (c *client) waitForTopic(ctx context.Context, topic string) {
 func (c *client) Close() error {
 	c.mutex.Lock()
 	defer c.mutex.Unlock()
+
 	return c.writer.Close()
 }
 
@@ -246,8 +255,10 @@ func (c *consumer) worker(ctx context.Context) {
 			if err == io.EOF {
 				break
 			}
+
 			log.Errorf("Failed to read kafka msg, caused by %s", err)
 			time.Sleep(time.Second)
+
 			continue
 		}
 
@@ -270,6 +281,7 @@ func (c *consumer) handleMsg(msg *kafka.Message) {
 		log.Errorf("Failed to handler kafka msg: [%s] , caused by %s \n"+
 			"\tTopic: %s\n\tpartition %d: %d",
 			msg.Value, err, msg.Topic, msg.Partition, msg.Offset)
+
 		return
 	}
 }
@@ -287,6 +299,7 @@ func (c *consumer) commitMsg(msg *kafka.Message) {
 		log.Errorf("Failed to commit kafka msg: [%s], caused by %s \n"+
 			"\tTopic: %s\n\tpartition %d: %d",
 			msg.Value, err, msg.Topic, msg.Partition, msg.Offset)
+
 		return
 	}
 }
@@ -295,10 +308,14 @@ func (c *consumer) commitMsg(msg *kafka.Message) {
 // we wrap the reader.Close() to make it compatible with kafka.Close()
 func (c *consumer) Close() error {
 	c.closed.Store(true)
+
 	if err := c.reader.Close(); err != nil {
 		return err
 	}
+
 	c.wg.Wait()
+
 	log.Infof("%s reader Closed", c.name)
+
 	return nil
 }

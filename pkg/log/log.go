@@ -53,6 +53,7 @@ func RegisterLogger(loggerName string, opts ...OptionFunc) {
 	if loggerName == DefaultLoggerName {
 		defaultLogger = log
 	}
+
 	loggers[loggerName] = log
 }
 
@@ -61,7 +62,9 @@ func GetLoggerByName(loggerName string) Logger {
 	if logger, ok := loggers[loggerName]; ok {
 		return logger
 	}
+
 	Warnf("logger %s not found, use default logger", loggerName)
+
 	return defaultLogger
 }
 

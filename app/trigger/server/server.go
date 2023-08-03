@@ -42,7 +42,7 @@ func RegisterResolver(conf *configs.TriggerConfig) []*resolver.Pair {
 	baseConfig := conf.ServerConfig.BaseConfig
 	consulURL := baseConfig.NameServerURL
 
-	pairs := []*resolver.Pair{
+	return []*resolver.Pair{
 		resolver.GRPCRegistration(pb.CronTriggerService_ServiceDesc.ServiceName,
 			baseConfig.GRPCPort, resolver.WithConsulResolver(consulURL)),
 		resolver.GRPCRegistration(pb.WebhookTriggerService_ServiceDesc.ServiceName,
@@ -50,7 +50,6 @@ func RegisterResolver(conf *configs.TriggerConfig) []*resolver.Pair {
 		resolver.HTTPRegistration(healthEndpointPath,
 			baseConfig.HTTPPort, resolver.WithConsulResolver(consulURL)),
 	}
-	return pairs
 }
 
 // StartServer starts the server.
@@ -59,5 +58,6 @@ func StartServer(conf *configs.TriggerConfig) (*grpc.Server, *health.Server, *ht
 	grpcServer, healthcheck := launcher.StartGRPCServer(&baseConfig,
 		withCronTriggerService(conf), withWebhookTriggerService(conf))
 	httpServer := launcher.StartHTTPServer(&baseConfig, healthEndpointPath, swaggerEndpointPath)
+
 	return grpcServer, healthcheck, httpServer
 }

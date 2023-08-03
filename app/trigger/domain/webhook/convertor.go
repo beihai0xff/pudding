@@ -22,6 +22,7 @@ func convPoTOEntity(p *po.WebhookTriggerTemplate) (*TriggerTemplate, error) {
 	if err := copier.Copy(e, p); err != nil {
 		return nil, err
 	}
+
 	return e, nil
 }
 

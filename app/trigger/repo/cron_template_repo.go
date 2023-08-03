@@ -62,9 +62,11 @@ func (dao *CronTemplate) FindByID(ctx context.Context, id uint) (*po.CronTrigger
 // PageQuery query cron templates by page
 func (dao *CronTemplate) PageQuery(ctx context.Context, p *constants.PageQuery, status pb.TriggerStatus) (
 	[]*po.CronTriggerTemplate, int64, error) {
-	var res []*po.CronTriggerTemplate
-	var count int64
-	var err error
+	var (
+		res   []*po.CronTriggerTemplate
+		count int64
+		err   error
+	)
 
 	if status > pb.TriggerStatus_UNKNOWN_UNSPECIFIED && status <= pb.TriggerStatus_MAX_AGE {
 		res, count, err = sql.CronTriggerTemplate.WithContext(ctx).
@@ -85,6 +87,7 @@ func (dao *CronTemplate) Insert(ctx context.Context, p *po.CronTriggerTemplate) 
 	if p.CronExpr == "" {
 		return fmt.Errorf("cron expression is empty")
 	}
+
 	return sql.CronTriggerTemplate.WithContext(ctx).Create(p)
 }
 
@@ -109,6 +112,7 @@ func (dao *CronTemplate) BatchHandleRecords(ctx context.Context, t time.Time, ba
 			_ = tx.Save(item)
 			log.Infof("update records: %+v ", results)
 		})
+
 		return nil
 	}
 

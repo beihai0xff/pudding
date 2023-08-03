@@ -40,6 +40,7 @@ func StartServer(conf *configs.BrokerConfig) (*grpc.Server, *health.Server, *htt
 	baseConfig := conf.ServerConfig.BaseConfig
 	grpcServer, healthcheck := launcher.StartGRPCServer(&baseConfig, withSchedulerService(conf))
 	httpServer := launcher.StartHTTPServer(&baseConfig, healthEndpointPath, swaggerEndpointPath)
+
 	return grpcServer, healthcheck, httpServer
 }
 
@@ -54,5 +55,6 @@ func RegisterResolver(conf *configs.BrokerConfig) []*resolver.Pair {
 		resolver.HTTPRegistration(healthEndpointPath,
 			baseConfig.HTTPPort, resolver.WithConsulResolver(consulURL)),
 	}
+
 	return pairs
 }

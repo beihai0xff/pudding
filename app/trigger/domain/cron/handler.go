@@ -41,6 +41,7 @@ func (h *Handler) FindOneByID(ctx context.Context, req *pb.FindOneByIDRequest) (
 			Description: fmt.Sprintf("ID [%d] should be greater than zero", req.Id),
 		})
 	}
+
 	e, err := h.t.FindByID(ctx, uint(req.Id))
 	if err != nil {
 		return nil, errno.InternalError("can not find trigger by id", &errdetails.ErrorInfo{
@@ -49,6 +50,7 @@ func (h *Handler) FindOneByID(ctx context.Context, req *pb.FindOneByIDRequest) (
 			Metadata: map[string]string{"id": strconv.FormatUint(req.Id, 10)},
 		})
 	}
+
 	return &pb.CronFindOneByIDResponse{
 		Body: h.convertTemplateEntityToPb(e),
 	}, nil
@@ -60,6 +62,7 @@ func (h *Handler) PageQuery(ctx context.Context, req *pb.PageQueryTemplateReques
 		Offset: int(req.Offset),
 		Limit:  int(req.Limit),
 	}
+
 	res, count, err := h.t.PageQuery(ctx, &p, req.Status)
 	if err != nil {
 		return nil, errno.InternalError("can not pageQuery cron trigger", &errdetails.ErrorInfo{
@@ -92,6 +95,7 @@ func (h *Handler) Register(ctx context.Context, req *pb.CronTriggerServiceRegist
 			Metadata: map[string]string{"request body": req.String()},
 		})
 	}
+
 	return &emptypb.Empty{}, nil
 }
 
@@ -104,6 +108,7 @@ func (h *Handler) UpdateStatus(ctx context.Context, req *pb.UpdateStatusRequest)
 			Description: fmt.Sprintf("ID [%d] should be greater than zero", req.Id),
 		})
 	}
+
 	if req.Status > pb.TriggerStatus_MAX_AGE || req.Status <= pb.TriggerStatus_UNKNOWN_UNSPECIFIED {
 		return nil, errno.BadRequest("Invalid status code", &errdetails.BadRequest_FieldViolation{
 			Field:       "status",
@@ -144,5 +149,6 @@ func (h *Handler) convertTemplateEntitySliceToPb(es []*TriggerTemplate) []*pb.Cr
 	for _, e := range es {
 		res = append(res, h.convertTemplateEntityToPb(e))
 	}
+
 	return res
 }

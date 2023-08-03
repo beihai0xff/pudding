@@ -41,7 +41,6 @@ func NewDelayStorage(client *rdb.Client, interval uint64) *DelayStorage {
 // Produce produce a Message to DelayStorage
 func (q *DelayStorage) Produce(ctx context.Context, msg *types.Message) error {
 	// member := &redis.Z{Score: float64(msg.DeliverAt.Unix()), Member: msg.Key}
-
 	timeSlice := q.getTimeSlice(msg.DeliverAt)
 	return q.pushToZSet(ctx, timeSlice, msg)
 }
@@ -62,9 +61,11 @@ func (q *DelayStorage) pushToZSet(ctx context.Context, timeSlice string, msg *ty
 	if err != nil {
 		return fmt.Errorf("pushToZSet: failed to push message: %w", err)
 	}
+
 	if count == 0 {
 		return errno.ErrDuplicateMessage
 	}
+
 	return nil
 }
 
@@ -138,14 +139,17 @@ func (q *DelayStorage) getFromZSetByScore(timeSlice string, now uint64, batchSiz
 			log.Errorf("failed to get message body from hashTable: %v", err)
 			continue
 		}
+
 		msg := types.Message{}
 		if err := msgpack.Decode(body, &msg); err != nil {
 			log.Errorf("failed to decode message body: %v", err)
 			continue
 		}
+
 		log.Debugf("get message from zset: %s", msg.String())
 		res = append(res, &msg)
 	}
+
 	return res, nil
 }
 
@@ -163,6 +167,7 @@ func (q *DelayStorage) Close() error {
 func (q *DelayStorage) getTimeSlice(readyTime uint64) string {
 	startAt := (readyTime / q.interval) * q.interval
 	endAt := startAt + q.interval
+
 	return fmt.Sprintf(timeSliceNameFormat, startAt, endAt)
 }
 
