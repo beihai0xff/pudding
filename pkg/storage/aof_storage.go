@@ -130,6 +130,8 @@ func (s *aofStorage) View(segmentID, timestamp, sequence uint64) (*types.Message
 }
 
 // Insert will insert a key/value pair with the given segmentID.
+//
+//nolint:gocyclo
 func (s *aofStorage) Insert(msg *types.Message) (uint64, error) {
 	var sequence uint64
 

@@ -23,6 +23,8 @@ func GetEnv() string {
 }
 
 // GetOutBoundIP get preferred outbound ip of this machine.
+//
+//nolint:gocyclo
 func GetOutBoundIP() string {
 	ifaces, err := net.Interfaces()
 	if err != nil {
