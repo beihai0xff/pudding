@@ -2,7 +2,6 @@ package broker
 
 import (
 	"context"
-	"errors"
 	"fmt"
 	"strconv"
 	"strings"
@@ -41,45 +40,46 @@ func (s *scheduler) tryProduceToken() {
 	for {
 		select {
 		case t := <-tick.C:
-			// get token name
-			tokenName := s.formatTokenName(uint64(t.Unix()))
-
-			// try to lock the token
-			ctx, cancel := context.WithTimeout(context.Background(), time.Second)
-
-			locker, err := s.cluster.Mutex(s.formatTokenLockerName(t.Unix()), time.Millisecond*500,
-				cluster.WithDisableKeepalive())
-			if err != nil {
-				log.Errorf("failed to get token locker [%s]: %v", tokenName, err)
-				continue
+			if err := s.produceToken(&t); err != nil {
+				log.Infof("produce token failed: %v", err)
 			}
-
-			if err = locker.Lock(ctx); err != nil {
-				if !errors.Is(err, cluster.ErrLocked) {
-					log.Errorf("failed to get token locker [%s]: %v", tokenName, err)
-				}
-				// if the token is locked, skip it
-				continue
-			}
-
-			// if got the token cluster, send it to the token topic
-			if err := s.produceRealTime(ctx, &types.Message{Topic: s.tokenTopic, Payload: []byte(tokenName)}); err != nil {
-				log.Errorf("failed to produce token [%s]: %v", tokenName, err)
-				continue
-			}
-
-			log.Infof("success produce token: %s", tokenName)
-
-			// extends the locker with a new TTL
-			if err := locker.Refresh(ctx); err != nil {
-				log.Errorf("failed to refresh locker [%s]: %v", tokenName, err)
-			}
-
-			cancel()
 		case <-s.quit:
 			break
 		}
 	}
+}
+
+func (s *scheduler) produceToken(t *time.Time) error {
+	// get token name
+	tokenName := s.formatTokenName(uint64(t.Unix()))
+
+	// try to lock the token
+	ctx, cancel := context.WithTimeout(context.Background(), time.Second)
+	defer cancel()
+
+	locker, err := s.cluster.Mutex(s.formatTokenLockerName(t.Unix()), time.Millisecond*500,
+		cluster.WithDisableKeepalive())
+	if err != nil {
+		return fmt.Errorf("failed to get token locker [%s]: %w", tokenName, err)
+	}
+
+	if err = locker.Lock(ctx); err != nil {
+		return fmt.Errorf("failed to get token locker [%s]: %w", tokenName, err)
+	}
+
+	// if got the token cluster, send it to the token topic
+	if err := s.produceRealTime(ctx, &types.Message{Topic: s.tokenTopic, Payload: []byte(tokenName)}); err != nil {
+		return fmt.Errorf("failed to produce token [%s]: %w", tokenName, err)
+	}
+
+	log.Infof("success produce token: %s", tokenName)
+
+	// extends the locker with a new TTL
+	if err := locker.Refresh(ctx); err != nil {
+		log.Errorf("failed to refresh locker [%s]: %v", tokenName, err)
+	}
+
+	return nil
 }
 
 // try to consume token and send to the token channel

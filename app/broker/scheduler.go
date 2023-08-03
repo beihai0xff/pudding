@@ -158,39 +158,40 @@ func (s *scheduler) startSchedule() {
 	for {
 		select {
 		case t := <-s.token:
-			func() {
-				ctx, cancel := context.WithTimeout(context.Background(), time.Second*3)
-				defer cancel()
-
-				// lock the timeSlice
-				name := s.getLockerName(t)
-
-				locker, err := s.cluster.Mutex(name, time.Second*3)
-				if err != nil {
-					return
-				}
-
-				if err = locker.Lock(ctx); err != nil {
-					if !errors.Is(err, cluster.ErrLocked) {
-						log.Errorf("failed to get timeSlice locker [%s]: %v", name, err)
-					}
-
-					return
-				}
-
-				if err := s.delay.Consume(ctx, t, 100, s.produceRealTime); err != nil {
-					log.Errorf("failed to consume timeSlice [%d] message: %v", t, err)
-				}
-
-				// Release the cluster
-				if err := locker.Unlock(ctx); err != nil {
-					log.Errorf("failed to release timeSlice locker [%s]: %v", name, err)
-				}
-			}()
-
+			go s.consumeDelayMessage(t)
 		case <-s.quit:
 			break
 		}
+	}
+}
+
+func (s *scheduler) consumeDelayMessage(t uint64) {
+	ctx, cancel := context.WithTimeout(context.Background(), time.Second*3)
+	defer cancel()
+
+	// lock the timeSlice
+	name := s.getLockerName(t)
+
+	locker, err := s.cluster.Mutex(name, time.Second*3)
+	if err != nil {
+		return
+	}
+
+	if err = locker.Lock(ctx); err != nil {
+		if !errors.Is(err, cluster.ErrLocked) {
+			log.Errorf("failed to get timeSlice locker [%s]: %v", name, err)
+		}
+
+		return
+	}
+
+	if err := s.delay.Consume(ctx, t, 100, s.produceRealTime); err != nil {
+		log.Errorf("failed to consume timeSlice [%d] message: %v", t, err)
+	}
+
+	// Release the cluster
+	if err := locker.Unlock(ctx); err != nil {
+		log.Errorf("failed to release timeSlice locker [%s]: %v", name, err)
 	}
 }
 

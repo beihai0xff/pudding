@@ -62,6 +62,8 @@ func (l *GORMLogger) Error(ctx context.Context, s string, i ...interface{}) {
 }
 
 // Trace log sql
+//
+//nolint:gocyclo
 func (l *GORMLogger) Trace(c context.Context, begin time.Time, fc func() (sql string, rowsAffected int64), err error) {
 	if l.level <= logger.Silent {
 		return

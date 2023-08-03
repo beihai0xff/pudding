@@ -50,6 +50,8 @@ type BaseConfig struct {
 // flags have the highest priority
 // if command line not set flag and other config provider not set the key,
 // it will set the key to flag default value
+//
+//nolint:gocyclo
 func (c *BaseConfig) SetFlags() {
 	// if flag changes or not set value in other config file, use flag value
 	if *HostDomain != DefaultHostDomain || c.HostDomain == "" {
