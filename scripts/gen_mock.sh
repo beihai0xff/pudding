@@ -1,6 +1,6 @@
 #!/bin/bash
 
-set -e -x
+set -ex
 
 mockgen -destination=test/mock/app/broker/scheduler.go -package=mock -source=app/broker/scheduler.go Scheduler
 mockgen -destination=test/mock/app/broker/storage/storage.go -package=mock -source=app/broker/storage/storage.go DelayStorage
