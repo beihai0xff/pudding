@@ -1,21 +1,15 @@
 //go:build tools
 
-// Package tools ensures tool dependencies are kept in sync.  This is the
-// recommended way of doing this according to
+// Package tools ensure tool dependencies are kept in sync.
+// This is the recommended way of doing this according to
 // https://github.com/golang/go/wiki/Modules#how-can-i-track-tool-dependencies-for-a-module
 // To install the following tools at the version used by this repo run:
 // $ make bootstrap
 // or
-// $ go generate -tags tools tools/tools.go
+// $ go generate -x -tags tools tools/tools.go
 package tools
 
-//go:generate go install github.com/bufbuild/buf/cmd/buf
-//go:generate go install github.com/fatih/gomodifytags
-//go:generate go install github.com/golang/mock/mockgen
-import (
-	_ "github.com/bufbuild/buf/cmd/buf"
-
-	_ "github.com/fatih/gomodifytags"
-
-	_ "github.com/golang/mock/mockgen"
-)
+//go:generate go install github.com/bufbuild/buf/cmd/buf@v1.25.1
+//go:generate go install github.com/fatih/gomodifytags@latest
+//go:generate go install go.uber.org/mock/mockgen
+//go:generate cd .. && bash -x ./scripts/gen_proto.sh

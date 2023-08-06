@@ -65,7 +65,7 @@ env/dev: bootstrap
 
 # bootstrap the build by downloading additional tools that may be used by devs
 bootstrap:
-	@go generate -tags tools tools/tools.go
+	@go generate -x -tags tools tools/tools.go
 
 env/test:
 	@echo "init unittest docker compose container"
