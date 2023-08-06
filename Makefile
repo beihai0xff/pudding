@@ -50,7 +50,7 @@ install/tools:
 	@go generate -x -tags tools tools/tools.go
 
 # bootstrap the build by downloading additional tools that may be used by devs
-bootstrap: install/tools gen/proto gen/struct_tag gen/mock gen/swagger-ui
+bootstrap: install/tools gen/proto gen/struct_tag gen/mock
 
 
 .PHONY: build/binary build/docker gen/proto gen/struct_tag gen/mock gen/swagger-ui install/tools bootstrap
