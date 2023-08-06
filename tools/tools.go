@@ -12,4 +12,3 @@ package tools
 //go:generate go install github.com/bufbuild/buf/cmd/buf@v1.25.1
 //go:generate go install github.com/fatih/gomodifytags@latest
 //go:generate go install go.uber.org/mock/mockgen
-//go:generate cd .. && make gen/proto
