@@ -10,7 +10,7 @@ import (
 
 	types "github.com/beihai0xff/pudding/api/gen/pudding/types/v1"
 	types0 "github.com/beihai0xff/pudding/app/broker/pkg/types"
-	gomock "github.com/golang/mock/gomock"
+	gomock "go.uber.org/mock/gomock"
 )
 
 // MockRealTimeConnector is a mock of RealTimeConnector interface.

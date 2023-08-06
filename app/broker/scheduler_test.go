@@ -6,8 +6,8 @@ import (
 	"testing"
 	"time"
 
-	"github.com/golang/mock/gomock"
 	"github.com/stretchr/testify/assert"
+	"go.uber.org/mock/gomock"
 	"golang.org/x/net/context"
 
 	"github.com/beihai0xff/pudding/api/gen/pudding/types/v1"
