@@ -13,7 +13,7 @@ import (
 	constants "github.com/beihai0xff/pudding/app/trigger/pkg/constants"
 	repo "github.com/beihai0xff/pudding/app/trigger/repo"
 	po "github.com/beihai0xff/pudding/app/trigger/repo/po"
-	gomock "github.com/golang/mock/gomock"
+	gomock "go.uber.org/mock/gomock"
 )
 
 // MockCronTemplateDAO is a mock of CronTemplateDAO interface.

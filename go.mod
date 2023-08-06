@@ -6,7 +6,6 @@ require (
 	github.com/alicebob/miniredis/v2 v2.30.1
 	github.com/apache/pulsar-client-go v0.9.0
 	github.com/go-playground/validator/v10 v10.14.0
-	github.com/golang/mock v1.6.0
 	github.com/golang/protobuf v1.5.3
 	github.com/google/uuid v1.3.0
 	github.com/grpc-ecosystem/go-grpc-middleware v1.4.0
@@ -37,6 +36,7 @@ require (
 	go.opentelemetry.io/otel/metric v0.35.0
 	go.opentelemetry.io/otel/sdk/metric v0.35.0
 	go.uber.org/automaxprocs v1.5.2
+	go.uber.org/mock v0.2.0
 	go.uber.org/zap v1.24.0
 	golang.org/x/crypto v0.11.0
 	golang.org/x/net v0.12.0

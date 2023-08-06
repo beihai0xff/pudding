@@ -11,7 +11,7 @@ import (
 	trigger "github.com/beihai0xff/pudding/api/gen/pudding/trigger/v1"
 	constants "github.com/beihai0xff/pudding/app/trigger/pkg/constants"
 	po "github.com/beihai0xff/pudding/app/trigger/repo/po"
-	gomock "github.com/golang/mock/gomock"
+	gomock "go.uber.org/mock/gomock"
 )
 
 // MockWebhookTemplate is a mock of WebhookTemplate interface.
