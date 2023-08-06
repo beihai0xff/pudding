@@ -9,14 +9,17 @@ IMAGE_NAME 			= pudding/${APP}:latest
 SWAGGER_UI_VERSION	:=v4.15.5
 
 
+# clean
+clean:
+	@echo "clean build dir"
+	@rm -rf ./build/bin
+
 # lint
 lint:
 	cd api/protobuf-spec && buf mod update && buf lint
 	golangci-lint run
 
-test: env/test test/run
-
-.PHONY: clean lint test
+.PHONY: clean lint
 
 
 # build binary app
@@ -43,18 +46,14 @@ gen/mock:
 gen/swagger-ui:
 	SWAGGER_UI_VERSION=$(SWAGGER_UI_VERSION) APP=$(APP) bash -x ./scripts/gen_swagger-ui.sh
 
-gen/certs:
-	bash -x scripts/gen_certs.sh
+install/tools:
+	@go generate -x -tags tools tools/tools.go
 
-.PHONY: build/binary build/docker gen/proto gen/struct_tag gen/mock gen/swagger-ui gen/certs
+# bootstrap the build by downloading additional tools that may be used by devs
+bootstrap: install/tools gen/proto gen/struct_tag gen/mock gen/swagger-ui
 
 
-# clean
-clean:
-	@echo "clean build dir"
-	@rm -rf ./build/bin
-
-.PHONY: clean
+.PHONY: build/binary build/docker gen/proto gen/struct_tag gen/mock gen/swagger-ui install/tools bootstrap
 
 
 # bootstrap
@@ -62,10 +61,6 @@ env/mysql:
 	go run scripts/init_mysql_env.go
 
 env/dev: bootstrap
-
-# bootstrap the build by downloading additional tools that may be used by devs
-bootstrap:
-	@go generate -x -tags tools tools/tools.go
 
 env/test:
 	@echo "init unittest docker compose container"
@@ -76,5 +71,8 @@ env/test:
 test/run:
 	bash -x ./scripts/run_test.sh
 
-.PHONY: env/dev env/mysql env/test test/run bootstrap
+
+test: env/test test/run
+
+.PHONY: env/dev env/mysql env/test test/run test
 
