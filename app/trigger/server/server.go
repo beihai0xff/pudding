@@ -32,9 +32,11 @@ var (
 
 // RegisterLogger registers the logger to the resolver.
 func RegisterLogger() {
-	log.RegisterLogger(log.DefaultLoggerName, log.WithCallerSkip(1))
+	log.RegisterLogger(log.DefaultLoggerName, configs.GetLogConfig(log.DefaultLoggerName),
+		log.WithCallerSkip(1))
 	// gorm log need 3 skip
-	log.RegisterLogger(logger.BackendLoggerName, log.WithCallerSkip(3))
+	log.RegisterLogger(logger.BackendLoggerName, configs.GetLogConfig(logger.BackendLoggerName),
+		log.WithCallerSkip(3))
 }
 
 // RegisterResolver registers the service to the resolver.

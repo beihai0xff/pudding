@@ -2,6 +2,8 @@
 // server_base_config.go contains the base config of a server
 package configs
 
+import "github.com/beihai0xff/pudding/pkg/log"
+
 const (
 	// baseConfigPath server base config path
 	baseConfigPath = "server_config.base_config"
@@ -43,7 +45,7 @@ type BaseConfig struct {
 	// NameServerURL name server url
 	NameServerURL string `json:"name_server_url" yaml:"name_server_url" mapstructure:"name_server_url"`
 	// Logger log config for output config message, do not use it
-	Logger []LogConfig `json:"log_config" yaml:"log_config" mapstructure:"log_config"`
+	Logger []log.Config `json:"log_config" yaml:"log_config" mapstructure:"log_config"`
 }
 
 // SetFlags set flags to BaseConfig

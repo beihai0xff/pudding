@@ -6,17 +6,15 @@ import (
 	"go.uber.org/zap"
 	"go.uber.org/zap/zapcore"
 	"gopkg.in/natefinch/lumberjack.v2"
-
-	"github.com/beihai0xff/pudding/configs"
 )
 
 // newLogger new a zap log, default callerSkip is 1
-func newLogger(c *configs.LogConfig) *logger {
+func newLogger(c *Config) *logger {
 	return &logger{newZapLogWithCallerSkip(c).Sugar()}
 }
 
 // newZapLogWithCallerSkip new a zap log
-func newZapLogWithCallerSkip(c *configs.LogConfig) *zap.Logger {
+func newZapLogWithCallerSkip(c *Config) *zap.Logger {
 	return zap.New(
 		zapcore.NewTee(newCore(c)),
 		zap.AddCallerSkip(c.CallerSkip),
@@ -25,18 +23,18 @@ func newZapLogWithCallerSkip(c *configs.LogConfig) *zap.Logger {
 	)
 }
 
-func newCore(c *configs.LogConfig) zapcore.Core {
-	level := zap.NewAtomicLevelAt(configs.Levels[c.Level])
+func newCore(c *Config) zapcore.Core {
+	level := zap.NewAtomicLevelAt(Levels[c.Level])
 
 	// get log output writer
 	var writes []zapcore.WriteSyncer
 
 	for _, writer := range c.Writers {
-		if writer == configs.OutputConsole {
+		if writer == OutputConsole {
 			writes = append(writes, getConsoleWriter())
 		}
 
-		if writer == configs.OutputFile {
+		if writer == OutputFile {
 			writes = append(writes, getFileWriter(&c.FileConfig))
 		}
 	}
@@ -53,39 +51,30 @@ func getConsoleWriter() zapcore.WriteSyncer {
 }
 
 // getFileWriter write log to file
-func getFileWriter(c *configs.LogFileConfig) zapcore.WriteSyncer {
+func getFileWriter(c *FileConfig) zapcore.WriteSyncer {
 	if c.Filepath == "" {
 		Fatalf("log file writer set, but log file path is empty, please check your config")
 	}
 
 	lumberJackLogger := &lumberjack.Logger{
-		Filename:   c.Filepath,   // 日志文件路径
-		MaxSize:    c.MaxSize,    // 每个日志文件保存的大小 单位:M
-		MaxAge:     c.MaxAge,     // 文件最多保存多少天
-		MaxBackups: c.MaxBackups, // 日志文件最多保存多少个备份
-		Compress:   c.Compress,   // 是否压缩
+		Filename:   c.Filepath,
+		MaxSize:    c.MaxSize,
+		MaxAge:     c.MaxAge,
+		MaxBackups: c.MaxBackups,
+		Compress:   c.Compress,
 	}
 
 	return zapcore.AddSync(lumberJackLogger)
 }
 
-func newEncoder(c *configs.LogConfig) zapcore.Encoder {
-	encoderCfg := zapcore.EncoderConfig{
-		TimeKey:    "time",
-		LevelKey:   "level",
-		NameKey:    "name",
-		CallerKey:  "caller",
-		MessageKey: "message",
-		// StacktraceKey: "stacktrace",
-		LineEnding:     zapcore.DefaultLineEnding,
-		EncodeLevel:    zapcore.CapitalLevelEncoder,
-		EncodeTime:     zapcore.ISO8601TimeEncoder,
-		EncodeDuration: zapcore.StringDurationEncoder,
-		EncodeCaller:   zapcore.ShortCallerEncoder,
-	}
+func newEncoder(c *Config) zapcore.Encoder {
+	encoderCfg := zap.NewProductionEncoderConfig()
+	encoderCfg.EncodeTime = zapcore.ISO8601TimeEncoder
+	encoderCfg.EncodeLevel = zapcore.CapitalLevelEncoder
+	encoderCfg.EncodeDuration = zapcore.StringDurationEncoder
 
 	encoder := zapcore.NewConsoleEncoder(encoderCfg)
-	if c.Format == configs.EncoderTypeJSON {
+	if c.Format == EncoderTypeJSON {
 		encoder = zapcore.NewJSONEncoder(encoderCfg)
 	}
 

@@ -6,18 +6,10 @@ import (
 
 	"go.uber.org/zap"
 	"go.uber.org/zap/zapcore"
-
-	"github.com/beihai0xff/pudding/configs"
 )
 
 var (
 	defaultLogger *logger
-	defaultConfig = &configs.LogConfig{
-		Writers:    []string{configs.OutputConsole},
-		Format:     configs.EncoderTypeConsole,
-		Level:      "debug",
-		CallerSkip: 1,
-	}
 
 	loggers = map[string]Logger{}
 )
@@ -26,7 +18,7 @@ var (
 const DefaultLoggerName = "default"
 
 func init() {
-	defaultLogger = newLogger(defaultConfig)
+	defaultLogger = newLogger(&DefaultConfig)
 	loggers[DefaultLoggerName] = defaultLogger
 }
 
@@ -40,8 +32,7 @@ func (l *logger) WithFields(fields ...interface{}) Logger {
 }
 
 // RegisterLogger register a logger with name
-func RegisterLogger(loggerName string, opts ...OptionFunc) {
-	c := configs.GetLogConfig(loggerName)
+func RegisterLogger(loggerName string, c *Config, opts ...OptionFunc) {
 	cjson, _ := json.Marshal(c)
 	Infof("Register Logger [%s] with config: %s", loggerName, string(cjson))
 
@@ -69,11 +60,11 @@ func GetLoggerByName(loggerName string) Logger {
 }
 
 // OptionFunc is the option function for LogConfig
-type OptionFunc func(config *configs.LogConfig)
+type OptionFunc func(config *Config)
 
 // WithCallerSkip set caller skip
 func WithCallerSkip(callerSkip int) OptionFunc {
-	return func(c *configs.LogConfig) {
+	return func(c *Config) {
 		c.CallerSkip = callerSkip
 	}
 }
