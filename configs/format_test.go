@@ -6,6 +6,8 @@ import (
 
 	"github.com/samber/lo"
 	"github.com/stretchr/testify/assert"
+
+	"github.com/beihai0xff/pudding/pkg/log"
 )
 
 type testFormatConfig struct {
@@ -13,11 +15,11 @@ type testFormatConfig struct {
 	ServerConfig struct {
 		Broker     string `json:"broker" yaml:"broker" mapstructure:"broker"`
 		BaseConfig struct {
-			HostDomain string      `json:"host_domain" yaml:"host_domain" mapstructure:"host_domain"`
-			GRPCPort   int         `json:"grpc_port" yaml:"grpc_port" mapstructure:"grpc_port"`
-			HTTPPort   int         `json:"http_port" yaml:"http_port" mapstructure:"http_port"`
-			EnableTLS  bool        `json:"enable_tls" yaml:"enable_tls" mapstructure:"enable_tls"`
-			Logger     []LogConfig `json:"log_config" yaml:"log_config" mapstructure:"log_config"`
+			HostDomain string       `json:"host_domain" yaml:"host_domain" mapstructure:"host_domain"`
+			GRPCPort   int          `json:"grpc_port" yaml:"grpc_port" mapstructure:"grpc_port"`
+			HTTPPort   int          `json:"http_port" yaml:"http_port" mapstructure:"http_port"`
+			EnableTLS  bool         `json:"enable_tls" yaml:"enable_tls" mapstructure:"enable_tls"`
+			Logger     []log.Config `json:"log_config" yaml:"log_config" mapstructure:"log_config"`
 		} `json:"base_config" yaml:"base_config" mapstructure:"base_config"`
 	} `json:"server_config" yaml:"server_config"  mapstructure:"server_config"`
 }
@@ -34,13 +36,13 @@ func TestUnmarshalToStruct(t *testing.T) {
 	assert.Equal(t, testJSONFormat, buf.String())
 
 	// get_logger_configs
-	var logConfig []LogConfig
+	var logConfig []log.Config
 	err = UnmarshalToStruct("server_config.base_config.log_config", &logConfig)
 	assert.NoError(t, err)
-	v, _ := lo.Find(logConfig, func(conf LogConfig) bool {
+	v, _ := lo.Find(logConfig, func(conf log.Config) bool {
 		return conf.LogName == "default"
 	})
-	assert.Equal(t, LogConfig{LogName: "default", Writers: []string{OutputConsole}, Level: "debug", Format: EncoderTypeJSON}, v)
+	assert.Equal(t, log.Config{LogName: "default", Writers: []string{log.OutputConsole}, Level: "debug", Format: log.EncoderTypeJSON}, v)
 }
 
 func TestJSONFormat(t *testing.T) {

@@ -113,7 +113,7 @@ func Sync() {
 	}
 }
 
-// WithFields 设置一些业务自定义数据到每条 log 中
+// WithFields set some business custom data to each log
 func WithFields(fields ...interface{}) Logger {
 	return defaultLogger.WithFields(fields...)
 }
