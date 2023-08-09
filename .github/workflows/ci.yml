@@ -3,12 +3,9 @@ on:
   push:
     tags:
       - v*
-      - feat*
-      - bug*
+      - main
     branches:
-      - v*
-      - feat*
-      - bug*
+      - main
   pull_request:
     branches:
       - main
