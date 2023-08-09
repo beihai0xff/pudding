@@ -12,10 +12,12 @@ SWAGGER_UI_VERSION	:=v4.15.5
 # clean
 clean:
 	@echo "clean build dir"
-	@rm -rf ./build/bin
+	@rm -rf ./build/bin dist
+	@rm -rf api/gen
+	@rm -rf coverage.txt
 
 # lint
-lint:
+lint: gen/proto
 	cd api/protobuf-spec && buf mod update && buf lint
 	golangci-lint run
 

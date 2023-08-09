@@ -25,3 +25,4 @@
 .DS_Store
 /coverage.txt
 /dist/
+/api/gen/
