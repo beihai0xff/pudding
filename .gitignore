@@ -23,5 +23,5 @@
 # vendor/
 
 .DS_Store
-/coverprofile.cov
+/coverage.txt
 /dist/
