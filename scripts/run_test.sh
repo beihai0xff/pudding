@@ -1,9 +1,9 @@
 #!/bin/bash
 
-set -e x
+set -ex
 
 make clean
 make bootstrap
 make env/mysql
-go test -v -race -covermode=atomic -coverprofile=coverprofile.cov ./...
-go tool cover -func=coverprofile.cov
+go test -v -race -covermode=atomic -coverprofile=coverage.txt ./...
+go tool cover -func=coverage.txt
