@@ -89,7 +89,6 @@ func (c *client) SendMessage(ctx context.Context, msg *Message) (string, error) 
 	}
 
 	if err != nil {
-
 		return "", fmt.Errorf("failed to write topic=%s, address=%s messages %w", msg.Topic, c.Address, err)
 	}
 
