@@ -61,12 +61,14 @@ func (c *Connector) NewConsumer(topic, group string, batchSize int, fn type2.Han
 		return err
 	}
 
+	consumer.Run(ctx)
+
 	c.consumers[topic+group+uuid.NewString()] = consumer
 
 	return nil
 }
 
-// Close close the connector
+// Close the connector
 func (c *Connector) Close() error {
 	for consumerName, consumer := range c.consumers {
 		if err := consumer.Close(); err != nil {
