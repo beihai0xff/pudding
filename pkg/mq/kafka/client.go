@@ -3,6 +3,7 @@ package kafka
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"io"
 	"net"
@@ -12,7 +13,6 @@ import (
 	"time"
 
 	"github.com/google/uuid"
-	"github.com/pkg/errors"
 	"github.com/segmentio/kafka-go"
 
 	"github.com/beihai0xff/pudding/configs"
@@ -89,7 +89,8 @@ func (c *client) SendMessage(ctx context.Context, msg *Message) (string, error) 
 	}
 
 	if err != nil {
-		return "", errors.Wrapf(err, "failed to write messages, topic=%s, address=%s", msg.Topic, c.Address)
+
+		return "", fmt.Errorf("failed to write topic=%s, address=%s messages %w", msg.Topic, c.Address, err)
 	}
 
 	log.Debugf("send message to kafka success: %s", msg)
@@ -129,7 +130,7 @@ func (c *client) getReaderConfig(topic, group string, config *configs.KafkaConfi
 	}
 }
 
-// CreateTopic close kafka client
+// CreateTopic create kafka topic
 func (c *client) CreateTopic(ctx context.Context, topic string, numPartitions, replicationFactor int) error {
 	if c.Address == nil || len(c.Address) == 0 {
 		return errors.New("kafka address is empty")
@@ -169,9 +170,11 @@ func (c *client) CreateTopic(ctx context.Context, topic string, numPartitions, r
 	return nil
 }
 
-// Block until topic exists.
+// Block until the topic exists.
 func (c *client) waitForTopic(ctx context.Context, topic string) {
 	for {
+		time.Sleep(time.Second)
+
 		select {
 		case <-ctx.Done():
 			log.Errorf("reached deadline before verifying topic existence")
@@ -189,6 +192,7 @@ func (c *client) waitForTopic(ctx context.Context, topic string) {
 		})
 		if err != nil {
 			log.Errorf("waitForTopic: error listing topics: %v", err)
+			continue
 		}
 
 		// Find a topic which has at least 1 partition in the metadata response
@@ -206,9 +210,6 @@ func (c *client) waitForTopic(ctx context.Context, topic string) {
 		}
 
 		log.Debugf("retrying after 1s")
-		time.Sleep(time.Second)
-
-		continue
 	}
 }
 
@@ -238,12 +239,13 @@ type consumer struct {
 
 // Run start a goroutine to consume kafka message
 func (c *consumer) Run(ctx context.Context) {
-	c.wg.Add(1)
 	go c.worker(ctx)
 }
 
-// worker start a goroutine to consume kafka message
+// worker starts a goroutine to consume kafka message
 func (c *consumer) worker(ctx context.Context) {
+	c.wg.Add(1)
+
 	for {
 		if c.closed.Load() {
 			break
@@ -251,7 +253,7 @@ func (c *consumer) worker(ctx context.Context) {
 		// read kafka message in blocking mode
 		msg, err := c.reader.FetchMessage(ctx)
 		if err != nil {
-			// if reader has been closed, break the loop
+			// if the reader has been closed, break the loop
 			if err == io.EOF {
 				break
 			}
