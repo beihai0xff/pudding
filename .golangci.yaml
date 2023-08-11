@@ -49,7 +49,6 @@ linters:
     - stylecheck
     - thelper
     - tparallel
-    - typecheck
     - unconvert
     - unparam
     - whitespace
@@ -127,11 +126,6 @@ linters-settings:
 
   lll:
     line-length: 120
-
-  typecheck:
-    check-type-assertions: true
-    check-blank: true
-    enable: all
 
   gocyclo:
     min-complexity: 8
