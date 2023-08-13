@@ -30,7 +30,7 @@ func ParseTriggerConfig(configPath string, opts ...OptionFunc) *TriggerConfig {
 		panic(err)
 	}
 	// set flags
-	c.ServerConfig.BaseConfig.SetFlags()
+	c.ServerConfig.BaseConfig = *baseConfig
 
 	return &c
 }

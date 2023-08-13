@@ -2,8 +2,6 @@
 package logger
 
 const (
-	// PulsarLoggerName is the name of the logger for pulsar.
-	PulsarLoggerName = "pulsar_log"
 	// GRPCLoggerName is the name of the logger for grpc.
 	GRPCLoggerName = "grpc_log"
 	// BackendLoggerName is the name of the logger for gorm.

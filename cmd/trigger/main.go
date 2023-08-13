@@ -3,7 +3,6 @@ package main
 
 import (
 	"context"
-	"flag"
 	"os"
 	"os/signal"
 	"syscall"
@@ -18,16 +17,14 @@ import (
 	"github.com/beihai0xff/pudding/pkg/shutdown"
 )
 
-var (
-	mysqlDSN = flag.String("mysql-url", "", "The server mysql connection dsn")
-
-	webhookPrefix = flag.String("webhook-prefix", "", "The server webhook prefix")
-)
-
 func main() {
-	flag.Parse()
+	// TODO: add flags
+	// flag := configs.GetConfigFlagSet()
+	// mysqlDSN := flag.String("mysql-url", "", "The server mysql connection dsn")
+	// webhookPrefix := flag.String("webhook-prefix", "", "The server webhook prefix")
+	configs.ParseFlag()
 
-	conf := configs.ParseTriggerConfig(*configs.ConfigPath)
+	conf := configs.ParseTriggerConfig(*configs.GetConfigFilePath())
 	autocert.New(conf.ServerConfig.HostDomain)
 
 	server.RegisterLogger()

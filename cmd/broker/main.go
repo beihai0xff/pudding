@@ -3,7 +3,6 @@ package main
 
 import (
 	"context"
-	"flag"
 	"os"
 	"os/signal"
 	"syscall"
@@ -18,15 +17,13 @@ import (
 	"github.com/beihai0xff/pudding/pkg/shutdown"
 )
 
-var (
-	redisURL  = flag.String("redis-url", "", "The redis connection url")
-	pulsarURL = flag.String("pulsar-url", "", "The pulsar connection url")
-)
-
 func main() {
-	flag.Parse()
+	flag := configs.GetConfigFlagSet()
+	redisURL := flag.String("redis-url", "", "The redis connection url")
 
-	conf := configs.ParseBrokerConfig(*configs.ConfigPath, configs.WithRedisURL(*redisURL))
+	configs.ParseFlag()
+
+	conf := configs.ParseBrokerConfig(*configs.GetConfigFilePath(), configs.WithRedisURL(*redisURL))
 	autocert.New(conf.ServerConfig.HostDomain)
 
 	server.RegisterLogger()

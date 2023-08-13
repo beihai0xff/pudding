@@ -41,9 +41,8 @@ func ParseBrokerConfig(configPath string, opts ...OptionFunc) *BrokerConfig {
 	if err := UnmarshalToStruct("", &c); err != nil {
 		panic(err)
 	}
-
 	// set flags
-	c.ServerConfig.BaseConfig.SetFlags()
+	c.ServerConfig.BaseConfig = *baseConfig
 
 	return &c
 }

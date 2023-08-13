@@ -8,6 +8,7 @@ import (
 	"google.golang.org/grpc/health"
 
 	pb "github.com/beihai0xff/pudding/api/gen/pudding/broker/v1"
+
 	"github.com/beihai0xff/pudding/configs"
 	"github.com/beihai0xff/pudding/pkg/grpc/launcher"
 	"github.com/beihai0xff/pudding/pkg/grpc/resolver"
@@ -31,7 +32,7 @@ var (
 // RegisterLogger registers the logger to the resolver.
 func RegisterLogger() {
 	log.RegisterLogger(log.DefaultLoggerName, configs.GetLogConfig(log.DefaultLoggerName), log.WithCallerSkip(1))
-	log.RegisterLogger(logger.PulsarLoggerName, configs.GetLogConfig(logger.PulsarLoggerName), log.WithCallerSkip(1))
+	log.RegisterLogger(logger.KafkaLoggerName, configs.GetLogConfig(logger.KafkaLoggerName), log.WithCallerSkip(1))
 	log.RegisterLogger(logger.GRPCLoggerName, configs.GetLogConfig(logger.GRPCLoggerName), log.WithCallerSkip(1))
 }
 
