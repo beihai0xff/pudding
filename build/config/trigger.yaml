@@ -1,11 +1,23 @@
 name: pudding
-scheduler_consul_url: consul://[user:password@]127.0.0.127:8555/my-service?[healthy=]&[wait=]&[near=]&[insecure=]&[limit=]&[tag=]&[token=]
-webhook_prefix: http://127.0.0.1:8081
-consul_url: http://127.0.0.1:8500
+server_config:
+  host_domain: "localhost"
+  grpc_port: 50051
+  http_port: 8080
+  cert_path: ./certs/pudding.pem
+  key_path: ./certs/pudding-key.pem
+  name_server_url: http://localhost:8500
+
+  scheduler_consul_url: consul://[user:password@]127.0.0.127:8555/my-service?[healthy=]&[wait=]&[near=]&[insecure=]&[limit=]&[tag=]&[token=]
+  webhook_prefix: http://127.0.0.1:8081
+  consul_url: http://127.0.0.1:8500
+
+
 mysql_config:
   dsn: root:my-secret-pw@tcp(localhost:3306)/test?charset=utf8mb4&parseTime=True&loc=UTC
+
+
 log_config:
-  default:
+  - log_name: default
     level: debug
     writers:
       - console
@@ -22,7 +34,7 @@ log_config:
       max_size: 128
       # log file is compress
       compress: false
-  gorm_log:
+  - log_name: gorm_log
     level: info
     writers:
       - console

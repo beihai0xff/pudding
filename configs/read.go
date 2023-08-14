@@ -32,9 +32,9 @@ const (
 	ConfigFormatJSON = "json"
 )
 
-// Parse load config from  given filePath and format
+// Parse load config from given filePath and format
 func Parse(configPath, format string, reader ParserFunc, opts ...OptionFunc) error {
-	// first, read config from given config read func, such as file, consul, etc.
+	// First, read config from given config read func, such as file, consul, etc.
 	var parser koanf.Parser
 
 	switch format {
@@ -50,12 +50,12 @@ func Parse(configPath, format string, reader ParserFunc, opts ...OptionFunc) err
 		return err
 	}
 
-	// second, read config from environment variables
+	// Second, read config from environment variables,
 	// Parse environment variables and merge into the loaded config.
 	// "PUDDING" is the prefix to filter the env vars by.
-	// "." is the delimiter used to represent the key hierarchy in env vars.
+	// "." is the delimiter used to represent the key hierarchy in env vars
 	// The (optional, or can be nil) function can be used to transform
-	// the env var names, for instance, to lowercase them.
+	// the env var names, for instance, to lowercase them
 	if err := k.Load(kenv.Provider("PUDDING_", defaultDelim, func(s string) string {
 		return strings.ReplaceAll(strings.ToLower(
 			strings.TrimPrefix(s, "PUDDING_")), "_", ".")
@@ -64,7 +64,10 @@ func Parse(configPath, format string, reader ParserFunc, opts ...OptionFunc) err
 		return err
 	}
 
+	// third, read config from cli arguments
 	configMap := map[string]interface{}{}
+	flagProvider(configMap)
+
 	for _, opt := range opts {
 		opt(configMap)
 	}
@@ -72,6 +75,8 @@ func Parse(configPath, format string, reader ParserFunc, opts ...OptionFunc) err
 	if err := k.Load(confmap.Provider(configMap, defaultDelim), nil); err != nil {
 		panic(err)
 	}
+
+	k.Print()
 
 	return nil
 }

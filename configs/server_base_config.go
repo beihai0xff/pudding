@@ -2,11 +2,7 @@
 // server_base_config.go contains the base config of a server
 package configs
 
-import "github.com/beihai0xff/pudding/pkg/log"
-
 const (
-	// baseConfigPath server base config path
-	baseConfigPath = "server_config.base_config"
 
 	// DefaultHostDomain is the default server domain
 	DefaultHostDomain = "localhost"
@@ -44,6 +40,4 @@ type BaseConfig struct {
 	KeyPath string `json:"key_path" yaml:"key_path" mapstructure:"key_path"`
 	// NameServerURL name server url
 	NameServerURL string `json:"name_server_url" yaml:"name_server_url" mapstructure:"name_server_url"`
-	// Logger log config for output config message, do not use it
-	Logger []log.Config `json:"log_config" yaml:"log_config" mapstructure:"log_config"`
 }

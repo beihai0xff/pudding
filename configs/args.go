@@ -4,36 +4,32 @@ package configs
 
 import (
 	"flag"
-	"os"
+	"fmt"
+	"strings"
+)
+
+const (
+	// serverConfigPath server config path
+	serverConfigPath = "server_config.%s"
 )
 
 var (
-	configFlagSet  = flag.NewFlagSet(os.Args[0], flag.ExitOnError)
-	configFilepath = new(string)
-	baseConfig     = &BaseConfig{}
+	configFilepath = flag.String("config-filepath", "./config.yaml", "The server config file path")
+	_              = flag.String("host-domain", DefaultHostDomain, "The server host domain")
+	_              = flag.Int("grpc-port", DefaultGRPCPort, "The grpc server port")
+	_              = flag.Int("http-port", DefaultHTTPPort, "The http server port")
+	_              = flag.Bool("enable-tls", DefaultEnableTLS, "Is enable server tls")
+	_              = flag.String("cert-path", DefaultCertPath, "The TLS cert file path")
+	_              = flag.String("key-path", DefaultKeyPath, "The TLS key file path")
+	_              = flag.String("name-server-url", DefaultNameServerURL, "The name server connection url")
 )
 
-func init() {
-	configFilepath = configFlagSet.String("config-filepath", "./config.yaml", "The server config file path")
-
-	configFlagSet.StringVar(&baseConfig.HostDomain, "host-domain", DefaultHostDomain, "The server host domain")
-	configFlagSet.IntVar(&baseConfig.GRPCPort, "grpc-port", DefaultGRPCPort, "The grpc server port")
-	configFlagSet.IntVar(&baseConfig.HTTPPort, "http-port", DefaultHTTPPort, "The http server port")
-	configFlagSet.BoolVar(&baseConfig.EnableTLS, "enable-tls", DefaultEnableTLS, "Is enable server tls")
-	configFlagSet.StringVar(&baseConfig.CertPath, "tls-cert-path", DefaultCertPath, "The TLS cert file path")
-	configFlagSet.StringVar(&baseConfig.KeyPath, "tls-key-path", DefaultKeyPath, "The TLS key file path")
-	configFlagSet.StringVar(&baseConfig.NameServerURL, "name-server-url", DefaultNameServerURL, "The name server connection url")
-}
-
-// GetConfigFlagSet get the config flag set
-func GetConfigFlagSet() *flag.FlagSet {
-	return configFlagSet
-}
-
-// ParseFlag parse the command line arguments
-func ParseFlag() {
-	// Ignore errors; CommandLine is set for ExitOnError.
-	_ = configFlagSet.Parse(os.Args[1:])
+func flagProvider(mp map[string]interface{}) {
+	// It visits only those flags that have been set.
+	flag.Visit(func(f *flag.Flag) {
+		key := strings.ReplaceAll(fmt.Sprintf(serverConfigPath, f.Name), "-", "_")
+		mp[key] = f.Value.(flag.Getter).Get()
+	})
 }
 
 // GetConfigFilePath get the config file path

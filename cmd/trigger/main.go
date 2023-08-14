@@ -3,6 +3,7 @@ package main
 
 import (
 	"context"
+	"flag"
 	"os"
 	"os/signal"
 	"syscall"
@@ -19,13 +20,12 @@ import (
 
 func main() {
 	// TODO: add flags
-	// flag := configs.GetConfigFlagSet()
 	// mysqlDSN := flag.String("mysql-url", "", "The server mysql connection dsn")
 	// webhookPrefix := flag.String("webhook-prefix", "", "The server webhook prefix")
-	configs.ParseFlag()
+	flag.Parse()
 
 	conf := configs.ParseTriggerConfig(*configs.GetConfigFilePath())
-	autocert.New(conf.ServerConfig.HostDomain)
+	autocert.New(conf.BaseConfig.HostDomain)
 
 	server.RegisterLogger()
 

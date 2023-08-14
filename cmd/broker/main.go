@@ -3,6 +3,7 @@ package main
 
 import (
 	"context"
+	"flag"
 	"os"
 	"os/signal"
 	"syscall"
@@ -17,14 +18,13 @@ import (
 	"github.com/beihai0xff/pudding/pkg/shutdown"
 )
 
-func main() {
-	flag := configs.GetConfigFlagSet()
-	redisURL := flag.String("redis-url", "", "The redis connection url")
+var redisURL = flag.String("redis-url", "", "The redis connection url")
 
-	configs.ParseFlag()
+func main() {
+	flag.Parse()
 
 	conf := configs.ParseBrokerConfig(*configs.GetConfigFilePath(), configs.WithRedisURL(*redisURL))
-	autocert.New(conf.ServerConfig.HostDomain)
+	autocert.New(conf.BaseConfig.HostDomain)
 
 	server.RegisterLogger()
 
