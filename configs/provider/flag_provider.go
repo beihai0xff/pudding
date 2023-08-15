@@ -5,6 +5,7 @@ package provider
 import (
 	"errors"
 	"flag"
+	"fmt"
 
 	"github.com/knadh/koanf/maps"
 )
@@ -16,12 +17,14 @@ type KoanfIntf interface {
 	Exists(string) bool
 }
 
+type CallBack func(key string, value flag.Value) (string, any)
+
 // Flag implements a pflag command line provider.
 type Flag struct {
 	delim   string
 	flagSet *flag.FlagSet
 	ko      KoanfIntf
-	cb      func(key string) string
+	cb      CallBack
 	flagCB  func(f *flag.Flag) (string, interface{})
 }
 
@@ -48,7 +51,7 @@ func Provider(f *flag.FlagSet, delim string, ko KoanfIntf) *Flag {
 // takes the variable name allows their modification.
 // This is useful for cases where complex types like slices separated by
 // custom separators.
-func ProviderWithKey(f *flag.FlagSet, delim string, ko KoanfIntf, cb func(key string) string) *Flag {
+func ProviderWithKey(f *flag.FlagSet, delim string, ko KoanfIntf, cb CallBack) *Flag {
 	return &Flag{
 		flagSet: f,
 		delim:   delim,
@@ -62,18 +65,28 @@ func (p *Flag) Read() (map[string]interface{}, error) {
 	mp := make(map[string]interface{})
 
 	p.flagSet.VisitAll(func(f *flag.Flag) {
-		key := f.Name
+		var (
+			key   string
+			value any
+		)
+
 		if p.cb != nil {
 			// key :=
-			key = p.cb(key)
+			key, value = p.cb(f.Name, f.Value)
+		} else {
+			getter, ok := f.Value.(flag.Getter)
+			if !ok {
+				panic(fmt.Sprintf("flag %s does not implement flag.Getter", f.Name))
+			}
+			key, value = f.Name, getter.Get()
 		}
 
 		// if the key is set, and the flag value is the default value, skip it
-		if p.ko.Exists(key) && f.Value.(flag.Getter).Get() == f.DefValue {
+		if p.ko.Exists(key) && f.Value.String() == f.DefValue {
 			return
 		}
 
-		mp[key] = f.Value.(flag.Getter).Get()
+		mp[key] = value
 	})
 
 	return maps.Unflatten(mp, p.delim), nil
