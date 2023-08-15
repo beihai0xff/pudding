@@ -52,7 +52,7 @@ func TestJSONFormat(t *testing.T) {
 
 	tests := []struct {
 		name    string
-		args    interface{}
+		args    any
 		want    string
 		wantErr assert.ErrorAssertionFunc
 	}{

@@ -103,6 +103,10 @@ func (w webhookTriggerTemplate) TableName() string { return w.webhookTriggerTemp
 
 func (w webhookTriggerTemplate) Alias() string { return w.webhookTriggerTemplateDo.Alias() }
 
+func (w webhookTriggerTemplate) Columns(cols ...field.Expr) gen.Columns {
+	return w.webhookTriggerTemplateDo.Columns(cols...)
+}
+
 func (w *webhookTriggerTemplate) GetFieldByName(fieldName string) (field.OrderExpr, bool) {
 	_f, ok := w.fieldMap[fieldName]
 	if !ok || _f == nil {
@@ -148,9 +152,9 @@ func (w webhookTriggerTemplateDo) FindByID(id uint) (result *po.WebhookTriggerTe
 	generateSQL.WriteString("SELECT * FROM webhook_trigger_template WHERE id=? ")
 
 	var executeSQL *gorm.DB
-
-	executeSQL = w.UnderlyingDB().Raw(generateSQL.String(), params...).Take(&result)
+	executeSQL = w.UnderlyingDB().Raw(generateSQL.String(), params...).Take(&result) // ignore_security_alert
 	err = executeSQL.Error
+
 	return
 }
 
@@ -176,10 +180,10 @@ func (w webhookTriggerTemplateDo) UpdateStatus(ctx context.Context, id uint, sta
 	generateSQL.WriteString("WHERE id=? ")
 
 	var executeSQL *gorm.DB
-
-	executeSQL = w.UnderlyingDB().Exec(generateSQL.String(), params...)
+	executeSQL = w.UnderlyingDB().Exec(generateSQL.String(), params...) // ignore_security_alert
 	rowsAffected = executeSQL.RowsAffected
 	err = executeSQL.Error
+
 	return
 }
 
@@ -225,10 +229,6 @@ func (w webhookTriggerTemplateDo) Select(conds ...field.Expr) *webhookTriggerTem
 
 func (w webhookTriggerTemplateDo) Where(conds ...gen.Condition) *webhookTriggerTemplateDo {
 	return w.withDO(w.DO.Where(conds...))
-}
-
-func (w webhookTriggerTemplateDo) Exists(subquery interface{ UnderlyingDB() *gorm.DB }) *webhookTriggerTemplateDo {
-	return w.Where(field.CompareSubQuery(field.ExistsOp, nil, subquery.UnderlyingDB()))
 }
 
 func (w webhookTriggerTemplateDo) Order(conds ...field.Expr) *webhookTriggerTemplateDo {

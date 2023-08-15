@@ -32,11 +32,11 @@ func NewMessageLogger() *MessageLogger {
 }
 
 // RecordMessageInfoLog print Info messages
-func (l *MessageLogger) RecordMessageInfoLog(format string, args ...interface{}) {
+func (l *MessageLogger) RecordMessageInfoLog(format string, args ...any) {
 	l.l.Infof(format, args...)
 }
 
 // RecordMessageErrorLog print Error messages
-func (l *MessageLogger) RecordMessageErrorLog(format string, args ...interface{}) {
+func (l *MessageLogger) RecordMessageErrorLog(format string, args ...any) {
 	l.l.Errorf(format, args...)
 }

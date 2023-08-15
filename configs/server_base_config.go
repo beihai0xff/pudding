@@ -20,7 +20,7 @@ const (
 )
 
 // OptionFunc is the option function for config.
-type OptionFunc func(map[string]interface{})
+type OptionFunc func(map[string]any)
 
 // BaseConfig server base Config
 // support CommandLine

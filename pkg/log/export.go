@@ -8,94 +8,94 @@ import (
 // Logger is the interface that wraps the basic log methods.
 type Logger interface {
 	// Debug logs to DEBUG log
-	Debug(args ...interface{})
+	Debug(args ...any)
 	// Info logs to INFO log
-	Info(args ...interface{})
+	Info(args ...any)
 	// Warn logs to WARN log
-	Warn(args ...interface{})
+	Warn(args ...any)
 	// Error logs to ERROR log
-	Error(args ...interface{})
+	Error(args ...any)
 	// Fatal logs to FATAL log
-	Fatal(args ...interface{})
+	Fatal(args ...any)
 	// Debugln logs to DEBUG log
-	Debugln(args ...interface{})
+	Debugln(args ...any)
 	// Infoln logs to INFO log
-	Infoln(args ...interface{})
+	Infoln(args ...any)
 	// Warnln logs to WARN log
-	Warnln(args ...interface{})
+	Warnln(args ...any)
 	// Errorln logs to ERROR log
-	Errorln(args ...interface{})
+	Errorln(args ...any)
 	// Fatalln logs to FATAL log
-	Fatalln(args ...interface{})
+	Fatalln(args ...any)
 	// Debugf logs to DEBUG log, Arguments will be formatted with Sprint, Sprintf, or neither.
-	Debugf(format string, args ...interface{})
+	Debugf(format string, args ...any)
 	// Infof logs to INFO log, Arguments will be formatted with Sprint, Sprintf, or neither.
-	Infof(format string, args ...interface{})
+	Infof(format string, args ...any)
 	// Warnf logs to WARN log, Arguments will be formatted with Sprint, Sprintf, or neither.
-	Warnf(format string, args ...interface{})
+	Warnf(format string, args ...any)
 	// Errorf logs to ERROR log, Arguments will be formatted with Sprint, Sprintf, or neither.
-	Errorf(format string, args ...interface{})
+	Errorf(format string, args ...any)
 	// Fatalf logs to FATAL log, Arguments will be formatted with Sprint, Sprintf, or neither.
-	Fatalf(format string, args ...interface{})
+	Fatalf(format string, args ...any)
 	// Sync calls the zap defaultLogger's Sync method, flushing any buffered log entries.
 	// Applications should take care to call Sync before exiting.
 	Sync() error
 	// WithFields set some business custom data to each log
-	WithFields(fields ...interface{}) Logger
+	WithFields(fields ...any) Logger
 }
 
 // Debug logs to DEBUG log
-func Debug(args ...interface{}) {
+func Debug(args ...any) {
 	defaultLogger.Debug(args...)
 }
 
 // Info logs to INFO log
-func Info(args ...interface{}) {
+func Info(args ...any) {
 	defaultLogger.Info(args...)
 }
 
 // Warn logs to WARN log
-func Warn(args ...interface{}) {
+func Warn(args ...any) {
 	defaultLogger.Warn(args...)
 }
 
 // Error logs to ERROR log
-func Error(args ...interface{}) {
+func Error(args ...any) {
 	defaultLogger.Error(args...)
 }
 
 // Fatal logs to FATAL log
-func Fatal(args ...interface{}) {
+func Fatal(args ...any) {
 	defaultLogger.Fatal(args...)
 }
 
 // Debugf logs to DEBUG log, Arguments will be formatted with Sprint, Sprintf, or neither.
-func Debugf(format string, args ...interface{}) {
+func Debugf(format string, args ...any) {
 	defaultLogger.Debugf(format, args...)
 }
 
 // Infof logs to INFO log, Arguments will be formatted with Sprint, Sprintf, or neither.
-func Infof(format string, args ...interface{}) {
+func Infof(format string, args ...any) {
 	defaultLogger.Infof(format, args...)
 }
 
 // Warnf logs to WARN log, Arguments will be formatted with Sprint, Sprintf, or neither.
-func Warnf(format string, args ...interface{}) {
+func Warnf(format string, args ...any) {
 	defaultLogger.Warnf(format, args...)
 }
 
 // Errorf logs to ERROR log, Arguments will be formatted with Sprint, Sprintf, or neither.
-func Errorf(format string, args ...interface{}) {
+func Errorf(format string, args ...any) {
 	defaultLogger.Errorf(format, args...)
 }
 
 // Panicf logs to PANIC log, Arguments will be formatted with Sprint, Sprintf, or neither.
-func Panicf(format string, args ...interface{}) {
+func Panicf(format string, args ...any) {
 	defaultLogger.Panicf(format, args...)
 }
 
 // Fatalf logs to FATAL log, Arguments will be formatted with Sprint, Sprintf, or neither.
-func Fatalf(format string, args ...interface{}) {
+func Fatalf(format string, args ...any) {
 	defaultLogger.Fatalf(format, args...)
 }
 
@@ -114,6 +114,6 @@ func Sync() {
 }
 
 // WithFields set some business custom data to each log
-func WithFields(fields ...interface{}) Logger {
+func WithFields(fields ...any) Logger {
 	return defaultLogger.WithFields(fields...)
 }

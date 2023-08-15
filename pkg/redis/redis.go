@@ -96,7 +96,7 @@ func (c *Client) ZRangeByScore(ctx context.Context, key string, opt *redis.ZRang
 }
 
 // ZRem executes the Redis ZRem command
-func (c *Client) ZRem(ctx context.Context, key string, members ...interface{}) error {
+func (c *Client) ZRem(ctx context.Context, key string, members ...any) error {
 	return c.client.ZRem(ctx, key, members...).Err()
 }
 
@@ -125,7 +125,7 @@ func (c *Client) StreamSend(ctx context.Context, streamName string, msg []byte) 
 		MaxLen: 100000,
 		Approx: true,
 		ID:     "*",
-		Values: []interface{}{"body", msg},
+		Values: []any{"body", msg},
 	}).Err()
 }
 

@@ -106,6 +106,10 @@ func (c cronTriggerTemplate) TableName() string { return c.cronTriggerTemplateDo
 
 func (c cronTriggerTemplate) Alias() string { return c.cronTriggerTemplateDo.Alias() }
 
+func (c cronTriggerTemplate) Columns(cols ...field.Expr) gen.Columns {
+	return c.cronTriggerTemplateDo.Columns(cols...)
+}
+
 func (c *cronTriggerTemplate) GetFieldByName(fieldName string) (field.OrderExpr, bool) {
 	_f, ok := c.fieldMap[fieldName]
 	if !ok || _f == nil {
@@ -152,9 +156,9 @@ func (c cronTriggerTemplateDo) FindByID(id uint) (result *po.CronTriggerTemplate
 	generateSQL.WriteString("SELECT * FROM cron_trigger_template WHERE id=? ")
 
 	var executeSQL *gorm.DB
-
-	executeSQL = c.UnderlyingDB().Raw(generateSQL.String(), params...).Take(&result)
+	executeSQL = c.UnderlyingDB().Raw(generateSQL.String(), params...).Take(&result) // ignore_security_alert
 	err = executeSQL.Error
+
 	return
 }
 
@@ -180,10 +184,10 @@ func (c cronTriggerTemplateDo) UpdateStatus(ctx context.Context, id uint, status
 	generateSQL.WriteString("WHERE id=? ")
 
 	var executeSQL *gorm.DB
-
-	executeSQL = c.UnderlyingDB().Exec(generateSQL.String(), params...)
+	executeSQL = c.UnderlyingDB().Exec(generateSQL.String(), params...) // ignore_security_alert
 	rowsAffected = executeSQL.RowsAffected
 	err = executeSQL.Error
+
 	return
 }
 
@@ -229,10 +233,6 @@ func (c cronTriggerTemplateDo) Select(conds ...field.Expr) *cronTriggerTemplateD
 
 func (c cronTriggerTemplateDo) Where(conds ...gen.Condition) *cronTriggerTemplateDo {
 	return c.withDO(c.DO.Where(conds...))
-}
-
-func (c cronTriggerTemplateDo) Exists(subquery interface{ UnderlyingDB() *gorm.DB }) *cronTriggerTemplateDo {
-	return c.Where(field.CompareSubQuery(field.ExistsOp, nil, subquery.UnderlyingDB()))
 }
 
 func (c cronTriggerTemplateDo) Order(conds ...field.Expr) *cronTriggerTemplateDo {

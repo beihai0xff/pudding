@@ -19,8 +19,8 @@ var grpcBlackList = []string{"/grpc.health.v1.Health/Check"}
 
 // unaryServerRequestLog logs the grpc request.
 func unaryServerRequestLog() grpc.UnaryServerInterceptor {
-	return func(ctx context.Context, req interface{}, info *grpc.UnaryServerInfo,
-		handler grpc.UnaryHandler) (interface{}, error) {
+	return func(ctx context.Context, req any, info *grpc.UnaryServerInfo,
+		handler grpc.UnaryHandler) (any, error) {
 		rsp, err := handler(ctx, req)
 		if !lo.Contains(grpcBlackList, info.FullMethod) {
 			recordGRPCRequestLog(ctx, req, rsp, info, err)
@@ -30,14 +30,14 @@ func unaryServerRequestLog() grpc.UnaryServerInterceptor {
 	}
 }
 
-func recordGRPCRequestLog(ctx context.Context, req, rsp interface{}, info *grpc.UnaryServerInfo, err error) {
+func recordGRPCRequestLog(ctx context.Context, req, rsp any, info *grpc.UnaryServerInfo, err error) {
 	p, ok := peer.FromContext(ctx)
 	if !ok {
 		logger.GetGRPCLogger().Errorf("failed to get peer from context")
 		return
 	}
 
-	request := map[string]interface{}{
+	request := map[string]any{
 		"method":      info.FullMethod,
 		"remote_addr": p.Addr.String(),
 		"request":     req,

@@ -74,7 +74,7 @@ func Parse(configPath, format string, reader ParserFunc, opts ...OptionFunc) err
 	}
 
 	// Finally, read config from given option func
-	configMap := map[string]interface{}{}
+	configMap := map[string]any{}
 	for _, opt := range opts {
 		opt(configMap)
 	}
@@ -88,7 +88,7 @@ func Parse(configPath, format string, reader ParserFunc, opts ...OptionFunc) err
 	return nil
 }
 
-func cliCallback(key string, value flag.Value) (string, interface{}) {
+func cliCallback(key string, value flag.Value) (string, any) {
 	getter, ok := value.(flag.Getter)
 	if !ok {
 		log.Warnf("flag %s does not implement flag.Getter, skip it", key)

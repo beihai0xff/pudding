@@ -15,7 +15,7 @@ func TestInternalError(t *testing.T) {
 	assert.EqualError(t, err, status.New(codes.Internal, "can not find trigger by id").Err().Error())
 	sta, ok := status.FromError(err)
 	assert.Equal(t, true, ok)
-	assert.Equal(t, []interface{}{}, sta.Details())
+	assert.Equal(t, []any{}, sta.Details())
 
 	// test has one detail
 	detail1 := errdetails.ErrorInfo{
@@ -53,7 +53,7 @@ func TestBadRequest(t *testing.T) {
 	assert.EqualError(t, err, status.New(codes.InvalidArgument, "can not find trigger by id").Err().Error())
 	sta, ok := status.FromError(err)
 	assert.Equal(t, true, ok)
-	assert.Equal(t, []interface{}{}, sta.Details())
+	assert.Equal(t, []any{}, sta.Details())
 
 	// test has one detail
 	detail1 := errdetails.ErrorInfo{
