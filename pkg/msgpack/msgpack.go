@@ -26,9 +26,9 @@ var defaultPack = &MsgPack{
 
 type (
 	// MarshalFunc is a function that marshals a value into a byte array.
-	MarshalFunc func(interface{}) ([]byte, error)
+	MarshalFunc func(any) ([]byte, error)
 	// UnmarshalFunc is a function that unmarshals a byte array into a value.
-	UnmarshalFunc func([]byte, interface{}) error
+	UnmarshalFunc func([]byte, any) error
 	// CompressFunc is a function that compresses a byte array.
 	CompressFunc func(data []byte) []byte
 	// DecompressFunc is a function that decompresses a byte array.
@@ -82,17 +82,17 @@ func WithCompressFunc(fnc CompressFunc, fnd DecompressFunc) OptionFunc {
 */
 
 // Encode wrap for msgpack.Encode
-func Encode(item interface{}) ([]byte, error) {
+func Encode(item any) ([]byte, error) {
 	return defaultPack.Encode(item)
 }
 
 // Decode wrap for msgpack.Decode
-func Decode(b []byte, value interface{}) error {
+func Decode(b []byte, value any) error {
 	return defaultPack.Decode(b, value)
 }
 
 // Encode wraps msgpack.Marshal and compresses the result.
-func (p *MsgPack) Encode(item interface{}) ([]byte, error) {
+func (p *MsgPack) Encode(item any) ([]byte, error) {
 	switch value := item.(type) {
 	case nil:
 		return nil, nil
@@ -111,7 +111,7 @@ func (p *MsgPack) Encode(item interface{}) ([]byte, error) {
 }
 
 // Decode a msgpack encoded byte array
-func (p *MsgPack) Decode(b []byte, value interface{}) error {
+func (p *MsgPack) Decode(b []byte, value any) error {
 	if len(b) == 0 {
 		return nil
 	}

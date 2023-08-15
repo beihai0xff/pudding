@@ -71,7 +71,7 @@ func requestLog(p *responseProxy, r *http.Request) {
 		scheme = "https"
 	}
 
-	request := map[string]interface{}{
+	request := map[string]any{
 		"scheme":       scheme,
 		"request_line": fmt.Sprintf("%s %s %s", r.Method, r.RequestURI, r.Proto),
 		"remote_addr":  realIP,

@@ -19,17 +19,17 @@ type GRPCLogger struct {
 }
 
 // Warning logs to the WARNING log.
-func (l *GRPCLogger) Warning(args ...interface{}) {
+func (l *GRPCLogger) Warning(args ...any) {
 	l.Warn(args...)
 }
 
 // Warningln logs to the WARNING log.
-func (l *GRPCLogger) Warningln(args ...interface{}) {
+func (l *GRPCLogger) Warningln(args ...any) {
 	l.Warnln(args...)
 }
 
 // Warningf logs to the WARNING log.
-func (l *GRPCLogger) Warningf(format string, args ...interface{}) {
+func (l *GRPCLogger) Warningf(format string, args ...any) {
 	l.Warnf(format, args...)
 }
 

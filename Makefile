@@ -17,7 +17,7 @@ clean:
 	@rm -rf coverage.txt
 
 # lint
-lint: gen/proto
+lint: gen/proto gen/mock gen/struct_tag
 	cd api/protobuf-spec && buf mod update && buf lint
 	golangci-lint run
 

@@ -9,7 +9,7 @@ import (
 )
 
 // UnmarshalToStruct unmarshal config to struct
-func UnmarshalToStruct(path string, c interface{}) error {
+func UnmarshalToStruct(path string, c any) error {
 	if err := k.UnmarshalWithConf(path, c, koanf.UnmarshalConf{Tag: "yaml"}); err != nil {
 		return fmt.Errorf("failed to unmarshal config: %w", err)
 	}
@@ -18,7 +18,7 @@ func UnmarshalToStruct(path string, c interface{}) error {
 }
 
 // JSONFormat returns the json format of the config.
-func JSONFormat(c interface{}) (*bytes.Buffer, error) {
+func JSONFormat(c any) (*bytes.Buffer, error) {
 	b, err := json.Marshal(c)
 	if err != nil {
 		return nil, fmt.Errorf("marshal config %v failed: %w", c, err)

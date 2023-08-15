@@ -26,11 +26,10 @@ type Flag struct {
 	flagSet *flag.FlagSet
 	ko      KoanfIntf
 	cb      CallBack
-	flagCB  func(f *flag.Flag) (string, interface{})
 }
 
 // Provider returns a commandline flags provider that returns
-// a nested map[string]interface{} of environment variable where the
+// a nested map[string]any of environment variable where the
 // nesting hierarchy of keys are defined by delim. For instance, the
 // delim "." will convert the key `parent.child.key: 1`
 // to `{parent: {child: {key: 1}}}`.
@@ -62,8 +61,8 @@ func ProviderWithKey(f *flag.FlagSet, delim string, ko KoanfIntf, cb CallBack) *
 }
 
 // Read reads the flag variables and returns a nested conf map.
-func (p *Flag) Read() (map[string]interface{}, error) {
-	mp := make(map[string]interface{})
+func (p *Flag) Read() (map[string]any, error) {
+	mp := make(map[string]any)
 
 	p.flagSet.VisitAll(func(f *flag.Flag) {
 		var (
@@ -96,9 +95,4 @@ func (p *Flag) Read() (map[string]interface{}, error) {
 // ReadBytes is not supported by the flag provider.
 func (p *Flag) ReadBytes() ([]byte, error) {
 	return nil, errors.New("flag provider does not support this method")
-}
-
-// Watch is not supported.
-func (p *Flag) Watch(cb func(event interface{}, err error)) error {
-	return errors.New("flag provider does not support this method")
 }

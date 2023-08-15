@@ -27,7 +27,7 @@ type logger struct {
 }
 
 // WithFields add customs fields to logger
-func (l *logger) WithFields(fields ...interface{}) Logger {
+func (l *logger) WithFields(fields ...any) Logger {
 	return &logger{l.WithOptions(zap.AddStacktrace(zapcore.WarnLevel)).With(fields...)}
 }
 

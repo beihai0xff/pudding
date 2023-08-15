@@ -47,17 +47,17 @@ func (l *GORMLogger) LogMode(level logger.LogLevel) logger.Interface {
 }
 
 // Info log info
-func (l *GORMLogger) Info(ctx context.Context, s string, i ...interface{}) {
+func (l *GORMLogger) Info(ctx context.Context, s string, i ...any) {
 	l.l.Infof(s, i...)
 }
 
 // Warn log warn
-func (l *GORMLogger) Warn(ctx context.Context, s string, i ...interface{}) {
+func (l *GORMLogger) Warn(ctx context.Context, s string, i ...any) {
 	l.l.Warnf(s, i...)
 }
 
 // Error log error
-func (l *GORMLogger) Error(ctx context.Context, s string, i ...interface{}) {
+func (l *GORMLogger) Error(ctx context.Context, s string, i ...any) {
 	l.l.Errorf(s, i...)
 }
 

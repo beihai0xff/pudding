@@ -16,7 +16,7 @@ type RedisConfig struct {
 
 // WithRedisURL set the redis url.
 func WithRedisURL(url string) OptionFunc {
-	return func(confMap map[string]interface{}) {
+	return func(confMap map[string]any) {
 		if url != "" {
 			confMap[fmt.Sprintf("%s.url", redisConfigPath)] = url
 		}
