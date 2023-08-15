@@ -69,15 +69,7 @@ func Parse(configPath, format string, reader ParserFunc, opts ...OptionFunc) err
 	}
 
 	// third, read config from cli arguments
-	fn := provider.CallBack(func(key string, value flag.Value) (string, interface{}) {
-		getter, ok := value.(flag.Getter)
-		if !ok {
-			log.Warnf("flag %s does not implement flag.Getter, skip it", key)
-			return "", ""
-		}
-		return strings.ReplaceAll(fmt.Sprintf(serverConfigPath, key), "-", "_"), getter.Get()
-	})
-	if err := k.Load(provider.ProviderWithKey(flag.CommandLine, defaultDelim, k, fn), nil); err != nil {
+	if err := k.Load(provider.ProviderWithKey(flag.CommandLine, defaultDelim, k, cliCallback), nil); err != nil {
 		panic(err)
 	}
 
@@ -94,6 +86,16 @@ func Parse(configPath, format string, reader ParserFunc, opts ...OptionFunc) err
 	k.Print()
 
 	return nil
+}
+
+func cliCallback(key string, value flag.Value) (string, interface{}) {
+	getter, ok := value.(flag.Getter)
+	if !ok {
+		log.Warnf("flag %s does not implement flag.Getter, skip it", key)
+		return "", ""
+	}
+
+	return strings.ReplaceAll(fmt.Sprintf(serverConfigPath, key), "-", "_"), getter.Get()
 }
 
 // ReadFromFile read config from filePath with format

@@ -17,6 +17,7 @@ type KoanfIntf interface {
 	Exists(string) bool
 }
 
+// CallBack is a callback function that allows the user to modify the key and value
 type CallBack func(key string, value flag.Value) (string, any)
 
 // Flag implements a pflag command line provider.
