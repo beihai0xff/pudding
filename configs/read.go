@@ -2,6 +2,7 @@
 package configs
 
 import (
+	"flag"
 	"fmt"
 	"strings"
 
@@ -12,6 +13,8 @@ import (
 	kenv "github.com/knadh/koanf/providers/env"
 	kfile "github.com/knadh/koanf/providers/file"
 	"github.com/knadh/koanf/v2"
+
+	"github.com/beihai0xff/pudding/configs/provider"
 )
 
 // Global koanf instance. Use defaultDelim as the key path delimiter. This can be "/" or any character.
@@ -65,9 +68,15 @@ func Parse(configPath, format string, reader ParserFunc, opts ...OptionFunc) err
 	}
 
 	// third, read config from cli arguments
-	configMap := map[string]interface{}{}
-	flagProvider(configMap)
+	fn := func(key string) string {
+		return strings.ReplaceAll(fmt.Sprintf(serverConfigPath, key), "-", "_")
+	}
+	if err := k.Load(provider.ProviderWithKey(flag.CommandLine, defaultDelim, k, fn), nil); err != nil {
+		panic(err)
+	}
 
+	// Finally, read config from given option func
+	configMap := map[string]interface{}{}
 	for _, opt := range opts {
 		opt(configMap)
 	}

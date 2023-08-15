@@ -3,7 +3,6 @@
 package configs
 
 const (
-
 	// DefaultHostDomain is the default server domain
 	DefaultHostDomain = "localhost"
 	// DefaultGRPCPort is the default port for gRPC server.

@@ -4,8 +4,6 @@ package configs
 
 import (
 	"flag"
-	"fmt"
-	"strings"
 )
 
 const (
@@ -23,14 +21,6 @@ var (
 	_              = flag.String("key-path", DefaultKeyPath, "The TLS key file path")
 	_              = flag.String("name-server-url", DefaultNameServerURL, "The name server connection url")
 )
-
-func flagProvider(mp map[string]interface{}) {
-	// It visits only those flags that have been set.
-	flag.Visit(func(f *flag.Flag) {
-		key := strings.ReplaceAll(fmt.Sprintf(serverConfigPath, f.Name), "-", "_")
-		mp[key] = f.Value.(flag.Getter).Get()
-	})
-}
 
 // GetConfigFilePath get the config file path
 func GetConfigFilePath() *string {
