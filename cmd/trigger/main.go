@@ -18,17 +18,14 @@ import (
 	"github.com/beihai0xff/pudding/pkg/shutdown"
 )
 
-var (
-	mysqlDSN = flag.String("mysql-url", "", "The server mysql connection dsn")
-
-	webhookPrefix = flag.String("webhook-prefix", "", "The server webhook prefix")
-)
-
 func main() {
+	// TODO: add flags
+	// mysqlDSN := flag.String("mysql-url", "", "The server mysql connection dsn")
+	// webhookPrefix := flag.String("webhook-prefix", "", "The server webhook prefix")
 	flag.Parse()
 
-	conf := configs.ParseTriggerConfig(*configs.ConfigPath)
-	autocert.New(conf.ServerConfig.HostDomain)
+	conf := configs.ParseTriggerConfig(*configs.GetConfigFilePath())
+	autocert.New(conf.BaseConfig.HostDomain)
 
 	server.RegisterLogger()
 

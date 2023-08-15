@@ -41,7 +41,7 @@ func RegisterLogger() {
 
 // RegisterResolver registers the service to the resolver.
 func RegisterResolver(conf *configs.TriggerConfig) []*resolver.Pair {
-	baseConfig := conf.ServerConfig.BaseConfig
+	baseConfig := conf.BaseConfig
 	consulURL := baseConfig.NameServerURL
 
 	return []*resolver.Pair{
@@ -56,7 +56,7 @@ func RegisterResolver(conf *configs.TriggerConfig) []*resolver.Pair {
 
 // StartServer starts the server.
 func StartServer(conf *configs.TriggerConfig) (*grpc.Server, *health.Server, *http.Server) {
-	baseConfig := conf.ServerConfig.BaseConfig
+	baseConfig := conf.BaseConfig
 	grpcServer, healthcheck := launcher.StartGRPCServer(&baseConfig,
 		withCronTriggerService(conf), withWebhookTriggerService(conf))
 	httpServer := launcher.StartHTTPServer(&baseConfig, healthEndpointPath, swaggerEndpointPath)

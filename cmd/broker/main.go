@@ -18,16 +18,13 @@ import (
 	"github.com/beihai0xff/pudding/pkg/shutdown"
 )
 
-var (
-	redisURL  = flag.String("redis-url", "", "The redis connection url")
-	pulsarURL = flag.String("pulsar-url", "", "The pulsar connection url")
-)
+var redisURL = flag.String("redis-url", "", "The redis connection url")
 
 func main() {
 	flag.Parse()
 
-	conf := configs.ParseBrokerConfig(*configs.ConfigPath, configs.WithRedisURL(*redisURL))
-	autocert.New(conf.ServerConfig.HostDomain)
+	conf := configs.ParseBrokerConfig(*configs.GetConfigFilePath(), configs.WithRedisURL(*redisURL))
+	autocert.New(conf.BaseConfig.HostDomain)
 
 	server.RegisterLogger()
 

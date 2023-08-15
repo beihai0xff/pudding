@@ -6,24 +6,23 @@ import (
 	"flag"
 )
 
-var (
-	// ConfigPath config file path
-	ConfigPath = flag.String("config-filepath", "./config.yaml", "The server config file path")
-
-	// HostDomain server host domain
-	HostDomain = flag.String("host-domain", DefaultHostDomain, "The server host domain")
-
-	// GRPCPort grpc server port
-	GRPCPort = flag.Int("grpc-port", DefaultGRPCPort, "The grpc server port")
-	// HTTPPort http server port
-	HTTPPort = flag.Int("http-port", DefaultHTTPPort, "The http server port")
-
-	// EnableTLS is enable server tls
-	EnableTLS = flag.Bool("enable-tls", false, "Is enable server tls")
-	// CertPath tls cert file path, the file must contain PEM encoded data.
-	CertPath = flag.String("tls-cert-path", DefaultCertPath, "The TLS cert file path")
-	// KeyPath tls key file path, the file must contain PEM encoded data.
-	KeyPath = flag.String("tls-key-path", DefaultKeyPath, "The TLS key file path")
-	// NameServerURL name server url
-	NameServerURL = flag.String("name-server-url", DefaultNameServerURL, "The name server connection url")
+const (
+	// serverConfigPath server config path
+	serverConfigPath = "server_config.%s"
 )
+
+var (
+	configFilepath = flag.String("config-filepath", "./config.yaml", "The server config file path")
+	_              = flag.String("host-domain", DefaultHostDomain, "The server host domain")
+	_              = flag.Int("grpc-port", DefaultGRPCPort, "The grpc server port")
+	_              = flag.Int("http-port", DefaultHTTPPort, "The http server port")
+	_              = flag.Bool("enable-tls", DefaultEnableTLS, "Is enable server tls")
+	_              = flag.String("cert-path", DefaultCertPath, "The TLS cert file path")
+	_              = flag.String("key-path", DefaultKeyPath, "The TLS key file path")
+	_              = flag.String("name-server-url", DefaultNameServerURL, "The name server connection url")
+)
+
+// GetConfigFilePath get the config file path
+func GetConfigFilePath() *string {
+	return configFilepath
+}

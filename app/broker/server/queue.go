@@ -32,7 +32,7 @@ func newDelayStorage(conf *configs.BrokerConfig) storage.DelayStorage {
 
 		log.Infof("timeSlice interval is: %f seconds", t.Seconds())
 
-		return redis_storage.NewDelayStorage(rdb.New(conf.RedisConfig), uint64(t.Seconds()))
+		return redis_storage.NewDelayStorage(rdb.New(&conf.RedisConfig), uint64(t.Seconds()))
 	default:
 		log.Fatalf("unknown broker type: [%s]", broker)
 	}
@@ -47,9 +47,9 @@ func newConnector(conf *configs.BrokerConfig) connector.RealTimeConnector {
 	case "pulsar":
 		log.Fatalf("pulsar connectorName is not implemented yet")
 	case "kafka":
-		return kafka_connector.NewConnector(kafka.New(conf.KafkaConfig))
+		return kafka_connector.NewConnector(kafka.New(&conf.KafkaConfig))
 	case "redis":
-		return redis_connector.NewConnector(rdb.New(conf.RedisConfig))
+		return redis_connector.NewConnector(rdb.New(&conf.RedisConfig))
 	default:
 		log.Fatalf("unknown connectorType type: [%s]", connectorName)
 	}

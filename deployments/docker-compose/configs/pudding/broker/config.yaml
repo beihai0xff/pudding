@@ -1,40 +1,42 @@
 name: pudding.broker
 server_config:
+  host-domain: "localhost"
+  grpc_port: 50051
+  http_port: 8080
+  cert_path: ./certs/pudding.pem
+  key_path: ./certs/pudding-key.pem
+  name_server_url: http://consul-client:8500
+  etcd_urls: http://etcd-host:2379
+
   broker: redis
   connector: kafka
   time_slice_interval: 60s
   message_topic: default
   token_topic: token
-  base_config:
-    host-domain: "localhost"
-    grpc_port: 50051
-    http_port: 8080
-    cert_path: ./certs/pudding.pem
-    key_path: ./certs/pudding-key.pem
-    name_server_url: http://consul-client:8500
-    etcd_urls: http://etcd-host:2379
-    log_config:
-      default:
-        level: info
-        writers:
-          - console
-          - file
-        file_config:
-          filepath: ./log/server.log
-      pulsar_log:
-        level: info
-        writers:
-          - console
-          - file
-        file_config:
-          filepath: ./log/pulsar.log
-      grpc_log:
-        level: info
-        writers:
-          - console
-          - file
-        file_config:
-          filepath: ./log/grpc.log
+
+
+log_config:
+  default:
+    level: info
+    writers:
+      - console
+      - file
+    file_config:
+      filepath: ./log/server.log
+  pulsar_log:
+    level: info
+    writers:
+      - console
+      - file
+    file_config:
+      filepath: ./log/pulsar.log
+  grpc_log:
+    level: info
+    writers:
+      - console
+      - file
+    file_config:
+      filepath: ./log/grpc.log
 
 
 redis_config:
