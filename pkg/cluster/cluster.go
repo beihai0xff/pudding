@@ -32,12 +32,12 @@ type (
 		requestTimeout time.Duration
 	}
 
-	// ClusterOption is a function that applies an option to cluster.
-	ClusterOption func(*clusterOptions)
+	// Option is a function that applies an option to cluster.
+	Option func(*clusterOptions)
 )
 
 // New creates a new cluster manager.
-func New(urls []string, opts ...ClusterOption) (Cluster, error) {
+func New(urls []string, opts ...Option) (Cluster, error) {
 	client, err := newETCDClient(urls)
 	if err != nil {
 		return nil, fmt.Errorf("create etcd client failed: %v", err)
@@ -50,7 +50,7 @@ func newETCDClient(urls []string) (*clientv3.Client, error) {
 	return clientv3.NewFromURLs(urls)
 }
 
-func newCluster(client *clientv3.Client, opts ...ClusterOption) *cluster {
+func newCluster(client *clientv3.Client, opts ...Option) *cluster {
 	ops := clusterOptions{requestTimeout: defaultRequestTimeout}
 	for _, opt := range opts {
 		opt(&ops)

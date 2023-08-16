@@ -7,7 +7,7 @@ const (
 )
 
 // WithRequestTimeout set the request timeout for etcd requests.
-func WithRequestTimeout(timeout time.Duration) ClusterOption {
+func WithRequestTimeout(timeout time.Duration) Option {
 	return func(opt *clusterOptions) {
 		opt.requestTimeout = timeout
 	}
