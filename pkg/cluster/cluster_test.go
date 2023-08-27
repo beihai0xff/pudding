@@ -1,6 +1,7 @@
 package cluster
 
 import (
+	"context"
 	"testing"
 	"time"
 
@@ -20,6 +21,7 @@ func TestMain(m *testing.M) {
 	testCluster = newCluster(client, WithRequestTimeout(time.Second))
 
 	m.Run()
+	testCluster.client.Delete(context.Background(), "/test", clientv3.WithPrefix())
 }
 
 func Test_newCluster(t *testing.T) {
