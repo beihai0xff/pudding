@@ -36,10 +36,9 @@ type Message struct {
 }
 
 // queue implements a single-reader, multi-writer distributed queue.
-// /namespace/topic/msg/key
-// /namespace/topic/acked/key_rev
-// /namespace/topic/unacked/key_rev
-// /namespace/topic/consumerID
+// /namespace/topic/msg/key (value: value)
+// /namespace/topic/unacked (value: consumer_id, rev)
+// /namespace/topic/consumer (mutex)
 type queue struct {
 	client        *v3.Client
 	topic         string
