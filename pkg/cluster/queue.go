@@ -92,7 +92,7 @@ func (q *queue) Consume(ctx context.Context) (*Message, error) {
 	for {
 		log.Debugf("try to get message from the topic [%s]", q.topic)
 
-		if held, err := q.consumerMutex.IsHeld(); err != nil {
+		if held, err := q.consumerMutex.TryLock(); err != nil {
 			return nil, err
 		} else if !held {
 			// wait for the lock, only one consumer can consume the message
