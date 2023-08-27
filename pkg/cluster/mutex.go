@@ -35,6 +35,9 @@ type Mutex interface {
 	// May return ErrLockNotHeld.
 	Unlock(ctx context.Context) error
 
+	// IsHeld returns whether the lock is held.
+	IsHeld() (bool, error)
+
 	// Refresh extends the lock with TTL.
 	// recommended use it when keepAlive is false
 	// will return ErrLockNotHeld if refresh is unsuccessful.
@@ -84,6 +87,19 @@ func (m *mutex) Lock(ctx context.Context) (err error) {
 	isTimeout = false
 
 	return
+}
+
+// IsHeld returns whether the lock is held.
+func (m *mutex) IsHeld() (bool, error) {
+	if err := m.m.TryLock(context.Background()); err != nil {
+		if errors.Is(err, concurrency.ErrLocked) {
+			return false, nil
+		}
+
+		return false, err
+	}
+
+	return true, nil
 }
 
 func (m *mutex) Unlock(ctx context.Context) error {

@@ -9,8 +9,6 @@ import (
 
 	clientv3 "go.etcd.io/etcd/client/v3"
 	"go.etcd.io/etcd/client/v3/concurrency"
-
-	"github.com/beihai0xff/pudding/pkg/log"
 )
 
 type (
@@ -18,6 +16,8 @@ type (
 	Cluster interface {
 		// Mutex returns a distributed mutex implementation.
 		Mutex(name string, ttl time.Duration, opts ...MutexOption) (Mutex, error)
+		// Queue returns a distributed queue implementation.
+		Queue(topic string) (Queue, error)
 	}
 
 	// cluster is a cluster manager implementation.
@@ -74,8 +74,6 @@ func (c *cluster) getSession(ctx context.Context, ttl int64) (*concurrency.Sessi
 	if err != nil {
 		return nil, fmt.Errorf("create session failed: %v", err)
 	}
-
-	log.Infof("session is ready")
 
 	return session, nil
 }
