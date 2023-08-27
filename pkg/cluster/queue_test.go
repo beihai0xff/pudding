@@ -78,7 +78,7 @@ func Test_queue_Consume_wait_key(t *testing.T) {
 	q, _ := newQueue(testCluster, "/test/Produce")
 	defer q.client.Delete(context.Background(), "/test/Produce", v3.WithPrefix())
 
-	for i := 0; i < 4; i++ {
+	for i := 0; i < 3; i++ {
 		uMsg := &Message{
 			Key:    fmt.Sprintf("%d", i),
 			Value:  "value",
@@ -99,10 +99,11 @@ func Test_queue_Consume_wait_key(t *testing.T) {
 		assert.NoError(t, err)
 		assert.Equal(t, "1", got.Key)
 		assert.NoError(t, q.Commit(got))
+		time.Sleep(time.Second)
 	}()
-	time.Sleep(2 * time.Second)
+	time.Sleep(time.Second)
 	assert.NoError(t, q.Commit(got))
-
+	time.Sleep(time.Second)
 	got, err = q.Consume(context.Background())
 	assert.NoError(t, err)
 	assert.Equal(t, "2", got.Key)

@@ -59,7 +59,7 @@ func newQueue(cluster *cluster, topic string) (*queue, error) {
 		consumerID: uuid.New().String(),
 	}
 
-	m, err := cluster.Mutex(q.getConsumerLockPath(), 5*time.Second)
+	m, err := cluster.Mutex(q.getConsumerLockPath(), 10*time.Second)
 	if err != nil {
 		return nil, err
 	}
@@ -90,6 +90,8 @@ func (q *queue) Produce(m *Message) (string, error) {
 //nolint:gocyclo
 func (q *queue) Consume(ctx context.Context) (*Message, error) {
 	for {
+		log.Debugf("try to get message from the topic [%s]", q.topic)
+
 		if held, err := q.consumerMutex.IsHeld(); err != nil {
 			return nil, err
 		} else if !held {
@@ -113,6 +115,9 @@ func (q *queue) Consume(ctx context.Context) (*Message, error) {
 			}
 
 			if rev != 0 {
+				log.Debugf("message [%s] has been locked by this consumer, "+
+					"wait for the consumer to commit the message", string(kv.Key))
+
 				_, err := waitKeyEvents(q.client, q.getUnAckedPath(), rev, []mvccpb.Event_EventType{mvccpb.DELETE})
 				if err != nil {
 					return nil, err
@@ -190,10 +195,14 @@ func (q *queue) tryUnackMessage(kv *mvccpb.KeyValue) (int64, error) {
 }
 
 func (q *queue) message(kv *mvccpb.KeyValue) *Message {
-	return &Message{
+	msg := Message{
 		Key:   strings.TrimPrefix(string(kv.Key), q.getMsgPath()),
 		Value: string(kv.Value),
 	}
+
+	log.Debugf("get message [%s] from the topic [%s]", msg.Key, q.topic)
+
+	return &msg
 }
 
 func (q *queue) getMsgPath() string {
