@@ -7,8 +7,6 @@ import (
 	"strings"
 	"time"
 
-	"github.com/beihai0xff/pudding/api/gen/pudding/types/v1"
-	type2 "github.com/beihai0xff/pudding/app/broker/pkg/types"
 	"github.com/beihai0xff/pudding/pkg/cluster"
 	"github.com/beihai0xff/pudding/pkg/log"
 )
@@ -21,21 +19,46 @@ const (
 	prefixTokenLocker = "pudding_locker_token:"
 )
 
+type timeManager struct {
+	// tokenTopic default token topic
+	tokenTopic string
+	// tokenQueue token queue
+	tokenQueue cluster.Queue
+
+	cluster cluster.Cluster
+
+	quit chan struct{}
+}
+
+func newTimeManager(tokenTopic string, clus cluster.Cluster, quit chan struct{}) (*timeManager, error) {
+	queue, err := clus.Queue(tokenTopic)
+	if err != nil {
+		return nil, fmt.Errorf("failed to new token queue: %w", err)
+	}
+
+	return &timeManager{
+		tokenTopic: tokenTopic,
+		tokenQueue: queue,
+		cluster:    clus,
+		quit:       quit,
+	}, nil
+}
+
 /*
 	Produce or Consume token
 */
 
-// try to produce token to bucket
-func (s *scheduler) tryProduceToken() {
+// produceTokenTimer try to produce token to bucket
+func (s *timeManager) produceTokenTimer() {
 	log.Infof("start produce token goroutine")
 
-	now := s.wallClock.Now()
+	now := s.cluster.WallClock()
 	timer := time.NewTimer(time.Until(now) + time.Second)
 
 	// wait for the next second
 	<-timer.C
 
-	tick := time.NewTicker(1 * time.Second)
+	tick := time.NewTicker(time.Second)
 
 	for {
 		select {
@@ -49,7 +72,7 @@ func (s *scheduler) tryProduceToken() {
 	}
 }
 
-func (s *scheduler) produceToken(t *time.Time) error {
+func (s *timeManager) produceToken(t *time.Time) error {
 	// get token name
 	tokenName := s.formatTokenName(uint64(t.Unix()))
 
@@ -67,8 +90,8 @@ func (s *scheduler) produceToken(t *time.Time) error {
 		return fmt.Errorf("failed to get token locker [%s]: %w", tokenName, err)
 	}
 
-	// if got the token cluster, send it to the token topic
-	if err := s.produceRealTime(ctx, &types.Message{Topic: s.tokenTopic, Payload: []byte(tokenName)}); err != nil {
+	// if got the token locker, send it to the token topic
+	if _, err := s.tokenQueue.Produce(&cluster.Message{Key: tokenName, Unique: true}); err != nil {
 		return fmt.Errorf("failed to produce token [%s]: %w", tokenName, err)
 	}
 
@@ -83,36 +106,49 @@ func (s *scheduler) produceToken(t *time.Time) error {
 }
 
 // try to consume token and send to the token channel
-func (s *scheduler) getToken() {
+func (s *timeManager) consumeToken(cb func(uint64) error) {
 	log.Infof("start consume token")
 
-	if err := s.connector.NewConsumer(type2.TokenTopic, type2.TokenGroup, 1,
-		func(ctx context.Context, msg *types.Message) error {
-			log.Infof("get token: %s", string(msg.Payload))
+	for {
+		msg, err := s.tokenQueue.Consume(context.Background())
 
-			t := s.parseNowFromToken(string(msg.Payload))
-			if t <= 0 {
-				return fmt.Errorf("failed to parse token: %s", string(msg.Payload))
-			}
-			s.token <- t
-			return nil
-		}); err != nil {
-		log.Errorf("failed to get token, caused by %v", err)
-		panic(err)
+		if err != nil {
+			log.Errorf("failed to consume token, caused by %v", err)
+			time.Sleep(time.Second)
+
+			continue
+		}
+
+		log.Infof("get token: %s", msg.Key)
+
+		t := s.parseTimeFromToken(msg.Key)
+		if t <= 0 {
+			log.Errorf("failed to parse token: %s", msg.Key)
+			continue
+		}
+
+		for err := cb(t); err != nil; err = cb(t) {
+			log.Errorf("failed to consume token: %s, caused by %v", msg.Key, err)
+		}
+		log.Infof("success consume token: %s", msg.Key)
+
+		if err := s.tokenQueue.Commit(msg); err != nil {
+			log.Errorf("failed to commit token: %s, caused by %v", msg.Key, err)
+		}
 	}
 }
 
-func (s *scheduler) formatTokenName(timestamp uint64) string {
+func (s *timeManager) formatTokenName(timestamp uint64) string {
 	return fmt.Sprintf(prefixToken+"%d", timestamp)
 }
 
-func (s *scheduler) formatTokenLockerName(timestamp int64) string {
+func (s *timeManager) formatTokenLockerName(timestamp int64) string {
 	return fmt.Sprintf(prefixTokenLocker+"%d", timestamp)
 }
 
-// parseNowFromToken parse token from token name
+// parseTimeFromToken parse token from token name
 // if return value is -1, means parse failed
-func (s *scheduler) parseNowFromToken(token string) uint64 {
+func (s *timeManager) parseTimeFromToken(token string) uint64 {
 	if strings.HasPrefix(token, prefixToken) {
 		t, err := strconv.ParseUint(token[len(prefixToken):], 10, 64)
 		if err != nil {

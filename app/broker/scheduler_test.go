@@ -4,7 +4,6 @@ import (
 	"errors"
 	"os"
 	"testing"
-	"time"
 
 	"github.com/stretchr/testify/assert"
 	"go.uber.org/mock/gomock"
@@ -13,7 +12,7 @@ import (
 	"github.com/beihai0xff/pudding/api/gen/pudding/types/v1"
 	. "github.com/beihai0xff/pudding/app/broker/pkg/types"
 	"github.com/beihai0xff/pudding/app/broker/storage/redis_storage"
-	"github.com/beihai0xff/pudding/pkg/clock"
+	"github.com/beihai0xff/pudding/pkg/cluster"
 	rdb "github.com/beihai0xff/pudding/pkg/redis"
 	mock "github.com/beihai0xff/pudding/test/mock/app/broker/connector"
 )
@@ -21,12 +20,24 @@ import (
 var s *scheduler
 
 func TestMain(m *testing.M) {
+	quit := make(chan struct{})
+
+	cluster, err := cluster.New([]string{"http://localhost:2379"})
+	if err != nil {
+		panic(err)
+	}
+
+	timeManager, err := newTimeManager("pudding_token", cluster, quit)
+	if err != nil {
+		panic(err)
+	}
 
 	s = &scheduler{
 		delay:        redis_storage.NewDelayStorage(rdb.NewMockRdb(), 60),
 		messageTopic: DefaultTopic,
-		tokenTopic:   TokenTopic,
-		wallClock:    clock.NewFakeClock(time.Date(2022, 1, 1, 0, 0, 0, 0, time.UTC)),
+		cluster:      cluster,
+		timeManager:  timeManager,
+		quit:         quit,
 	}
 
 	exitCode := m.Run()

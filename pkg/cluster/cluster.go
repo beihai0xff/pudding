@@ -9,6 +9,8 @@ import (
 
 	clientv3 "go.etcd.io/etcd/client/v3"
 	"go.etcd.io/etcd/client/v3/concurrency"
+
+	"github.com/beihai0xff/pudding/pkg/clock"
 )
 
 type (
@@ -18,12 +20,18 @@ type (
 		Mutex(name string, ttl time.Duration, opts ...MutexOption) (Mutex, error)
 		// Queue returns a distributed queue implementation.
 		Queue(topic string) (Queue, error)
+
+		// WallClock returns the wall clock time
+		WallClock() time.Time
 	}
 
 	// cluster is a cluster manager implementation.
 	cluster struct {
 		client *clientv3.Client
 		opts   *clusterOptions
+
+		// wallClock wall wallClock time
+		wallClock clock.Clock
 	}
 
 	// clusterOptions contains options for cluster.
@@ -57,8 +65,9 @@ func newCluster(client *clientv3.Client, opts ...Option) *cluster {
 	}
 
 	c := cluster{
-		client: client,
-		opts:   &ops,
+		client:    client,
+		opts:      &ops,
+		wallClock: clock.New(),
 	}
 
 	return &c
@@ -76,6 +85,10 @@ func (c *cluster) getSession(ctx context.Context, ttl int64) (*concurrency.Sessi
 	}
 
 	return session, nil
+}
+
+func (c *cluster) WallClock() time.Time {
+	return c.wallClock.Now()
 }
 
 func (c *cluster) grantLease(ctx context.Context, ttl int64) (clientv3.LeaseID, error) {
