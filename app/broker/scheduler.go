@@ -84,7 +84,7 @@ func New(config *configs.BrokerConfig, delay storage.DelayStorage,
 
 // Run start the scheduler
 func (s *scheduler) Run() {
-	go s.timeManager.produceTokenTimer()
+	go s.timeManager.produceTokenWorker()
 
 	go s.timeManager.consumeToken(s.consumeDelayMessage)
 }

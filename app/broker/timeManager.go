@@ -27,6 +27,9 @@ type timeManager struct {
 
 	cluster cluster.Cluster
 
+	// msgChan token message channel
+	msgChan chan *cluster.Message
+	// quit signal quit channel
 	quit chan struct{}
 }
 
@@ -39,6 +42,7 @@ func newTimeManager(tokenTopic string, clus cluster.Cluster, quit chan struct{})
 	return &timeManager{
 		tokenTopic: tokenTopic,
 		tokenQueue: queue,
+		msgChan:    make(chan *cluster.Message, 1),
 		cluster:    clus,
 		quit:       quit,
 	}, nil
@@ -48,8 +52,8 @@ func newTimeManager(tokenTopic string, clus cluster.Cluster, quit chan struct{})
 	Produce or Consume token
 */
 
-// produceTokenTimer try to produce token to bucket
-func (s *timeManager) produceTokenTimer() {
+// produceTokenWorker try to produce token to bucket
+func (s *timeManager) produceTokenWorker() {
 	log.Infof("start produce token goroutine")
 
 	now := s.cluster.WallClock()
@@ -63,7 +67,7 @@ func (s *timeManager) produceTokenTimer() {
 	for {
 		select {
 		case t := <-tick.C:
-			if err := s.produceToken(&t); err != nil {
+			if err := s.sendToken(&t); err != nil {
 				log.Infof("produce token failed: %v", err)
 			}
 		case <-s.quit:
@@ -72,7 +76,7 @@ func (s *timeManager) produceTokenTimer() {
 	}
 }
 
-func (s *timeManager) produceToken(t *time.Time) error {
+func (s *timeManager) sendToken(t *time.Time) error {
 	// get token name
 	tokenName := s.formatTokenName(uint64(t.Unix()))
 
@@ -80,7 +84,7 @@ func (s *timeManager) produceToken(t *time.Time) error {
 	ctx, cancel := context.WithTimeout(context.Background(), time.Second)
 	defer cancel()
 
-	locker, err := s.cluster.Mutex(s.formatTokenLockerName(t.Unix()), time.Millisecond*500,
+	locker, err := s.cluster.Mutex(s.formatTokenLockerName(t.Unix()), time.Second,
 		cluster.WithDisableKeepalive())
 	if err != nil {
 		return fmt.Errorf("failed to get token locker [%s]: %w", tokenName, err)
@@ -105,10 +109,36 @@ func (s *timeManager) produceToken(t *time.Time) error {
 	return nil
 }
 
-// try to consume token and send to the token channel
+// try to consume token
 func (s *timeManager) consumeToken(cb func(uint64) error) {
 	log.Infof("start consume token")
 
+	go s.reader()
+
+	for {
+		select {
+		case <-s.quit:
+			break
+		case msg := <-s.msgChan:
+			t := s.parseTimeFromToken(msg.Key)
+			if t <= 0 {
+				log.Errorf("failed to parse token from token key [%s]", msg.Key)
+				continue
+			}
+
+			for err := cb(t); err != nil; err = cb(t) {
+				log.Errorf("failed to consume token: %s, caused by %v", msg.Key, err)
+			}
+			log.Infof("success consume token: %s", msg.Key)
+
+			if err := s.tokenQueue.Commit(msg); err != nil {
+				log.Errorf("failed to commit token: %s, caused by %v", msg.Key, err)
+			}
+		}
+	}
+}
+
+func (s *timeManager) reader() {
 	for {
 		msg, err := s.tokenQueue.Consume(context.Background())
 
@@ -120,21 +150,7 @@ func (s *timeManager) consumeToken(cb func(uint64) error) {
 		}
 
 		log.Infof("get token: %s", msg.Key)
-
-		t := s.parseTimeFromToken(msg.Key)
-		if t <= 0 {
-			log.Errorf("failed to parse token: %s", msg.Key)
-			continue
-		}
-
-		for err := cb(t); err != nil; err = cb(t) {
-			log.Errorf("failed to consume token: %s, caused by %v", msg.Key, err)
-		}
-		log.Infof("success consume token: %s", msg.Key)
-
-		if err := s.tokenQueue.Commit(msg); err != nil {
-			log.Errorf("failed to commit token: %s, caused by %v", msg.Key, err)
-		}
+		s.msgChan <- msg
 	}
 }
 
@@ -152,7 +168,7 @@ func (s *timeManager) parseTimeFromToken(token string) uint64 {
 	if strings.HasPrefix(token, prefixToken) {
 		t, err := strconv.ParseUint(token[len(prefixToken):], 10, 64)
 		if err != nil {
-			log.Errorf("failed to parse token token: %s, caused by %v", token, err)
+			log.Errorf("failed to parse token [%s]: %v", token, err)
 
 			return 0
 		}
@@ -160,7 +176,7 @@ func (s *timeManager) parseTimeFromToken(token string) uint64 {
 		return t
 	}
 
-	log.Errorf("failed to parse token, token token: %s is invalid", token)
+	log.Errorf("failed to parse token, token [%s] is invalid", token)
 
 	return 0
 }
