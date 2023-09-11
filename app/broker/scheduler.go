@@ -13,7 +13,6 @@ import (
 	type2 "github.com/beihai0xff/pudding/app/broker/pkg/types"
 	"github.com/beihai0xff/pudding/app/broker/storage"
 	"github.com/beihai0xff/pudding/configs"
-	"github.com/beihai0xff/pudding/pkg/clock"
 	"github.com/beihai0xff/pudding/pkg/cluster"
 	"github.com/beihai0xff/pudding/pkg/errno"
 	"github.com/beihai0xff/pudding/pkg/log"
@@ -47,20 +46,15 @@ type Scheduler interface {
 type scheduler struct {
 	delay     storage.DelayStorage
 	connector connector.RealTimeConnector
-	// wallClock wall wallClock time
-	wallClock clock.Clock
 
-	cluster cluster.Cluster
+	cluster     cluster.Cluster
+	timeManager *timeManager
 
 	// messageTopic default message topic
 	messageTopic string
-	// tokenTopic default token topic
-	tokenTopic string
 
-	// token timeSlice token channel
-	token chan uint64
 	// quit signal quit channel
-	quit chan int64
+	quit chan struct{}
 }
 
 // New create a new scheduler
@@ -71,26 +65,28 @@ func New(config *configs.BrokerConfig, delay storage.DelayStorage,
 		return nil, err
 	}
 
-	q := &scheduler{
-		delay:        delay,
-		connector:    realtime,
-		wallClock:    clock.New(),
-		cluster:      clusterManager,
-		messageTopic: config.ServerConfig.MessageTopic,
-		tokenTopic:   config.ServerConfig.TokenTopic,
-		token:        make(chan uint64),
-		quit:         make(chan int64),
+	quit := make(chan struct{})
+
+	timeManager, err := newTimeManager(config.ServerConfig.TokenTopic, clusterManager, quit)
+	if err != nil {
+		return nil, err
 	}
 
-	return q, nil
+	return &scheduler{
+		delay:        delay,
+		connector:    realtime,
+		cluster:      clusterManager,
+		messageTopic: config.ServerConfig.MessageTopic,
+		timeManager:  timeManager,
+		quit:         quit,
+	}, nil
 }
 
 // Run start the scheduler
 func (s *scheduler) Run() {
-	go s.tryProduceToken()
+	go s.timeManager.produceTokenWorker()
 
-	s.getToken()
-	go s.startSchedule()
+	go s.timeManager.consumeToken(s.consumeDelayMessage)
 }
 
 /*
@@ -133,8 +129,8 @@ func (s *scheduler) checkParams(msg *types.Message) error {
 			return errInvalidMessageDelay
 		}
 
-		msg.DeliverAt = uint64(s.wallClock.Now().Unix()) + msg.DeliverAfter
-	} else if time.Unix(int64(msg.DeliverAt), 0).Before(s.wallClock.Now()) {
+		msg.DeliverAt = uint64(s.cluster.WallClock().Unix()) + msg.DeliverAfter
+	} else if time.Unix(int64(msg.DeliverAt), 0).Before(s.cluster.WallClock()) {
 		return errInvalidMessageReady
 	}
 
@@ -150,22 +146,7 @@ func (s *scheduler) checkParams(msg *types.Message) error {
 	return nil
 }
 
-// startSchedule start a scheduler to consume DelayStorage
-// and move delayed messages to RealTimeConnector
-func (s *scheduler) startSchedule() {
-	log.Infof("start Scheduling")
-
-	for {
-		select {
-		case t := <-s.token:
-			go s.consumeDelayMessage(t)
-		case <-s.quit:
-			break
-		}
-	}
-}
-
-func (s *scheduler) consumeDelayMessage(t uint64) {
+func (s *scheduler) consumeDelayMessage(t uint64) error {
 	ctx, cancel := context.WithTimeout(context.Background(), time.Second*3)
 	defer cancel()
 
@@ -174,7 +155,7 @@ func (s *scheduler) consumeDelayMessage(t uint64) {
 
 	locker, err := s.cluster.Mutex(name, time.Second*3)
 	if err != nil {
-		return
+		return fmt.Errorf("failed to get timeSlice locker [%s]: %w", name, err)
 	}
 
 	if err = locker.Lock(ctx); err != nil {
@@ -182,17 +163,19 @@ func (s *scheduler) consumeDelayMessage(t uint64) {
 			log.Errorf("failed to get timeSlice locker [%s]: %v", name, err)
 		}
 
-		return
+		return err
 	}
 
 	if err := s.delay.Consume(ctx, t, 100, s.produceRealTime); err != nil {
 		log.Errorf("failed to consume timeSlice [%d] message: %v", t, err)
 	}
 
-	// Release the cluster
+	// Release the locker
 	if err := locker.Unlock(ctx); err != nil {
 		log.Errorf("failed to release timeSlice locker [%s]: %v", name, err)
 	}
+
+	return nil
 }
 
 func (s *scheduler) getLockerName(t uint64) string {

@@ -62,10 +62,9 @@ func Parse(configPath, format string, reader ParserFunc, opts ...OptionFunc) err
 	// the env var names, for instance, to lowercase them
 	if err := k.Load(kenv.Provider("PUDDING_", defaultDelim, func(s string) string {
 		return strings.ReplaceAll(strings.ToLower(
-			strings.TrimPrefix(s, "PUDDING_")), "_", ".")
+			strings.TrimPrefix(s, "PUDDING_")), "_", defaultDelim)
 	}), nil); err != nil {
-		err := fmt.Errorf("error loading config from env: %w", err)
-		return err
+		return fmt.Errorf("error loading config from env: %w", err)
 	}
 
 	// third, read config from cli arguments
