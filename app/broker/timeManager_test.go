@@ -38,11 +38,10 @@ func Test_timeManager_sendToken(t *testing.T) {
 	start := time.Date(2020, 1, 1, 0, 0, 0, 0, time.UTC)
 	assert.NoError(t, timeManager.sendToken(&start))
 
-	go func() {
-		timeManager.consumeToken(func(time uint64) error {
-			assert.Equal(t, uint64(start.Unix()), time)
-			close(quit)
-			return nil
-		})
-	}()
+	timeManager.consumeToken(func(time uint64) error {
+		assert.Equal(t, uint64(start.Unix()), time)
+		close(quit)
+		return nil
+	})
+
 }

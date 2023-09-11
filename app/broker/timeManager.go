@@ -118,7 +118,7 @@ func (s *timeManager) consumeToken(cb func(uint64) error) {
 	for {
 		select {
 		case <-s.quit:
-			break
+			return
 		case msg := <-s.msgChan:
 			t := s.parseTimeFromToken(msg.Key)
 			if t <= 0 {
