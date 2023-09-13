@@ -40,6 +40,7 @@ type Message struct {
 // /namespace/topic/unacked (value: consumer_id, rev)
 // /namespace/topic/consumer (mutex)
 type queue struct {
+	cluster       *cluster
 	client        *v3.Client
 	topic         string
 	consumerMutex Mutex
@@ -53,19 +54,28 @@ func (c *cluster) Queue(topic string) (Queue, error) {
 
 func newQueue(cluster *cluster, topic string) (*queue, error) {
 	q := queue{
+		cluster:    cluster,
 		client:     cluster.client,
 		topic:      topic,
 		consumerID: uuid.New().String(),
 	}
 
-	m, err := cluster.Mutex(q.getConsumerLockPath(), 10*time.Second)
-	if err != nil {
+	if err := q.newMutex(); err != nil {
 		return nil, err
+	}
+
+	return &q, nil
+}
+
+func (q *queue) newMutex() error {
+	m, err := q.cluster.Mutex(q.getConsumerLockPath(), 10*time.Second)
+	if err != nil {
+		return err
 	}
 
 	q.consumerMutex = m
 
-	return &q, nil
+	return nil
 }
 
 func (q *queue) Produce(m *Message) (string, error) {
@@ -91,9 +101,7 @@ func (q *queue) Consume(ctx context.Context) (*Message, error) {
 	for {
 		log.Debugf("try to get message from the topic [%s]", q.topic)
 
-		if held, err := q.consumerMutex.TryLock(); err != nil {
-			return nil, err
-		} else if !held {
+		if !q.consumerMutex.IsLocked() {
 			// wait for the lock, only one consumer can consume the message
 			if err := q.consumerMutex.Lock(ctx); err != nil {
 				return nil, err

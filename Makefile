@@ -9,6 +9,10 @@ IMAGE_NAME 			= pudding/${APP}:latest
 SWAGGER_UI_VERSION	:=v4.15.5
 
 
+submodule:
+	git submodule update --init --recursive
+
+
 # clean
 clean:
 	@echo "clean build dir"
@@ -21,7 +25,7 @@ lint: gen/proto gen/mock gen/struct_tag
 	cd api/protobuf-spec && buf mod update && buf lint
 	golangci-lint run
 
-.PHONY: clean lint
+.PHONY: clean lint submodule
 
 
 # build binary app

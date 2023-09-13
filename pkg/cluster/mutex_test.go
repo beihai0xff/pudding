@@ -56,20 +56,17 @@ func refreshMutexAfter(t *testing.T, m Mutex, d time.Duration) {
 	}
 }
 
-func Test_mutex_TryLock(t *testing.T) {
-	mutex, err := testCluster.Mutex("test", 2*time.Second, WithDisableKeepalive())
+func Test_mutex_IsLocked(t *testing.T) {
+	mutex, err := testCluster.Mutex("test", 2*time.Second)
 	assert.NoError(t, err)
-	mutex2, err := testCluster.Mutex("test", 2*time.Second, WithDisableKeepalive())
+	mutex2, err := testCluster.Mutex("test", 2*time.Second)
 	assert.NoError(t, err)
 
 	ctx := context.Background()
 	assert.NoError(t, mutex.Lock(ctx))
-	held, err := mutex.TryLock()
-	assert.Equal(t, true, held)
-	held2, err := mutex2.TryLock()
-	assert.Equal(t, false, held2)
+	assert.Equal(t, true, mutex.IsLocked())
+	assert.Equal(t, false, mutex2.IsLocked())
 
 	assert.NoError(t, mutex.Unlock(ctx))
-	held, err = mutex.TryLock()
-	assert.Equal(t, true, held)
+	assert.Equal(t, false, mutex.IsLocked())
 }
