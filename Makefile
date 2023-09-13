@@ -25,7 +25,7 @@ lint: gen/proto gen/mock gen/struct_tag
 	cd api/protobuf-spec && buf mod update && buf lint
 	golangci-lint run
 
-.PHONY: clean lint
+.PHONY: clean lint submodule
 
 
 # build binary app
@@ -56,7 +56,7 @@ install/tools:
 	@go generate -x -tags tools tools/tools.go
 
 # bootstrap the build by downloading additional tools that may be used by devs
-bootstrap: submodule install/tools gen/proto gen/struct_tag gen/mock
+bootstrap: install/tools gen/proto gen/struct_tag gen/mock
 
 
 .PHONY: build/binary build/docker gen/proto gen/struct_tag gen/mock gen/swagger-ui install/tools bootstrap
