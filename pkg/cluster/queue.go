@@ -74,6 +74,7 @@ func (q *queue) newMutex() error {
 	}
 
 	q.consumerMutex = m
+
 	return nil
 }
 

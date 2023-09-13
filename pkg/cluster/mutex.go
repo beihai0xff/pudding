@@ -111,8 +111,9 @@ func (m *mutex) IsLocked() bool {
 }
 
 func (m *mutex) Unlock(ctx context.Context) error {
-	var err error
 	lockerKey := m.m.Key()
+
+	var err error
 	defer func() {
 		if err == nil {
 			m.lock.Unlock()
