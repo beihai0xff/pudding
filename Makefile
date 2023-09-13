@@ -9,6 +9,10 @@ IMAGE_NAME 			= pudding/${APP}:latest
 SWAGGER_UI_VERSION	:=v4.15.5
 
 
+submodule:
+	git submodule update --init --recursive
+
+
 # clean
 clean:
 	@echo "clean build dir"
@@ -52,7 +56,7 @@ install/tools:
 	@go generate -x -tags tools tools/tools.go
 
 # bootstrap the build by downloading additional tools that may be used by devs
-bootstrap: install/tools gen/proto gen/struct_tag gen/mock
+bootstrap: submodule install/tools gen/proto gen/struct_tag gen/mock
 
 
 .PHONY: build/binary build/docker gen/proto gen/struct_tag gen/mock gen/swagger-ui install/tools bootstrap

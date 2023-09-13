@@ -79,7 +79,7 @@ func (c *cluster) getSession(ctx context.Context, ttl int64) (*concurrency.Sessi
 		return nil, err
 	}
 
-	session, err := concurrency.NewSession(c.client, concurrency.WithLease(leaseID), concurrency.WithContext(ctx))
+	session, err := concurrency.NewSession(c.client, concurrency.WithLease(leaseID))
 	if err != nil {
 		return nil, fmt.Errorf("create session failed: %v", err)
 	}

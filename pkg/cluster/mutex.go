@@ -21,9 +21,9 @@ var (
 	ErrInvalidTTL = fmt.Errorf("invalid TTL, must be greater than %s", minLockTTL.String())
 
 	// ErrLocked is returned when a lock locked by another session.
-	ErrLocked = errors.New("locked already held by another session")
+	ErrLocked = errors.New("lock already held by another session")
 	// ErrLockedBySelf is returned when a lock locked by self.
-	ErrLockedBySelf = errors.New("locked already held by self")
+	ErrLockedBySelf = errors.New("lock already held by self")
 	// ErrLockNotHeld is returned when a lock is not held
 	ErrLockNotHeld = errors.New("lock not held")
 )
@@ -35,11 +35,8 @@ type Mutex interface {
 	// May return ErrLockNotHeld.
 	Unlock(ctx context.Context) error
 
-	// TryLock tries to lock the mutex without blocking.
-	// Returns true if the lock is acquired.
-	// Returns false if the lock is acquired by another session.
-	// Returns error if any errors occurs.
-	TryLock() (bool, error)
+	// IsLocked returns whether the lock is held.
+	IsLocked() bool
 
 	// Refresh extends the lock with TTL.
 	// recommended use it when keepAlive is false
@@ -73,7 +70,7 @@ func (m *mutex) Lock(ctx context.Context) (err error) {
 				err = ErrLocked
 			}
 
-			log.Errorf("lock failed: %v", err)
+			log.Errorf("lock [%s] failed: %v", m.m.Key(), err)
 			m.lock.Unlock()
 
 			return
@@ -92,25 +89,34 @@ func (m *mutex) Lock(ctx context.Context) (err error) {
 	return
 }
 
-// TryLock returns whether the lock is held.
-func (m *mutex) TryLock() (bool, error) {
-	if err := m.m.TryLock(context.Background()); err != nil {
-		if errors.Is(err, concurrency.ErrLocked) {
-			return false, nil
-		}
-
-		return false, err
+// IsLocked returns whether the lock is held.
+func (m *mutex) IsLocked() bool {
+	// if the mutex is locked by self, return true
+	if m.lock.TryLock() {
+		m.lock.Unlock()
+		return false
 	}
 
-	return true, nil
+	if m.session == nil {
+		return false
+	}
+
+	// check whether the session is expired
+	select {
+	case <-m.session.Done():
+		return false
+	default:
+		return true
+	}
 }
 
 func (m *mutex) Unlock(ctx context.Context) error {
 	var err error
+	lockerKey := m.m.Key()
 	defer func() {
 		if err == nil {
 			m.lock.Unlock()
-			log.Infof("mutex [%s] unlocked", m.m.Key())
+			log.Infof("mutex [%s] unlocked", lockerKey)
 		}
 	}()
 
