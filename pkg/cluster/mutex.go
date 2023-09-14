@@ -111,6 +111,11 @@ func (m *mutex) IsLocked() bool {
 }
 
 func (m *mutex) Unlock(ctx context.Context) error {
+	if m.lock.TryLock() {
+		m.lock.Unlock()
+		return ErrLockNotHeld
+	}
+
 	lockerKey := m.m.Key()
 
 	var err error
