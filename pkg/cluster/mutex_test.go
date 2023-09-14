@@ -9,7 +9,7 @@ import (
 )
 
 func Test_mutex_Lock(t *testing.T) {
-	mutex, err := testCluster.Mutex("test", 2*time.Second, WithDisableKeepalive())
+	mutex, err := testCluster.Mutex("test", 2*time.Second)
 	assert.NoError(t, err)
 
 	ctx := context.Background()
@@ -21,6 +21,18 @@ func Test_mutex_Lock(t *testing.T) {
 	assert.NoError(t, mutex.Lock(ctx))
 	assert.ErrorIs(t, ErrLockedBySelf, mutex.Lock(ctx))
 	assert.NoError(t, mutex.Unlock(ctx))
+}
+
+func Test_mutexUnlock(t *testing.T) {
+	mutex, err := testCluster.Mutex("test/unlock", 2*time.Second)
+	assert.NoError(t, err)
+
+	ctx := context.Background()
+	assert.NoError(t, mutex.Lock(ctx))
+	assert.NoError(t, mutex.Unlock(ctx))
+	// unlock again
+	assert.ErrorIs(t, mutex.Unlock(ctx), ErrLockNotHeld)
+	assert.ErrorIs(t, mutex.Unlock(ctx), ErrLockNotHeld)
 }
 
 func Test_mutex_Refresh(t *testing.T) {
