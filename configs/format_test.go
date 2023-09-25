@@ -15,13 +15,13 @@ type testFormatConfig struct {
 	ServerConfig struct {
 		Broker     string `json:"broker" yaml:"broker" mapstructure:"broker"`
 		BaseConfig struct {
-			HostDomain string       `json:"host_domain" yaml:"host_domain" mapstructure:"host_domain"`
-			GRPCPort   int          `json:"grpc_port" yaml:"grpc_port" mapstructure:"grpc_port"`
-			HTTPPort   int          `json:"http_port" yaml:"http_port" mapstructure:"http_port"`
-			EnableTLS  bool         `json:"enable_tls" yaml:"enable_tls" mapstructure:"enable_tls"`
-			Logger     []log.Config `json:"log_config" yaml:"log_config" mapstructure:"log_config"`
+			HostDomain string `json:"host_domain" yaml:"host_domain" mapstructure:"host_domain"`
+			GRPCPort   int    `json:"grpc_port" yaml:"grpc_port" mapstructure:"grpc_port"`
+			HTTPPort   int    `json:"http_port" yaml:"http_port" mapstructure:"http_port"`
+			EnableTLS  bool   `json:"enable_tls" yaml:"enable_tls" mapstructure:"enable_tls"`
 		} `json:"base_config" yaml:"base_config" mapstructure:"base_config"`
 	} `json:"server_config" yaml:"server_config"  mapstructure:"server_config"`
+	Logger []log.Config `json:"log_config" yaml:"log_config" mapstructure:"log_config"`
 }
 
 func TestUnmarshalToStruct(t *testing.T) {
@@ -37,7 +37,7 @@ func TestUnmarshalToStruct(t *testing.T) {
 
 	// get_logger_configs
 	var logConfig []log.Config
-	err = UnmarshalToStruct("server_config.base_config.log_config", &logConfig)
+	err = UnmarshalToStruct("log_config", &logConfig)
 	assert.NoError(t, err)
 	v, _ := lo.Find(logConfig, func(conf log.Config) bool {
 		return conf.LogName == "default"
@@ -61,6 +61,7 @@ func TestJSONFormat(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			got, err := JSONFormat(tt.args)
+			fmt.Println(got.String())
 			if !tt.wantErr(t, err, fmt.Sprintf("JSONFormat(%v)", tt.args)) {
 				return
 			}
@@ -77,41 +78,41 @@ var testJSONFormat = `{
             "host_domain": "localhost",
             "grpc_port": 50051,
             "http_port": 8080,
-            "enable_tls": false,
-            "log_config": [
-                {
-                    "log_name": "default",
-                    "writers": [
-                        "console"
-                    ],
-                    "file_config": {
-                        "filepath": "",
-                        "max_age": 0,
-                        "max_backups": 0,
-                        "compress": false,
-                        "max_size": 0
-                    },
-                    "format": "json",
-                    "level": "debug",
-                    "caller_skip": 0
-                },
-                {
-                    "log_name": "kafka_log",
-                    "writers": [
-                        "console"
-                    ],
-                    "file_config": {
-                        "filepath": "",
-                        "max_age": 0,
-                        "max_backups": 0,
-                        "compress": false,
-                        "max_size": 0
-                    },
-                    "format": "json",
-                    "level": "debug",
-                    "caller_skip": 0
-                }
-            ]
+            "enable_tls": false
         }
-    }
+    },
+    "log_config": [
+        {
+            "log_name": "default",
+            "writers": [
+                "console"
+            ],
+            "file_config": {
+                "filepath": "",
+                "max_age": 0,
+                "max_backups": 0,
+                "compress": false,
+                "max_size": 0
+            },
+            "format": "json",
+            "level": "debug",
+            "caller_skip": 0
+        },
+        {
+            "log_name": "kafka_log",
+            "writers": [
+                "console"
+            ],
+            "file_config": {
+                "filepath": "",
+                "max_age": 0,
+                "max_backups": 0,
+                "compress": false,
+                "max_size": 0
+            },
+            "format": "json",
+            "level": "debug",
+            "caller_skip": 0
+        }
+    ]
 }`
