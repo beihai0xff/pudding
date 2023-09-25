@@ -17,7 +17,7 @@ var defaultLogFileConfig = log.FileConfig{
 // GetLogConfig get specify log config by log name
 func GetLogConfig(logName string) *log.Config {
 	var logConfig []log.Config
-	if err := UnmarshalToStruct("server_config.base_config.log_config", &logConfig); err != nil {
+	if err := UnmarshalToStruct("log_config", &logConfig); err != nil {
 		panic(err)
 	}
 
