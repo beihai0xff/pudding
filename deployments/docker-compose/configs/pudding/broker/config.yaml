@@ -3,6 +3,7 @@ server_config:
   host-domain: "localhost"
   grpc_port: 50051
   http_port: 8080
+  enable_tls: true
   cert_path: ./certs/pudding.pem
   key_path: ./certs/pudding-key.pem
   name_server_url: http://consul-client:8500
@@ -14,30 +15,27 @@ server_config:
   message_topic: default
   token_topic: token
 
-
 log_config:
-  default:
-    level: info
+  - log_name: default
+    level: debug
     writers:
       - console
       - file
     file_config:
       filepath: ./log/server.log
-  pulsar_log:
+  - log_name: kafka_log
     level: info
     writers:
-      - console
       - file
     file_config:
-      filepath: ./log/pulsar.log
-  grpc_log:
+      filepath: ./log/kafka.log
+  - log_name: grpc_log
     level: info
     writers:
       - console
       - file
     file_config:
       filepath: ./log/grpc.log
-
 
 redis_config:
   url: redis://default:default@redis-host:6379/11

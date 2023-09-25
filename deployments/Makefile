@@ -26,5 +26,20 @@ deploy/docker-compose-infra:
 deploy/docker-compose-pudding:
 	@echo "starting pudding service containers..."
 	docker compose -f ./deployments/docker-compose/pudding.yml \
-		-p pudding-service up --force-recreate -V --abort-on-container-exit
+		-p pudding-service up -V --abort-on-container-exit
 	@echo "pudding service containers start successfully"
+
+deploy/docker-compose-stop:
+	@echo "stopping pudding service containers..."
+	docker compose -f ./deployments/docker-compose/pudding.yml \
+		-p pudding-service down
+	@echo "pudding service containers stop successfully"
+	@echo "stopping pudding infra containers..."
+	docker compose -f ./deployments/docker-compose/infra.yml \
+		-p pudding-infra down
+	@echo "pudding infra containers stop successfully"
+	@echo "stopping pudding prom containers..."
+	docker compose -f ./deployments/docker-compose/dockprom/docker-compose.yml \
+		-f ./deployments/docker-compose/dockprom-override.yml \
+		-p pudding-prom down
+	@echo "pudding prom containers stop successfully"
