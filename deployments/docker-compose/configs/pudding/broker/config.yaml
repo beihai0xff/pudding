@@ -1,11 +1,17 @@
 name: pudding.broker
 server_config:
+  tls:
+    enable: true
+    autocert: false
+    ca_cert: ./certs/ca.crt
+    server_cert: ./certs/server.crt
+    server_key: ./certs/server.key
+    client_cert: ./certs/client.crt
+    client_key: ./certs/client.key
+
   host-domain: "localhost"
   grpc_port: 50051
   http_port: 8080
-  enable_tls: true
-  cert_path: ./certs/pudding.pem
-  key_path: ./certs/pudding-key.pem
   name_server_url: http://consul-client:8500
   etcd_urls: http://etcd-host:2379
 

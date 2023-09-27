@@ -2,9 +2,9 @@ include ./deployments/Makefile
 
 WORKSPACE_DIR		?= $(shell pwd)
 
-IMAGE_VERSION 		?= alpha-1
+TAG 				?= latest
 APP 				?= ""
-IMAGE_NAME 			= pudding/${APP}:latest
+IMAGE_NAME 			= pudding/${APP}:${TAG}
 
 SWAGGER_UI_VERSION	:=v4.15.5
 
@@ -35,7 +35,7 @@ build/binary: gen/proto gen/struct_tag gen/swagger-ui
 
 # build docker image
 build/docker: clean
-	@DOCKER_BUILDKIT=1 docker build \
+	docker build \
 	--build-arg APP=${APP} \
 	-t ${IMAGE_NAME} -f ./build/Dockerfile .
 

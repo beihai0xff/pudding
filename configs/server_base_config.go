@@ -9,8 +9,10 @@ const (
 	DefaultGRPCPort = 50050
 	// DefaultHTTPPort is the default port for HTTP server.
 	DefaultHTTPPort = 8080
-	// DefaultEnableTLS is enabled TLS
-	DefaultEnableTLS = false
+	// DefaultTLSEnable is enabled TLS
+	DefaultTLSEnable = false
+	// DefaultEnableAutocert is enabled TLS autocert
+	DefaultEnableAutocert = false
 	// DefaultCertPath is the default path for TLS certificate.
 	DefaultCertPath = "./certs/pudding.pem"
 	// DefaultKeyPath is the default path for TLS key.
@@ -31,12 +33,26 @@ type BaseConfig struct {
 	GRPCPort int `json:"grpc_port" yaml:"grpc_port" mapstructure:"grpc_port"`
 	// HTTPPort http server port
 	HTTPPort int `json:"http_port" yaml:"http_port" mapstructure:"http_port"`
-	// EnableTLS is enabled TLS, default is false
-	EnableTLS bool `json:"enable_tls" yaml:"enable_tls" mapstructure:"enable_tls"`
-	// CertPath tls cert file path, the file must contain PEM encoded data.
-	CertPath string `json:"cert_path" yaml:"cert_path" mapstructure:"cert_path"`
-	// KeyPath tls key file path, the file must contain PEM encoded data.
-	KeyPath string `json:"key_path" yaml:"key_path" mapstructure:"key_path"`
 	// NameServerURL name server url
 	NameServerURL string `json:"name_server_url" yaml:"name_server_url" mapstructure:"name_server_url"`
+	// TLS config
+	TLS *TLS `json:"tls" yaml:"tls" mapstructure:"tls"`
+}
+
+// TLS config
+type TLS struct {
+	// Enable is enabled TLS, default is false
+	Enable bool `json:"enable" yaml:"enable" mapstructure:"enable"`
+	// AutoCert is enabled TLS autocert, default is false
+	AutoCert bool `json:"autocert" yaml:"autocert" mapstructure:"autocert"`
+	// CertPath tls cert file path, the file must contain PEM encoded data.
+	CACert string `json:"ca_cert" yaml:"ca_cert" mapstructure:"ca_cert"`
+	// ServerCert tls server cert file path, the file must contain PEM encoded data.
+	ServerCert string `json:"server_cert" yaml:"server_cert" mapstructure:"server_cert"`
+	// ServerKey tls server key file path, the file must contain PEM encoded data.
+	ServerKey string `json:"server_key" yaml:"server_key" mapstructure:"server_key"`
+	// ClientCert tls client cert file path, the file must contain PEM encoded data.
+	ClientCert string `json:"client_cert" yaml:"client_cert" mapstructure:"client_cert"`
+	// ClientKey tls client key file path, the file must contain PEM encoded data.
+	ClientKey string `json:"client_key" yaml:"client_key" mapstructure:"client_key"`
 }

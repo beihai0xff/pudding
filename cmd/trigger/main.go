@@ -13,9 +13,9 @@ import (
 
 	"github.com/beihai0xff/pudding/app/trigger/server"
 	"github.com/beihai0xff/pudding/configs"
-	"github.com/beihai0xff/pudding/pkg/autocert"
 	"github.com/beihai0xff/pudding/pkg/log"
 	"github.com/beihai0xff/pudding/pkg/shutdown"
+	"github.com/beihai0xff/pudding/pkg/tls"
 )
 
 func main() {
@@ -25,7 +25,7 @@ func main() {
 	flag.Parse()
 
 	conf := configs.ParseTriggerConfig(*configs.GetConfigFilePath())
-	autocert.New(conf.BaseConfig.HostDomain)
+	tls.New(conf.BaseConfig.HostDomain, conf.BaseConfig.TLS)
 
 	server.RegisterLogger()
 

@@ -1,9 +1,12 @@
 FROM golang:1.20-buster AS builder
 LABEL stage=gobuilder
 
-
-ENV GOPROXY https://goproxy.io,direct
 WORKDIR /builder
+ENV GOPROXY https://goproxy.io,direct
+# manage dependencies
+COPY go.mod .
+COPY go.sum .
+RUN go mod download -x
 COPY . .
 RUN make bootstrap
 ARG APP
