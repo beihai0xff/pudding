@@ -26,7 +26,7 @@ func withSchedulerService(conf *configs.BrokerConfig) launcher.StartServiceFunc 
 			panic(err)
 		}
 
-		// s.Run()
+		s.Run()
 		handler := broker.NewHandler(s)
 
 		// register scheduler server
