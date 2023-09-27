@@ -44,13 +44,11 @@ func WithConsulResolver(addr string) OptionResolver {
 func (c *consulResolver) RegisterGRPC(serviceName, ip string, port int) (string, error) {
 	// health check
 	check := &api.AgentServiceCheck{
-		GRPC:          fmt.Sprintf("%s:%d", ip, port),
-		GRPCUseTLS:    true,
-		TLSSkipVerify: true,
-		Timeout:       "10s",
-		Interval:      "10s",
-		// 指定时间后自动注销不健康的服务节点
-		// 最小超时时间为1分钟，收获不健康服务的进程每30秒运行一次，因此触发注销的时间可能略长于配置的超时时间。
+		GRPC:                           fmt.Sprintf("%s:%d", ip, port),
+		GRPCUseTLS:                     true,
+		TLSSkipVerify:                  true,
+		Timeout:                        "10s",
+		Interval:                       "10s",
 		DeregisterCriticalServiceAfter: "1m",
 	}
 
@@ -79,13 +77,11 @@ func (c *consulResolver) RegisterGRPC(serviceName, ip string, port int) (string,
 func (c *consulResolver) RegisterHTTP(path, ip string, port int) (string, error) {
 	// health check
 	check := &api.AgentServiceCheck{
-		HTTP:          fmt.Sprintf("https://%s:%d%s", ip, port, path),
-		Method:        "GET",
-		TLSSkipVerify: true,
-		Timeout:       "10s",
-		Interval:      "10s",
-		// 指定时间后自动注销不健康的服务节点
-		// 最小超时时间为1分钟，收获不健康服务的进程每30秒运行一次，因此触发注销的时间可能略长于配置的超时时间。
+		HTTP:                           fmt.Sprintf("https://%s:%d%s", ip, port, path),
+		Method:                         "GET",
+		TLSSkipVerify:                  true,
+		Timeout:                        "10s",
+		Interval:                       "10s",
 		DeregisterCriticalServiceAfter: "1m",
 	}
 

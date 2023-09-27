@@ -27,3 +27,4 @@
 /dist/
 /api/gen/
 /api/http-spec/
+/deployments/docker-compose/configs/certs/

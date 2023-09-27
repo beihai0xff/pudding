@@ -19,6 +19,7 @@ services:
         window: 120s
     command: "--http-port=1213 --grpc-port=50051"
     volumes:
+      - ./configs/certs/:/pudding/app/broker/certs/
       - ./configs/pudding/broker/config.yaml:/pudding/app/broker/config.yaml
     healthcheck:
       test: curl -fsk https://127.0.0.1:1213/healthz

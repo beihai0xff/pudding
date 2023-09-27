@@ -16,9 +16,6 @@ var (
 	_              = flag.String("host-domain", DefaultHostDomain, "The server host domain")
 	_              = flag.Int("grpc-port", DefaultGRPCPort, "The grpc server port")
 	_              = flag.Int("http-port", DefaultHTTPPort, "The http server port")
-	_              = flag.Bool("enable-tls", DefaultEnableTLS, "Is enable server tls")
-	_              = flag.String("cert-path", DefaultCertPath, "The TLS cert file path")
-	_              = flag.String("key-path", DefaultKeyPath, "The TLS key file path")
 	_              = flag.String("name-server-url", DefaultNameServerURL, "The name server connection url")
 )
 

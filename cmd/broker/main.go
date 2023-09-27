@@ -13,9 +13,9 @@ import (
 
 	"github.com/beihai0xff/pudding/app/broker/server"
 	"github.com/beihai0xff/pudding/configs"
-	"github.com/beihai0xff/pudding/pkg/autocert"
 	"github.com/beihai0xff/pudding/pkg/log"
 	"github.com/beihai0xff/pudding/pkg/shutdown"
+	"github.com/beihai0xff/pudding/pkg/tls"
 )
 
 var redisURL = flag.String("redis-url", "", "The redis connection url")
@@ -24,7 +24,7 @@ func main() {
 	flag.Parse()
 
 	conf := configs.ParseBrokerConfig(*configs.GetConfigFilePath(), configs.WithRedisURL(*redisURL))
-	autocert.New(conf.BaseConfig.HostDomain)
+	tls.New(conf.BaseConfig.HostDomain, conf.BaseConfig.TLS)
 
 	server.RegisterLogger()
 
